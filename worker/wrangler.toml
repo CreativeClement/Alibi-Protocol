@@ -1,0 +1,18 @@
+name = "alibi-protocol-new"
+main = "alibi-protocol-worker-v14.js"
+compatibility_date = "2024-01-01"
+account_id = "f2aa6844768d9ac1430b54517113ad4b"
+workers_dev = true
+
+[[routes]]
+pattern = "alibiprotocol.com/*"
+zone_name = "alibiprotocol.com"
+
+[[routes]]
+pattern = "alibiprotocol.com"
+zone_name = "alibiprotocol.com"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "alibi-airdrop"
+database_id = "9cb14fe6-33a1-4a76-b0d9-9795803870c0"

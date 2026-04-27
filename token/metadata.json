@@ -1,0 +1,24 @@
+{
+  "name": "Alibi Protocol",
+  "symbol": "ALIBI",
+  "description": "Blockchain-anchored civil rights protection for drivers. AI-powered legal guidance, tamper-proof evidence vaulting on Solana, and a DePIN earn-while-you-drive network. Your phone is your witness.",
+  "image": "https://alibiprotocol.com/icon-512.png",
+  "external_url": "https://alibiprotocol.com",
+  "attributes": [
+    { "trait_type": "Category", "value": "DePIN" },
+    { "trait_type": "Chain", "value": "Solana" },
+    { "trait_type": "Consensus", "value": "Proof-of-Active-Navigation" },
+    { "trait_type": "Supply", "value": "1,000,000,000" },
+    { "trait_type": "Deflationary", "value": "Yes" }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://alibiprotocol.com/icon-512.png",
+        "type": "image/png"
+      }
+    ],
+    "category": "currency",
+    "creators": []
+  }
+}

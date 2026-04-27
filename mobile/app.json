@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "Alibi Protocol",
+    "slug": "alibi-protocol",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0C"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.alibiprotocol.ios",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Alibi Protocol needs camera access to record video evidence during police encounters.",
+        "NSMicrophoneUsageDescription": "Alibi Protocol needs microphone access to record audio evidence during police encounters.",
+        "NSLocationWhenInUseUsageDescription": "Alibi Protocol uses your location for navigation, DePIN earning, and evidence geolocation.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Alibi Protocol uses your location for continuous navigation and DePIN earning while driving.",
+        "NSLocationAlwaysUsageDescription": "Alibi Protocol uses background location for DePIN earning during active navigation sessions."
+      }
+    },
+    "android": {
+      "package": "com.alibiprotocol.android",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0A0C",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "INTERNET"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "alibiprotocol",
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Alibi Protocol to access your camera for emergency recording.",
+          "microphonePermission": "Allow Alibi Protocol to access your microphone for audio evidence."
+        }
+      ],
+      "expo-av",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Alibi Protocol to access your location for navigation and DePIN earning."
+        }
+      ],
+      "expo-secure-store",
+      "expo-file-system",
+      "expo-asset"
+    ]
+  }
+}
