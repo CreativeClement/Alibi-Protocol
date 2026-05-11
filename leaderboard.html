@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALIBI PROTOCOL — SHIELD LEADERBOARD</title>
+<meta property="og:title" content="Alibi Protocol — Live Shield Leaderboard">
+<meta property="og:description" content="Real-time rankings of the top navigators earning $ALIBI. The snapshot fires without warning — see where you stand.">
+<meta property="og:image" content="https://alibiprotocol.com/assets/og-shield.png">
+<link rel="icon" href="https://alibiprotocol.com/assets/shield-logo.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#0A0A0C;--surface:#0f1117;--border:rgba(0,229,255,0.12);--cyan:#00E5FF;--green:#00FF88;--amber:#FF9F0A;--red:#FF3B30;--gray:#8B949E;--white:#FFFFFF}
+  body{background:var(--bg);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh}
+
+  /* ── NAV ── */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,12,0.95);backdrop-filter:blur(12px);z-index:100}
+  .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .nav-logo svg{width:28px;height:28px}
+  .nav-logo span{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--white);letter-spacing:0.1em}
+  .nav-links{display:flex;gap:24px;align-items:center}
+  .nav-links a{font-size:13px;color:var(--gray);text-decoration:none;transition:color .2s}
+  .nav-links a:hover{color:var(--cyan)}
+  .nav-cta{background:var(--cyan);color:#000;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em}
+
+  /* ── HERO ── */
+  .hero{text-align:center;padding:60px 20px 40px;border-bottom:1px solid var(--border)}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:100px;padding:6px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:0.1em;margin-bottom:20px}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+  .hero h1{font-family:'JetBrains Mono',monospace;font-size:clamp(28px,5vw,52px);font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin-bottom:16px}
+  .hero h1 span{color:var(--cyan)}
+  .hero p{color:var(--gray);font-size:16px;max-width:560px;margin:0 auto 32px;line-height:1.6}
+  .seed-banner{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(255,159,10,0.12),rgba(255,59,48,0.08));border:1px solid rgba(255,159,10,0.3);border-radius:12px;padding:14px 24px;max-width:640px;margin:0 auto}
+  .seed-banner-icon{font-size:24px;flex-shrink:0}
+  .seed-banner-text{text-align:left}
+  .seed-banner-text strong{display:block;font-size:14px;color:var(--amber);font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;margin-bottom:4px}
+  .seed-banner-text span{font-size:13px;color:#ccc;line-height:1.5}
+  .seed-banner a{color:var(--cyan);text-decoration:none;font-weight:600}
+
+  /* ── STATS ROW ── */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stat-box{background:var(--surface);padding:24px;text-align:center}
+  .stat-val{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--cyan);display:block}
+  .stat-lbl{font-size:11px;color:var(--gray);letter-spacing:0.1em;margin-top:4px;display:block;text-transform:uppercase}
+  @media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+
+  /* ── MAIN LAYOUT ── */
+  .main{max-width:1100px;margin:0 auto;padding:40px 20px 80px}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:gap}
+  .section-title{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:0.15em;color:var(--cyan);text-transform:uppercase}
+  .tab-group{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:10px;padding:4px}
+  .tab{padding:7px 16px;border-radius:8px;border:none;background:none;color:var(--gray);font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;transition:all .2s}
+  .tab.active{background:var(--cyan);color:#000;font-weight:700}
+
+  /* ── LEADERBOARD TABLE ── */
+  .lb-table{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+  .lb-header{display:grid;grid-template-columns:52px 1fr 120px 100px 100px 80px;gap:0;padding:14px 20px;border-bottom:1px solid var(--border);background:rgba(0,229,255,0.03)}
+  .lb-header span{font-size:10px;color:var(--gray);letter-spacing:0.12em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+  .lb-row{display:grid;grid-template-columns:52px 1fr 120px 100px 100px 80px;gap:0;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s;align-items:center}
+  .lb-row:hover{background:rgba(0,229,255,0.04)}
+  .lb-row:last-child{border-bottom:none}
+  .lb-rank{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--gray)}
+  .lb-rank.gold{color:#FFD700}.lb-rank.silver{color:#C0C0C0}.lb-rank.bronze{color:#CD7F32}
+  .wallet-col{display:flex;flex-direction:column;gap:3px}
+  .wallet-addr{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--white)}
+  .wallet-tags{display:flex;gap:6px;flex-wrap:wrap}
+  .tag{font-size:9px;padding:2px 7px;border-radius:100px;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;font-weight:700}
+  .tag-tier-RECRUIT{background:rgba(139,148,158,0.15);color:#8B949E}
+  .tag-tier-NAVIGATOR{background:rgba(74,144,226,0.15);color:#4A90E2}
+  .tag-tier-SENTINEL{background:rgba(0,229,255,0.15);color:var(--cyan)}
+  .tag-tier-GUARDIAN{background:rgba(0,255,136,0.15);color:var(--green)}
+  .tag-tier-OPERATOR{background:rgba(255,159,10,0.15);color:var(--amber)}
+  .tag-stake{background:rgba(255,215,0,0.15);color:#FFD700}
+  .tag-twitter{background:rgba(29,161,242,0.15);color:#1DA1F2}
+  .points-col{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--white)}
+  .miles-col{font-size:13px;color:var(--gray)}
+  .multiplier-col{font-family:'JetBrains Mono',monospace;font-size:13px}
+  .mult-boosted{color:var(--amber);font-weight:700}
+  .mult-base{color:var(--gray)}
+  .package-col{font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:0.05em}
+  .pkg-MYTHICAL{color:var(--red)}.pkg-LEGENDARY{color:var(--amber)}.pkg-RARE{color:var(--cyan)}.pkg-UNCOMMON{color:var(--gray)}
+
+  @media(max-width:768px){
+    .lb-header{grid-template-columns:40px 1fr 90px 70px}.lb-header span:nth-child(4),.lb-header span:nth-child(5){display:none}
+    .lb-row{grid-template-columns:40px 1fr 90px 70px}.miles-col,.multiplier-col{display:none}
+  }
+
+  /* ── SEED PHASE CTA ── */
+  .seed-cta{margin:40px 0;background:linear-gradient(135deg,rgba(255,159,10,0.08),rgba(0,229,255,0.05));border:1px solid rgba(255,159,10,0.25);border-radius:20px;padding:40px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+  .seed-cta-title{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--amber);margin-bottom:12px}
+  .seed-cta-body{color:#ccc;font-size:14px;line-height:1.7;margin-bottom:20px}
+  .multiplier-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+  .mult-row{background:rgba(0,0,0,0.3);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+  .mult-row-label{font-size:12px;color:var(--gray)}
+  .mult-row-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+  .seed-cta-buttons{display:flex;flex-direction:column;gap:12px;min-width:200px}
+  .btn-primary{background:var(--amber);color:#000;padding:14px 28px;border-radius:12px;font-weight:700;font-family:'JetBrains Mono',monospace;font-size:14px;text-decoration:none;text-align:center;display:block;letter-spacing:0.05em}
+  .btn-secondary{background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid rgba(0,229,255,0.25);padding:14px 28px;border-radius:12px;font-weight:700;font-family:'JetBrains Mono',monospace;font-size:14px;text-decoration:none;text-align:center;display:block}
+  @media(max-width:768px){.seed-cta{grid-template-columns:1fr}.seed-cta-buttons{flex-direction:row}}
+
+  /* ── SOCIAL TASKS ── */
+  .tasks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px}
+  .task-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s}
+  .task-card:hover{border-color:rgba(0,229,255,0.3)}
+  .task-header{display:flex;align-items:center;gap:12px}
+  .task-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .task-title{font-weight:600;font-size:14px}
+  .task-points{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);font-weight:700}
+  .task-desc{font-size:13px;color:var(--gray);line-height:1.5}
+  .task-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--white);cursor:pointer;text-align:center;text-decoration:none;transition:all .2s;display:block}
+  .task-btn:hover{background:rgba(0,229,255,0.1);border-color:rgba(0,229,255,0.3);color:var(--cyan)}
+  .task-btn.done{background:rgba(0,255,136,0.1);border-color:rgba(0,255,136,0.3);color:var(--green);cursor:default}
+
+  /* ── FOOTER ── */
+  footer{border-top:1px solid var(--border);padding:32px 40px;text-align:center;font-size:12px;color:var(--gray)}
+  footer a{color:var(--gray);text-decoration:none}
+  footer a:hover{color:var(--cyan)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <svg viewBox="0 0 40 48" fill="none"><path d="M20 2L4 10v14c0 10.5 6.8 20.3 16 23 9.2-2.7 16-12.5 16-23V10L20 2z" fill="rgba(0,229,255,0.15)" stroke="#00E5FF" stroke-width="2"/><path d="M14 24l4 4 8-8" stroke="#00E5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>ALIBI PROTOCOL</span>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/whitepaper.html">Whitepaper</a>
+    <a href="/tokenomics.html">Tokenomics</a>
+    <a href="https://discord.gg/A92JRRuRU4" target="_blank">Discord</a>
+    <a href="https://alibiprotocol.com/alibi-protocol-app" class="nav-cta">OPEN APP</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"><span class="live-dot"></span>LIVE RANKINGS — UPDATES EVERY 60s</div>
+  <h1>SHIELD <span>LEADERBOARD</span></h1>
+  <p>Every mile driven. Every hazard reported. Every rights violation documented. It all compounds toward the snapshot. <strong>The snapshot fires without warning.</strong></p>
+  <div class="seed-banner">
+    <div class="seed-banner-icon">🔒</div>
+    <div class="seed-banner-text">
+      <strong>SEED PHASE IS OPEN — LOCK YOUR MULTIPLIER NOW</strong>
+      <span>Seed phase stakers earn up to <strong>2.5× your earned $ALIBI</strong> when the snapshot fires. Every rank on this leaderboard gets bigger with a staking multiplier. <a href="/tokenomics.html">Learn how →</a></span>
+    </div>
+  </div>
+</div>
+
+<!-- NETWORK STATS -->
+<div class="stats-row">
+  <div class="stat-box"><span class="stat-val" id="stat-wallets">—</span><span class="stat-lbl">Active Navigators</span></div>
+  <div class="stat-box"><span class="stat-val" id="stat-miles">—</span><span class="stat-lbl">Total Miles Driven</span></div>
+  <div class="stat-box"><span class="stat-val" id="stat-hazards">—</span><span class="stat-lbl">Hazards Reported</span></div>
+  <div class="stat-box"><span class="stat-val" id="stat-pool">150M</span><span class="stat-lbl">$ALIBI Airdrop Pool</span></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEADERBOARD -->
+  <div class="section-header" style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <span class="section-title">🏆 TOP NAVIGATORS</span>
+    <div class="tab-group">
+      <button class="tab active" onclick="switchTab('global',this)">Global</button>
+      <button class="tab" onclick="switchTab('weekly',this)">This Week</button>
+      <button class="tab" onclick="switchTab('staked',this)">Seed Stakers</button>
+    </div>
+  </div>
+
+  <div class="lb-table">
+    <div class="lb-header">
+      <span>#</span><span>Navigator</span><span>Shield Points</span><span>Miles</span><span>Multiplier</span><span>Package</span>
+    </div>
+    <div id="lb-body">
+      <!-- Populated by JS -->
+      <div style="padding:40px;text-align:center;color:#8B949E;font-family:'JetBrains Mono',monospace;font-size:13px">
+        Loading live rankings...
+      </div>
+    </div>
+  </div>
+
+  <!-- SEED PHASE CTA -->
+  <div class="seed-cta">
+    <div>
+      <div class="seed-cta-title">🔒 STAKE NOW. MULTIPLY EVERYTHING.</div>
+      <div class="seed-cta-body">
+        Every $ALIBI token you've earned by driving gets multiplied at snapshot time — <strong>but only if you're staked in the seed phase.</strong>
+        This is the highest-leverage move in the entire airdrop. A wallet with 10,000 Shield Points and a 2.5× multiplier beats a wallet with 25,000 points at 1×.
+        <br><br>
+        <strong>Seed phase closes when the snapshot fires. There is no warning.</strong>
+      </div>
+      <div class="multiplier-grid">
+        <div class="mult-row"><span class="mult-row-label">Any amount staked</span><span class="mult-row-val" style="color:#8B949E">1.25× 🔒</span></div>
+        <div class="mult-row"><span class="mult-row-label">1,000+ $ALIBI staked</span><span class="mult-row-val" style="color:#00E5FF">1.50× 🔒</span></div>
+        <div class="mult-row"><span class="mult-row-label">10,000+ $ALIBI staked</span><span class="mult-row-val" style="color:#00FF88">2.00× 🔒</span></div>
+        <div class="mult-row"><span class="mult-row-label">50,000+ $ALIBI staked</span><span class="mult-row-val" style="color:#FF9F0A">2.50× 🔒</span></div>
+      </div>
+    </div>
+    <div class="seed-cta-buttons">
+      <a href="https://alibiprotocol.com/alibi-protocol-app" class="btn-primary">🚗 EARN NOW — OPEN APP</a>
+      <a href="https://discord.gg/A92JRRuRU4" class="btn-secondary" target="_blank">💬 JOIN DISCORD</a>
+      <a href="/tokenomics.html" class="btn-secondary">📄 TOKENOMICS</a>
+    </div>
+  </div>
+
+  <!-- SOCIAL TASKS -->
+  <div class="section-header" style="margin:40px 0 20px">
+    <span class="section-title">⚡ EARN BONUS SHIELD POINTS — SOCIAL TASKS</span>
+  </div>
+  <p style="color:#8B949E;font-size:13px;margin-bottom:24px;line-height:1.6">
+    Drive-to-earn is the primary mechanic. Social tasks stack bonus points on top. Complete all 8 for a <strong style="color:#00E5FF">+850 SP boost</strong> — equivalent to 85 extra miles driven.
+  </p>
+  <div class="tasks-grid" id="tasks-grid">
+    <!-- populated by JS -->
+  </div>
+
+</div>
+
+<footer>
+  <p style="margin-bottom:8px">ALIBI PROTOCOL — Before. During. After.</p>
+  <p><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/disclaimer.html">Disclaimer</a> · <a href="https://github.com/Str8-Profits/Alibi-Protocol" target="_blank">GitHub</a></p>
+  <p style="margin-top:8px;font-size:11px;color:#555">$ALIBI is a utility token. Not investment advice. Recording laws vary by state. This is not a securities offering.</p>
+</footer>
+
+<script>
+const SNAPSHOT_API = 'https://alibi-snapshot.alibiprotocol.workers.dev';
+const TASKS = [
+  { id:'follow_twitter',   icon:'𝕏', bg:'rgba(29,161,242,0.1)',   title:'Follow @AlibiProtocol',       points:100, desc:'Follow the official Alibi Protocol account on X (Twitter).',       url:'https://twitter.com/intent/follow?screen_name=AlibiProtocol' },
+  { id:'retweet_launch',   icon:'🔁', bg:'rgba(0,229,255,0.1)',    title:'Retweet Launch Post',          points:150, desc:'Retweet the official airdrop announcement to spread the word.',    url:'https://twitter.com/AlibiProtocol' },
+  { id:'quote_tweet',      icon:'💬', bg:'rgba(0,255,136,0.1)',    title:'Quote Tweet Your Stats',       points:200, desc:'Quote tweet with your Shield Point rank and tag @AlibiProtocol.', url:'https://twitter.com/intent/tweet?text=I%27m+in+the+%40AlibiProtocol+airdrop+%F0%9F%9B%A1%EF%B8%8F+Earning+%24ALIBI+just+by+driving.+The+snapshot+fires+any+time.+Join+now%3A+alibiprotocol.com+%23ALIBI+%23DePIN' },
+  { id:'join_discord',     icon:'🎮', bg:'rgba(88,101,242,0.1)',   title:'Join the Discord',             points:100, desc:'Join the official Discord server and verify your wallet.',          url:'https://discord.gg/A92JRRuRU4' },
+  { id:'refer_user',       icon:'👥', bg:'rgba(255,159,10,0.1)',   title:'Refer a Navigator',            points:150, desc:'Refer a friend who drives 10+ verified miles (100 SP each, no cap).', url:'#' },
+  { id:'first_hazard',     icon:'⚠️', bg:'rgba(255,59,48,0.1)',   title:'Report First Hazard',          points:50,  desc:'Submit your first hazard report in the app (police, camera, etc.).',   url:'https://alibiprotocol.com/alibi-protocol-app' },
+  { id:'first_encounter',  icon:'🎥', bg:'rgba(0,229,255,0.1)',   title:'Record First Encounter',       points:200, desc:'Activate Legal Shield during a police stop and hash the evidence.',     url:'https://alibiprotocol.com/alibi-protocol-app' },
+  { id:'seed_stake',       icon:'🔒', bg:'rgba(255,215,0,0.1)',   title:'Stake Seed Phase Tokens',      points:300, desc:'Stake any amount of $ALIBI in the seed phase for a permanent multiplier.', url:'/tokenomics.html' },
+];
+
+let currentTab = 'global';
+let completedTasks = JSON.parse(localStorage.getItem('alibi_tasks') || '{}');
+
+function pkgClass(p){return{MYTHICAL:'pkg-MYTHICAL',LEGENDARY:'pkg-LEGENDARY',RARE:'pkg-RARE',UNCOMMON:'pkg-UNCOMMON'}[p]||'pkg-UNCOMMON'}
+function fmtNum(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(Math.round(n))}
+function shortWallet(w){if(!w)return '—';return w.slice(0,5)+'...'+w.slice(-5)}
+function estPackage(pts,mult){
+  const eff=pts*(mult||1);
+  if(eff>=40000)return'MYTHICAL';if(eff>=12000)return'LEGENDARY';if(eff>=3000)return'RARE';return'UNCOMMON';
+}
+
+async function loadLeaderboard() {
+  try {
+    const res  = await fetch(`${SNAPSHOT_API}/leaderboard?tab=${currentTab}`);
+    const data = await res.json();
+    renderStats(data.network);
+    renderRows(data.rankings || []);
+  } catch {
+    // Demo data while API is being set up
+    renderStats({ wallets: 0, total_miles: 0, hazards: 0 });
+    renderRows([]);
+  }
+}
+
+function renderStats(n) {
+  document.getElementById('stat-wallets').textContent = fmtNum(n.wallets || 0);
+  document.getElementById('stat-miles').textContent   = fmtNum(n.total_miles || 0);
+  document.getElementById('stat-hazards').textContent = fmtNum(n.hazards || 0);
+}
+
+function renderRows(rows) {
+  const medals = ['🥇','🥈','🥉'];
+  if (!rows.length) {
+    document.getElementById('lb-body').innerHTML = `
+      <div style="padding:60px;text-align:center;color:#8B949E;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:2">
+        🛡️ No navigators yet — be the first.<br>
+        <a href="https://alibiprotocol.com/alibi-protocol-app" style="color:#00E5FF;font-weight:700">OPEN THE APP AND DRIVE →</a>
+      </div>`;
+    return;
+  }
+  document.getElementById('lb-body').innerHTML = rows.map((r, i) => {
+    const rankDisplay = i < 3 ? medals[i] : `<span style="font-size:14px">${i+1}</span>`;
+    const tierClass   = `tag-tier-${r.tier||'RECRUIT'}`;
+    const stakeTag    = r.stake_multiplier > 1 ? `<span class="tag tag-stake">×${r.stake_multiplier.toFixed(1)} STAKED 🔒</span>` : '';
+    const twitterTag  = r.twitter ? `<span class="tag tag-twitter">𝕏 VERIFIED</span>` : '';
+    const pkg         = estPackage(r.total_points, r.stake_multiplier);
+    const multColor   = r.stake_multiplier > 1 ? 'mult-boosted' : 'mult-base';
+    return `
+      <div class="lb-row">
+        <div class="lb-rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${rankDisplay}</div>
+        <div class="wallet-col">
+          <span class="wallet-addr">${shortWallet(r.wallet)}</span>
+          <div class="wallet-tags">
+            <span class="tag ${tierClass}">${r.tier||'RECRUIT'}</span>
+            ${stakeTag}${twitterTag}
+          </div>
+        </div>
+        <div class="points-col">${fmtNum(r.total_points)} <span style="font-size:10px;color:#8B949E">SP</span></div>
+        <div class="miles-col">${fmtNum(r.drive_miles||0)} mi</div>
+        <div class="multiplier-col ${multColor}">×${(r.stake_multiplier||1).toFixed(2)}</div>
+        <div class="package-col ${pkgClass(pkg)}">${pkg}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderTasks() {
+  document.getElementById('tasks-grid').innerHTML = TASKS.map(t => {
+    const done = completedTasks[t.id];
+    return `
+    <div class="task-card">
+      <div class="task-header">
+        <div class="task-icon" style="background:${t.bg}">${t.icon}</div>
+        <div><div class="task-title">${t.title}</div><div class="task-points">+${t.points} SP</div></div>
+      </div>
+      <div class="task-desc">${t.desc}</div>
+      ${done
+        ? `<div class="task-btn done">✅ COMPLETED</div>`
+        : `<a href="${t.url}" class="task-btn" target="_blank" onclick="markDone('${t.id}')">COMPLETE TASK →</a>`}
+    </div>`;
+  }).join('');
+}
+
+function markDone(id) {
+  completedTasks[id] = true;
+  localStorage.setItem('alibi_tasks', JSON.stringify(completedTasks));
+  setTimeout(renderTasks, 800);
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('lb-body').innerHTML = '<div style="padding:40px;text-align:center;color:#8B949E;font-family:JetBrains Mono,monospace;font-size:13px">Loading...</div>';
+  loadLeaderboard();
+}
+
+// Init
+loadLeaderboard();
+renderTasks();
+setInterval(loadLeaderboard, 60000); // refresh every 60s
+</script>
+</body>
+</html>

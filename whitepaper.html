@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*; connect-src 'self' https://*; frame-src 'self';">
+    <title>ALIBI Protocol Whitepaper v1.4</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020204">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="canonical" href="https://alibiprotocol.com/whitepaper">
+
+    <meta name="title" content="ALIBI Protocol Whitepaper v1.4">
+    <meta name="description" content="Technical whitepaper: blockchain-anchored civil rights protection layer for drivers. Real-time AI legal guidance, tamper-proof evidence recording, DePIN earn-while-you-drive network on Solana.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ALIBI Protocol Whitepaper v1.4">
+    <meta property="og:description" content="Cryptographic proof-of-existence for encounter evidence. Stop the Lie. Save Your Life.">
+    <meta property="og:url" content="https://alibiprotocol.com/whitepaper">
+    <meta property="og:image" content="https://alibiprotocol.com/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="ALIBI Protocol Whitepaper v1.4">
+    <meta property="twitter:description" content="The first DePIN-powered constitutional defense layer built on Solana.">
+    <meta property="twitter:image" content="https://alibiprotocol.com/og-image.png">
+
+    <style>
+        :root {
+            --bg: #0A0A0A;
+            --bg-secondary: #0D1117;
+            --surface: rgba(13, 17, 23, 0.7);
+            --border: rgba(0, 240, 255, 0.12);
+            --cyan: #00F0FF;
+            --green: #00FF88;
+            --text-pri: #ffffff;
+            --text-sec: #999999;
+            --text-muted: #8B949E;
+            --glass-glow: rgba(0, 240, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--cyan);
+            outline-offset: 3px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* Performance: skip rendering of off-screen sections */
+        section {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 600px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-pri);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Header Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5%;
+            z-index: 1000;
+        }
+
+        .header-logo {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            color: var(--cyan);
+            text-decoration: none;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .header-nav a {
+            color: var(--text-sec);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: color 0.3s;
+        }
+
+        .header-nav a:hover {
+            color: var(--cyan);
+        }
+
+        .btn-back {
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--cyan);
+            padding: 10px 24px;
+            border-radius: 80px;
+            font-size: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            background: var(--cyan);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        /* Main Layout */
+        .main-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            align-items: start;
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid rgba(0, 240, 255, 0.08);
+            padding: 40px 24px;
+            position: sticky;
+            top: 70px;
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-title {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            margin-bottom: 24px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 12px;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            color: var(--text-sec);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-left: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            color: var(--cyan);
+            border-left-color: var(--cyan);
+            background: rgba(0, 240, 255, 0.05);
+        }
+
+        .sidebar-section-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--green);
+            margin-right: 8px;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 60px 5% 100px 5%;
+            min-width: 0;
+        }
+
+        /* Top Badge */
+        .version-badge {
+            display: inline-block;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            color: var(--cyan);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 24px;
+        }
+
+        .classified-stamp {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--green);
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            opacity: 0.7;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 80px;
+        }
+
+        .section-header {
+            margin-bottom: 40px;
+        }
+
+        .section-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--green);
+            opacity: 0.6;
+            margin-bottom: 12px;
+            line-height: 1;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+            color: var(--text-pri);
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--text-sec);
+            line-height: 1.6;
+            max-width: 800px;
+        }
+
+        /* Content blocks */
+        .content-block {
+            margin-bottom: 32px;
+        }
+
+        .content-block-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--cyan);
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content-block-text {
+            font-size: 14px;
+            color: var(--text-sec);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .content-list {
+            list-style: none;
+            margin-bottom: 16px;
+        }
+
+        .content-list li {
+            font-size: 14px;
+            color: var(--text-sec);
+            margin-bottom: 12px;
+            padding-left: 24px;
+            position: relative;
+            line-height: 1.7;
+        }
+
+        .content-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--green);
+            font-weight: 800;
+        }
+
+        .glass-card {
+            background: rgba(13, 17, 23, 0.5);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+
+        .glass-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .glass-card-content {
+            font-size: 13px;
+            color: var(--text-sec);
+            line-height: 1.7;
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--cyan);
+            line-height: 1.6;
+            display: block;
+            white-space: pre;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .grid-item {
+            background: rgba(13, 17, 23, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.08);
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        .grid-item-label {
+            font-size: 11px;
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .grid-item-value {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--cyan);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 8px;
+        }
+
+        .grid-item-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Emphasis elements */
+        .highlight {
+            color: var(--cyan);
+        }
+
+        .accent-green {
+            color: var(--green);
+        }
+
+        strong {
+            font-weight: 700;
+            color: var(--text-pri);
+        }
+
+        em {
+            color: var(--text-sec);
+            font-style: italic;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid rgba(0, 240, 255, 0.08);
+            padding: 40px 5%;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .footer-divider {
+            height: 1px;
+            background: rgba(0, 240, 255, 0.08);
+            margin: 24px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .content {
+                padding: 40px 6% 60px 6%;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .section-title {
+                font-size: 24px;
+            }
+
+            .section-number {
+                font-size: 18px;
+            }
+
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .content-block-text {
+                font-size: 13px;
+            }
+
+            header {
+                padding: 0 4%;
+            }
+
+            .header-nav {
+                gap: 20px;
+            }
+        }
+
+        /* ══════════════════════════════════════════════════
+           PREMIUM UPGRADE LAYER
+           ══════════════════════════════════════════════════ */
+
+        :root {
+            --shadow-sm: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+            --shadow-md: 0 2px 4px rgba(0,0,0,.5), 0 8px 32px rgba(0,0,0,.4);
+            --shadow-lg: 0 4px 8px rgba(0,0,0,.5), 0 16px 48px rgba(0,0,0,.5);
+            --transition: all .24s cubic-bezier(.4,0,.2,1);
+            --radius: 20px;
+        }
+
+        /* Better body base */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Premium header */
+        header {
+            background: rgba(8,8,10,.92) !important;
+            backdrop-filter: blur(40px) !important;
+            -webkit-backdrop-filter: blur(40px) !important;
+            border-bottom: 1px solid rgba(255,255,255,.06) !important;
+            box-shadow: 0 1px 24px rgba(0,0,0,.4);
+        }
+
+        .header-logo {
+            font-size: 16px !important;
+            background: linear-gradient(135deg, var(--cyan), rgba(0,240,255,.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn-back {
+            transition: var(--transition) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 2px 12px rgba(0,240,255,.1);
+        }
+        .btn-back:hover {
+            box-shadow: 0 4px 20px rgba(0,240,255,.3) !important;
+        }
+
+        /* Premium sidebar */
+        .sidebar {
+            background: rgba(6,8,12,.95) !important;
+            border-right: 1px solid rgba(255,255,255,.05) !important;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,.08) transparent;
+        }
+
+        .nav-link {
+            border-radius: 10px;
+            transition: var(--transition) !important;
+            padding: 8px 12px !important;
+        }
+        .nav-link:hover {
+            background: rgba(0,240,255,.05);
+            color: var(--cyan) !important;
+        }
+        .nav-link.active {
+            background: rgba(0,240,255,.08) !important;
+            color: var(--cyan) !important;
+        }
+
+        /* Premium section titles */
+        .section-title {
+            background: linear-gradient(135deg, #fff 60%, rgba(255,255,255,.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-number {
+            background: linear-gradient(135deg, var(--cyan), rgba(0,240,255,.5)) !important;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Premium glass cards */
+        .glass-card {
+            background: rgba(10,12,18,.85) !important;
+            border: 1px solid rgba(255,255,255,.07) !important;
+            border-radius: var(--radius) !important;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,240,255,.15), transparent);
+        }
+        .glass-card:hover {
+            border-color: rgba(0,240,255,.18) !important;
+            box-shadow: var(--shadow-md), 0 0 0 1px rgba(0,240,255,.05) !important;
+            transform: translateY(-1px);
+        }
+        .glass-card-title {
+            font-size: 11px !important;
+            letter-spacing: 1.5px;
+            color: var(--green) !important;
+        }
+        .glass-card-content {
+            color: rgba(255,255,255,.65) !important;
+            line-height: 1.8 !important;
+        }
+
+        /* Premium code blocks */
+        .code-block {
+            background: rgba(0,0,0,.7) !important;
+            border: 1px solid rgba(0,240,255,.12) !important;
+            border-radius: 14px !important;
+            box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,.03);
+        }
+        .code-block code {
+            font-size: 11px !important;
+            color: var(--cyan) !important;
+            opacity: .9;
+        }
+
+        /* Premium grid items */
+        .grid-item {
+            background: rgba(10,12,18,.9) !important;
+            border: 1px solid rgba(255,255,255,.07) !important;
+            border-radius: 16px !important;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .grid-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,240,255,.12), transparent);
+        }
+        .grid-item:hover {
+            border-color: rgba(0,240,255,.15) !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .grid-item-value {
+            background: linear-gradient(135deg, var(--cyan), rgba(0,240,255,.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .grid-item-label {
+            letter-spacing: 2px;
+            font-size: 9px !important;
+        }
+
+        /* Premium content sections */
+        .content {
+            background: var(--bg);
+        }
+        .section {
+            border-bottom: 1px solid rgba(255,255,255,.04) !important;
+            position: relative;
+        }
+        .section::before {
+            content: '';
+            position: absolute;
+            left: -40px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(180deg, transparent, rgba(0,240,255,.08), transparent);
+        }
+
+        /* Premium tables */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        th {
+            background: rgba(0,240,255,.06) !important;
+            border-bottom: 1px solid rgba(0,240,255,.15) !important;
+            font-size: 9px !important;
+            letter-spacing: 1.5px;
+            padding: 12px 16px !important;
+            color: var(--cyan) !important;
+        }
+        td {
+            border-bottom: 1px solid rgba(255,255,255,.04) !important;
+            padding: 12px 16px !important;
+            font-size: 13px !important;
+            color: rgba(255,255,255,.75) !important;
+        }
+        tr:last-child td { border-bottom: none !important; }
+        tr:hover td { background: rgba(255,255,255,.02); }
+
+        /* Premium highlight */
+        .highlight {
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        /* Premium footer */
+        footer {
+            background: rgba(4,6,10,.98) !important;
+            border-top: 1px solid rgba(255,255,255,.05) !important;
+        }
+        .footer-content {
+            color: rgba(255,255,255,.3) !important;
+        }
+
+        /* Premium scroll indicator */
+        .content-block-text {
+            color: rgba(255,255,255,.7) !important;
+            line-height: 1.85 !important;
+        }
+
+        /* Subtle link styling */
+        .content a:not(.btn-back):not(.nav-link) {
+            color: var(--cyan);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(0,240,255,.2);
+            transition: var(--transition);
+        }
+        .content a:not(.btn-back):not(.nav-link):hover {
+            border-bottom-color: var(--cyan);
+        }
+
+        /* Premium section header spacing */
+        .section-header {
+            padding-bottom: 8px;
+            position: relative;
+        }
+        .section-header::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), transparent);
+            border-radius: 1px;
+            margin-top: 12px;
+        }
+
+        /* Better list styling */
+        ul, ol {
+            padding-left: 0;
+            list-style: none;
+        }
+        ul li::before {
+            content: '—';
+            color: rgba(0,240,255,.4);
+            margin-right: 10px;
+            font-weight: 700;
+        }
+        li {
+            color: rgba(255,255,255,.7);
+            font-size: 14px;
+            line-height: 1.8;
+            padding: 3px 0;
+        }
+
+        /* Premium section content p */
+        .section p, .content-block-text {
+            font-size: 15px;
+            color: rgba(255,255,255,.72);
+            line-height: 1.85;
+        }
+
+        /* Subtle background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,240,255,.04), transparent),
+                        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0,255,136,.02), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <a href="/" class="header-logo">← ALIBI</a>
+        <div class="header-nav">
+            <a href="/">Home</a>
+            <a href="/contact.html">Contact</a>
+            <a href="index.html" class="btn-back">Back to Site</a>
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-title">Table of Contents</div>
+            <ul class="sidebar-nav">
+                <li><a href="#abstract" class="nav-link active"><span class="sidebar-section-num">01</span>Abstract</a></li>
+                <li><a href="#problem" class="nav-link"><span class="sidebar-section-num">02</span>The Problem</a></li>
+                <li><a href="#architecture" class="nav-link"><span class="sidebar-section-num">03</span>Protocol Architecture</a></li>
+                <li><a href="#evidence" class="nav-link"><span class="sidebar-section-num">04</span>Evidence Integrity</a></li>
+                <li><a href="#ai" class="nav-link"><span class="sidebar-section-num">05</span>AI Legal Engine</a></li>
+                <li><a href="#depin" class="nav-link"><span class="sidebar-section-num">06</span>DePIN Network</a></li>
+                <li><a href="#tokenomics" class="nav-link"><span class="sidebar-section-num">07</span>Token Economics</a></li>
+                <li><a href="#security" class="nav-link"><span class="sidebar-section-num">08</span>Security</a></li>
+                <li><a href="#governance" class="nav-link"><span class="sidebar-section-num">09</span>Governance & DAO</a></li>
+                <li><a href="#roadmap" class="nav-link"><span class="sidebar-section-num">10</span>Roadmap</a></li>
+                <li><a href="#disclaimer" class="nav-link"><span class="sidebar-section-num">11</span>Legal Disclaimer</a></li>
+            </ul>
+        </nav>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Version Badge -->
+            <div class="classified-stamp">◆ DECLASSIFIED FOR DISTRIBUTION ◆</div>
+            <div class="version-badge">Whitepaper v1.4</div>
+
+            <!-- Section 01: Abstract -->
+            <div class="section" id="abstract">
+                <div class="section-header">
+                    <div class="section-number">01</div>
+                    <h1 class="section-title">Abstract</h1>
+                </div>
+
+                <div class="content-block">
+                    <p class="content-block-text">
+                        <strong>Alibi Protocol</strong> is a blockchain-anchored civil rights protection layer for drivers. It combines real-time AI legal guidance, tamper-proof evidence recording, and a DePIN earn-while-you-drive network built on Solana.
+                    </p>
+                    <p class="content-block-text">
+                        The protocol is the first system to give civilians <span class="highlight">cryptographic proof-of-existence</span> for encounter evidence. When a traffic stop occurs, Alibi activates in-vehicle recording, immediately hashes the evidence to SHA-256, anchors that hash to the Solana blockchain via the Memo Program, and simultaneously provides state-specific constitutional guidance powered by Claude AI — all in real time, with zero network latency requirements.
+                    </p>
+                    <p class="content-block-text">
+                        Users earn <span class="accent-green">$ALIBI</span> tokens by driving with the app active, creating a decentralized network that grows coverage, safety insight, and evidence availability. The token is not speculative — it fuels protocol governance, evidence vaulting, and access to AI legal guidance.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 02: The Problem -->
+            <div class="section" id="problem">
+                <div class="section-header">
+                    <div class="section-number">02</div>
+                    <h1 class="section-title">The Problem</h1>
+                    <p class="section-subtitle">Why Constitutional Rights Need Cryptographic Proof</p>
+                </div>
+
+                <div class="content-block">
+                    <p class="content-block-text">
+                        In the United States, <strong>over 20 million traffic stops occur annually</strong>. Each one is a constitutional flashpoint: Is consent to search valid? Did the officer articulate reasonable suspicion? What amendments apply in this state?
+                    </p>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">The Evidence Asymmetry</div>
+                        <div class="glass-card-content">
+                            Law enforcement agencies control dash-camera and body-camera footage. Civilians have no standardized, tamper-proof method to record their own evidence. If a recording exists, the burden of proof lies with the individual to prove authenticity — not with authorities to prove the recording was unmanipulated.
+                        </div>
+                    </div>
+
+                    <ul class="content-list">
+                        <li><strong>No civilian standard for tamper-proof evidence:</strong> Smartphones can be confiscated. Recordings can be deleted. Metadata can be spoofed. There is no cryptographic commitment to prove "this recording was made at this time and has not been edited."</li>
+                        <li><strong>Zero real-time legal guidance:</strong> Constitutional law is state-specific. A driver pulled over in Texas has different rights than one in New York. Under stress, few remember their amendments or landmark cases. No tool exists to provide immediate, accurate, state-aware legal advice during an active encounter.</li>
+                        <li><strong>Constitutional complexity under stress:</strong> The Fourth, Fifth, and Sixth Amendments are dense. Citizens do not memorize *Miranda v. Arizona*, *Terry v. Ohio*, or *Hiibel v. Sixth Judicial District*. A civilian facing an officer must improvise their defense — often unsuccessfully.</li>
+                    </ul>
+
+                    <p class="content-block-text">
+                        <span class="highlight">Alibi Protocol solves this.</span> It anchors evidence to the immutable Solana blockchain, provides AI-powered constitutional guidance in real time, and empowers civilians with the same cryptographic proof standard that banks use for financial records.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 03: Protocol Architecture -->
+            <div class="section" id="architecture">
+                <div class="section-header">
+                    <div class="section-number">03</div>
+                    <h1 class="section-title">Protocol Architecture</h1>
+                    <p class="section-subtitle">Three-Layer Stack: Record → Hash → Anchor</p>
+                </div>
+
+                <div class="content-block">
+                    <p class="content-block-text">
+                        Alibi operates as a three-layer distributed protocol: the <strong>Recording Layer</strong> (local evidence capture), the <strong>Intelligence Layer</strong> (real-time AI legal guidance), and the <strong>Immutability Layer</strong> (blockchain anchoring).
+                    </p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="glass-card-title">Layer 1: Recording Layer</div>
+                    <div class="glass-card-content">
+                        <strong>Mobile-native capture and local storage.</strong> The Alibi mobile app uses <strong>expo-camera</strong> and <strong>expo-av</strong> libraries to capture high-fidelity video and audio from the device camera and microphone. Recordings are stored in the app's sandboxed directory — not synced to cloud, not transmitted until user confirms. Raw MP4 video + WAV audio bytes are hashed immediately upon completion.
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="glass-card-title">Layer 2: Intelligence Layer</div>
+                    <div class="glass-card-content">
+                        <strong>Real-time AI legal guidance via Claude.</strong> While recording is active, the app streams the encounter context (user's description, officer's statements, GPS location) to Claude Sonnet 4 (claude-sonnet-4-20250514) via the Anthropic API. The AI system prompt is dynamically generated based on: (a) GPS reverse geocoding to determine jurisdiction/state, (b) applicable state constitutional law, (c) relevant landmark cases for that state. Temperature is set to 0.3 (accuracy prioritized over creativity). Max output is 300 tokens — short, actionable guidance under stress. If network is unavailable, the app falls back to a cached constitutional summary.
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="glass-card-title">Layer 3: Immutability Layer</div>
+                    <div class="glass-card-content">
+                        <strong>SHA-256 hash anchored to Solana blockchain.</strong> After recording stops, the app computes SHA-256(video_bytes + audio_bytes + metadata). This hash is immediately submitted to the Solana Memo Program (address: MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr) in a single transaction with format: <span class="highlight">ALIBI_INCIDENT:{sha256_hash}</span>. The Solana block time becomes the immutable timestamp. User receives a Solscan link proving blockchain anchoring.
+                    </div>
+                </div>
+
+                <p class="content-block-text" style="margin-top: 24px;">
+                    <strong>The evidence chain:</strong> Record → Hash → Anchor → Verify. Any modification to the recording changes the SHA-256 hash, breaking the chain. Solscan's public ledger makes forensic verification trivial.
+                </p>
+            </div>
+
+            <!-- Section 04: Evidence Integrity Model -->
+            <div class="section" id="evidence">
+                <div class="section-header">
+                    <div class="section-number">04</div>
+                    <h1 class="section-title">Evidence Integrity Model</h1>
+                    <p class="section-subtitle">Tamper Detection & Cryptographic Commitment</p>
+                </div>
+
+                <div class="content-block">
+                    <p class="content-block-text">
+                        The integrity of Alibi evidence rests on three immutable foundations: cryptographic hashing, blockchain anchoring, and public verifiability.
+                    </p>
+
+                    <div class="grid-3">
+                        <div class="grid-item">
+                            <div class="grid-item-label">Hash Algorithm</div>
+                            <div class="grid-item-value">SHA-256</div>
+                            <div class="grid-item-desc">NIST-approved cryptographic hash function. Any 1-bit change to recording breaks hash.</div>
+                        </div>
+                        <div class="grid-item">
+                            <div class="grid-item-label">Blockchain</div>
+                            <div class="grid-item-value">Solana</div>
+                            <div class="grid-item-desc">PoH consensus. Block time is immutable timestamp. Zero chain reorg risk post-finality.</div>
+                        </div>
+                        <div class="grid-item">
+                            <div class="grid-item-label">Transaction Format</div>
+                            <div class="grid-item-value">Memo</div>
+                            <div class="grid-item-desc">Public, queryable. Solscan verification available to any third party.</div>
+                        </div>
+                    </div>
+
+                    <p class="content-block-text">
+                        <strong>Transaction format:</strong>
+                    </p>
+
+                    <div class="code-block">
+                        <code>ALIBI_INCIDENT:a3f4b2c9d7e1f8a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4</code>
+                    </div>
+
+                    <p class="content-block-text">
+                        <strong>Tamper detection:</strong> If a user later claims they were denied access to their recording, they can generate a SHA-256 hash of their recovered file and compare it to the Solana-anchored hash. If they match, the recording is authentic. If they differ, the recording has been modified post-submission.
+                    </p>
+
+                    <p class="content-block-text">
+                        <strong>Solscan verification link:</strong> Upon successful anchoring, the app generates a link:
+                        <span class="highlight">solscan.io/tx/{transaction_signature}</span>.
+                        Any attorney, journalist, or court officer can verify the incident hash and timestamp without trusting the user, the app, or Alibi Protocol itself.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 05: AI Legal Guidance Engine -->
+            <div class="section" id="ai">
+                <div class="section-header">
+                    <div class="section-number">05</div>
+                    <h1 class="section-title">AI Legal Guidance Engine</h1>
+                    <p class="section-subtitle">State-Specific Constitutional Advice Under Stress</p>
+                </div>
+
+                <div class="content-block">
+                    <p class="content-block-text">
+                        Alibi's AI legal engine is powered by <strong>Claude Sonnet 4 (claude-sonnet-4-20250514)</strong> — a low-latency, high-accuracy LLM optimized for live conversations and complex reasoning. The system is purpose-built for real-time police encounters.
+                    </p>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">Model Selection</div>
+                        <div class="glass-card-content">
+                            <strong>Claude Sonnet 4</strong> is selected for: (1) Low latency (&lt;2s response time), (2) High factual accuracy on constitutional law, (3) Ability to cite specific amendments and cases. Not GPT-4o (higher hallucination risk on legal facts). Not GPT-3.5 (insufficient reasoning).
+                        </div>
+                    </div>
+
+                    <ul class="content-list">
+                        <li><strong>System Prompt (Dynamic):</strong> Generated at runtime based on GPS coordinates. Reverse geocoding returns the user's state. System prompt includes: (a) applicable state Bill of Rights, (b) landmark case summaries for that state, (c) local police procedure norms, (d) examples of valid consent vs. invalid consent.</li>
+                        <li><strong>Temperature: 0.3</strong> — Accuracy is prioritized over creativity. Legal guidance must be precise, not imaginative.</li>
+                        <li><strong>Max Tokens: 300</strong> — Under stress, a driver cannot read a 2,000-word legal essay. Guidance is SHORT and actionable: "You have the right to refuse searches of your vehicle without a warrant. Do not consent."</li>
+                        <li><strong>Fallback (Offline):</strong> If network is unavailable, the app serves cached constitutional summary (basic Fifth and Fourth Amendment primers) from local storage. Not as detailed as live AI, but functional.</li>
+                        <li><strong>Citations:</strong> Every AI response includes specific amendment references and case names. Example: "Per *Terry v. Ohio*, 392 U.S. 1 (1968), the officer must articulate reasonable suspicion to conduct a stop."</li>
+                    </ul>
+
+                    <p class="content-block-text">
+                        <strong>Important disclaimer:</strong> Alibi provides legal *information*, not legal *advice*. The AI guidance is educational only. For specific legal situations, users must consult a licensed attorney.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 06: DePIN Network -->
+            <div class="section" id="depin">
+                <div class="section-header">
+                    <div class="section-number">06</div>
+                    <h1 class="section-title">DePIN: Proof-of-Coverage-Navigation (PoCN)</h1>
+                    <p class="section-subtitle">Dynamic Rewards That Build Global Coverage</p>
+                </div>
+
+                <div class="content-block">
+                    <p class="content-block-text">
+                        Alibi's DePIN layer transforms passive driving into active participation in the world's largest decentralized road data network. Users earn <span class="accent-green">$ALIBI</span> tokens through Proof-of-Coverage-Navigation (PoCN) — a dynamic reward system that prioritizes network value creation over flat activity.
+                    </p>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">PoCN vs Traditional Mining</div>
+                        <div class="glass-card-content">
+                            Traditional DePIN rewards flat activity — drive more, earn more, regardless of where or when. PoCN rewards coverage value. A driver filling a gap in rural Mississippi at 2am earns up to 30x more than a driver in downtown Manhattan at noon. The network self-optimizes toward maximum geographic coverage with zero central coordination.
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">Dynamic Multipliers</div>
+                        <div class="glass-card-content">
+                            <strong>Coverage Gap (1x→10x):</strong> Inversely proportional to hex density. Solo driver in a hex = 10x. 50 drivers = 1x. Network self-heals gaps.
+                            <br><br>
+                            <strong>Night Shift (1x→3x):</strong> 10pm–6am driving earns up to 3x. Police encounters are statistically more frequent and more dangerous at night.
+                            <br><br>
+                            <strong>Consistency (1x→2x):</strong> 7-day streak = 2x on day 7. 30-day streak = 2x all month. Rewards habitual contributors.
+                            <br><br>
+                            <strong>Data Richness (1x→1.5x):</strong> More active sensors = higher reward. Camera, microphone, full suite bonus.
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">Proof-of-Witness</div>
+                        <div class="glass-card-content">
+                            When a driver activates Emergency Mode, nearby Alibi users within a 1-mile radius receive an encrypted proximity alert. Their apps automatically begin corroborating evidence — GPS confirms law enforcement presence at that location, audio sensors detect sirens, cameras capture independent angles. Multiple independent devices create a cryptographic mesh of interlocking evidence, each independently hashed and anchored to Solana. Witness Nodes earn a 50x reward multiplier. This is the first real-time, location-triggered mesh verification system in any DePIN protocol.
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="grid-item">
+                            <div class="grid-item-label">Base Reward</div>
+                            <div class="grid-item-value">1 $ALIBI/mi</div>
+                            <div class="grid-item-desc">Distance-based (harder to game than time-based). Hardware-attested GPS required.</div>
+                        </div>
+                        <div class="grid-item">
+                            <div class="grid-item-label">Emission Schedule</div>
+                            <div class="grid-item-value">5-Year Halving</div>
+                            <div class="grid-item-desc">Year 1: 140M. Year 2: 84M. Year 3: 50M. Year 4: 42M. Year 5: 34M. 1% perpetual tail emission.</div>
+                        </div>
+                    </div>
+
+                    <p class="content-block-text">
+                        <strong>Anti-Gaming Protection:</strong> Six layers of protection: hardware attestation (Play Integrity / App Attest), proximity sybil detection (vector collision), GPS jitter analysis (spoofing detection), minimum 1 mile per session, route variance decay (same daily route = diminishing returns), and accelerometer-GPS correlation (speed vs vibration cross-check).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 07: Token Economics -->
+            <div class="section" id="tokenomics">
+                <div class="section-header">
+                    <div class="section-number">07</div>
+                    <h1 class="section-title">Token Economics</h1>
+                    <p class="section-subtitle">$ALIBI — Data Coordination Token on Solana</p>
+                </div>
+
+                <div class="content-block">
+                    <div class="grid-3">
+                        <div class="grid-item">
+                            <div class="grid-item-label">Token</div>
+                            <div class="grid-item-value">$ALIBI</div>
+                            <div class="grid-item-desc">Solana SPL standard. Data coordination token.</div>
+                        </div>
+                        <div class="grid-item">
+                            <div class="grid-item-label">Blockchain</div>
+                            <div class="grid-item-value">Solana</div>
+                            <div class="grid-item-desc">~400ms finality. Proof of History consensus.</div>
+                        </div>
+                        <div class="grid-item">
+                            <div class="grid-item-label">Total Supply</div>
+                            <div class="grid-item-value">1,000,000,000</div>
+                            <div class="grid-item-desc">Fixed. Mint authority revoked. No inflation.</div>
+                        </div>
+                    </div>
+
+                    <p class="content-block-text" style="margin-top: 32px;">
+                        <strong>Allocation:</strong>
+                    </p>
+
+                    <div class="glass-card">
+                        <div class="glass-card-content">
+                            <ul class="content-list">
+                                <li><strong>Network Rewards (35%):</strong> PoCN mining. 5-year halving emission + 1% perpetual tail. Rewards coverage, not just activity.</li>
+                                <li><strong>Ecosystem & Data Partnerships (20%):</strong> Data buyer onboarding, fleet integrations, hardware partnerships, developer grants. 6-month cliff, 48-month quarterly release.</li>
+                                <li><strong>Liquidity (15%):</strong> 100M on Raydium DEX pairs (ALIBI/SOL, ALIBI/USDC). 50M for CEX market making. LP locked 24 months.</li>
+                                <li><strong>Treasury (15%):</strong> DAO multisig (3-of-5). 12-month cliff, 36-month quarterly. Development, infrastructure, growth.</li>
+                                <li><strong>Team & Core (10%):</strong> 12-month cliff, 48-month linear vest. Team unlocks last. No acceleration.</li>
+                                <li><strong>Community Launch (5%):</strong> Fair launch. No discount. Same listing price. 3-month cliff, 12-month vest.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">The Alibi Data Marketplace</div>
+                        <div class="glass-card-content">
+                            Every phone running Alibi generates 8 verified sensor data streams. This data is monetized through the Alibi Data Marketplace — enterprise customers pay for access to the world's largest verified road telemetry network. Revenue segments: Usage-Based Insurance ($45B market — verified driving behavior for policy pricing), Autonomous Vehicle & Mapping (ground-truth road data at scale), Smart Infrastructure (real-time road condition monitoring via accelerometer), Fleet Operations (tamper-proof driver telemetry for 7M+ commercial vehicles). All revenue settled on-chain via programmatic $ALIBI market buys — creating constant, revenue-driven demand.
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">55/25/10/10 Split</div>
+                        <div class="glass-card-content">
+                            <strong>55% → Stakers & Verification Nodes</strong> (real yield from enterprise revenue). <strong>25% → Treasury</strong> (DAO-governed development fund). <strong>10% → Burn</strong> (10% base rate, governance-adjustable up to 20% — permanent, on-chain, revenue-proportional). <strong>10% → Growth Fund</strong> (user acquisition, partnerships, and marketing).
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 08: Security Architecture -->
+            <div class="section" id="security">
+                <div class="section-header">
+                    <div class="section-number">08</div>
+                    <h1 class="section-title">Security Architecture</h1>
+                    <p class="section-subtitle">Hardware Attestation, Key Management & Network Hardening</p>
+                </div>
+
+                <div class="content-block">
+                    <p class="content-block-text">
+                        Alibi's security model is multi-layered, defending against Sybil attacks, device spoofing, GPS manipulation, and key compromise.
+                    </p>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">Layer 1: Hardware Attestation</div>
+                        <div class="glass-card-content">
+                            <strong>Native Device Verification.</strong> Alibi refuses to issue $ALIBI tokens to rooted (Android) or jailbroken (iOS) devices. We utilize <strong>Google Play Integrity API</strong> (Android) and <strong>Apple App Attest</strong> (iOS) to verify device integrity at runtime. Emulators, which lack hardware-backed keys, are rejected.
+                            <br><br>
+                            <strong>Secure Enclave Storage:</strong> All user private keys are stored in the <strong>Secure Enclave</strong> (iOS) or <strong>Android Keystore</strong>. No software hack can extract raw private keys. Transactions are signed on-device; keys never leave the phone.
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">Layer 2: Proximity Sybil Resistance</div>
+                        <div class="glass-card-content">
+                            <strong>Vector Collision Detection.</strong> The backend monitors velocity vectors of every earning device. If 10 devices travel at the *exact* same speed and *exact* same GPS trajectory within a 5-meter radius, the network flags a Proximity Conflict and only rewards one device.
+                            <br><br>
+                            <strong>Bluetooth/WiFi Sniffing:</strong> The app scans for nearby Alibi devices via Bluetooth. If multiple devices are consistently co-located while moving, they are marked as a single earning entity and rewards are pooled.
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">Layer 3: Proof-of-Movement (PoM)</div>
+                        <div class="glass-card-content">
+                            <strong>Dynamic Speed Tiers:</strong>
+                            <ul style="list-style: none; padding-left: 0;">
+                                <li>• 0-5 MPH: Zero-Reward Zone (Stationary/Walking)</li>
+                                <li>• 5-110 MPH: Optimal Earning Zone (Driving/Cycling)</li>
+                                <li>• 110+ MPH: Anti-Exploit Zone (Airplanes/Trains flagged as fraud)</li>
+                            </ul>
+                            <strong>GPS Spoofing Shield:</strong> App detects <strong>Location.mocked</strong> flags and analyzes GPS "jitter." Real driving produces micro-vibrations in GPS data; fake GPS produces perfect straight lines. Spoofed data is rejected.
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">Layer 4: Economic Security</div>
+                        <div class="glass-card-content">
+                            <strong>Liquidity Locking:</strong> LP tokens locked for minimum 24 months on Raydium, verifiable on-chain. <strong>Vesting:</strong> Team tokens (12mo cliff, 48mo vest) and Community Launch (3mo cliff, 12mo vest) locked in on-chain programs. <strong>Anti-Whale:</strong> Initial DEX trades capped at 0.5% of total supply. <strong>Mint Authority:</strong> Permanently revoked — no new tokens can ever be created. <strong>Freeze Authority:</strong> Permanently revoked — no wallet can freeze any holder's balance.
+                        </div>
+                    </div>
+
+                    <p class="content-block-text" style="margin-top: 24px;">
+                        <strong>Emergency Protocols:</strong> In the event of a discovered exploit, the DAO multisig (3-of-5) can initiate an emergency pause with a 48-hour timelock. No single wallet holds unilateral control. Accounts confirmed to be GPS spoofing have their earned rewards slashed and devices permanently blacklisted from the network.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 09: Governance & DAO -->
+            <div class="section" id="governance">
+                <div class="section-header">
+                    <div class="section-number">09</div>
+                    <h1 class="section-title">Governance & DAO</h1>
+                    <p class="section-subtitle">$ALIBI Holders Vote on Protocol Parameters</p>
+                </div>
+
+                <div class="content-block">
+                    <p class="content-block-text">
+                        Alibi Protocol is governed by its community of $ALIBI token holders through a decentralized autonomous organization (DAO). Long-term protocol decisions are delegated to token holders, not retained by the founding team.
+                    </p>
+
+                    <ul class="content-list">
+                        <li><strong>Voting Power:</strong> Proportional to staked $ALIBI in Verification Nodes. Staking aligns governance power with network commitment.</li>
+                        <li><strong>Proposal Threshold:</strong> 100,000 staked $ALIBI minimum to submit a proposal (adjustable via governance).</li>
+                        <li><strong>Quorum:</strong> Proposals require 30% of total staked tokens to participate. Simple majority (50%+1) wins.</li>
+                        <li><strong>Voting Period:</strong> 7 days per proposal. Execution occurs 2 days after passing (timelock for security).</li>
+                        <li><strong>Controllable Parameters:</strong> PoCN reward multipliers, Coverage Map hex resolution, Data Marketplace pricing tiers, revenue split ratios, emission schedule adjustments, and emergency protocol thresholds.</li>
+                    </ul>
+
+                    <div class="glass-card">
+                        <div class="glass-card-title">Sample Governance Proposals</div>
+                        <div class="glass-card-content">
+                            <ul style="list-style: none; padding-left: 0;">
+                                <li>→ 'Increase Coverage Gap Multiplier from 10x to 15x for hexes with zero 30-day coverage'</li>
+                                <li>→ 'Add barometric pressure data as a new Marketplace data stream'</li>
+                                <li>→ 'Onboard State Farm as a Tier 1 Data Marketplace partner'</li>
+                                <li>→ 'Expand PoCN to include bicycle riders and electric scooters'</li>
+                                <li>→ 'Allocate 2% of Treasury to sponsor open-source dashcam hardware'</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <p class="content-block-text">
+                        The DAO structure ensures that long-term protocol development reflects community values, not founder preferences. As the user base grows, governance becomes increasingly decentralized.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 10: Roadmap -->
+            <div class="section" id="roadmap">
+                <div class="section-header">
+                    <div class="section-number">10</div>
+                    <h1 class="section-title">Roadmap</h1>
+                    <p class="section-subtitle">Building the World's Largest Road Data Network</p>
+                </div>
+
+                <div class="content-block">
+                    <div class="grid-2">
+                        <div class="glass-card">
+                            <div class="glass-card-title">Q2 2026 (Current)</div>
+                            <div class="glass-card-content">
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li>→ $ALIBI token launch on Solana</li>
+                                    <li>→ Landing page, whitepaper, tokenomics live</li>
+                                    <li>→ Community launch (fair, no discount)</li>
+                                    <li>→ Mobile app public beta (iOS/Android)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <div class="glass-card-title">Q3 2026</div>
+                            <div class="glass-card-content">
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li>→ PoCN mining goes live (earn while driving)</li>
+                                    <li>→ Coverage Map launches on alibiprotocol.com</li>
+                                    <li>→ Proof-of-Witness mesh network activated</li>
+                                    <li>→ Verification Node staking opens</li>
+                                    <li>→ 10,000+ active daily drivers</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <div class="glass-card-title">Q4 2026</div>
+                            <div class="glass-card-content">
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li>→ Data Marketplace v1 (fleet operator pilot)</li>
+                                    <li>→ Insurance company pilot partnerships</li>
+                                    <li>→ DEX liquidity deployed (Raydium/Orca)</li>
+                                    <li>→ DAO governance live</li>
+                                    <li>→ 50,000+ active daily drivers</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <div class="glass-card-title">2027: Scale</div>
+                            <div class="glass-card-content">
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li>→ Data Marketplace full launch (4 segments)</li>
+                                    <li>→ CEX listings</li>
+                                    <li>→ International expansion (UK, EU, AU)</li>
+                                    <li>→ Hardware partnerships (Alibi-branded dashcam)</li>
+                                    <li>→ 500,000+ active drivers</li>
+                                    <li>→ First revenue-backed burn event</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <div class="glass-card-title">2028: Dominance</div>
+                            <div class="glass-card-content">
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li>→ 1M+ active drivers</li>
+                                    <li>→ Coverage Map spans all US Interstate highways</li>
+                                    <li>→ Accountability Index published as public dataset</li>
+                                    <li>→ Revenue-backed staking yield exceeds inflation</li>
+                                    <li>→ Global DePIN data standard</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 11: Legal Disclaimer -->
+            <div class="section" id="disclaimer">
+                <div class="section-header">
+                    <div class="section-number">11</div>
+                    <h1 class="section-title">Legal Disclaimer</h1>
+                    <p class="section-subtitle">Important Information About $ALIBI & Alibi Protocol</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="glass-card-title">Disclaimer</div>
+                    <div class="glass-card-content">
+                        <p style="margin-bottom: 14px;">
+                            <strong>$ALIBI is a utility token, not a security.</strong> It provides access to protocol services (evidence vaulting, AI guidance, governance voting). It does not represent equity, debt, or profit-sharing in Alibi Protocol Inc. or any subsidiary.
+                        </p>
+                        <p style="margin-bottom: 14px;">
+                            <strong>This whitepaper is NOT investment advice.</strong> Do not purchase $ALIBI expecting financial returns or price appreciation. The token's value depends on adoption, governance decisions, and market conditions. Past or projected performance does not guarantee future results.
+                        </p>
+                        <p style="margin-bottom: 14px;">
+                            <strong>Alibi provides legal information, not legal advice.</strong> The AI guidance engine (powered by Claude) is educational only and should not be relied upon as a substitute for a licensed attorney. In any legal situation, consult a qualified lawyer in your jurisdiction.
+                        </p>
+                        <p>
+                            <strong>No warranty of accuracy or completeness.</strong> Alibi Protocol makes no representations about the accuracy, completeness, or timeliness of information provided by the app, AI system, or evidence vaulting service. Use the protocol at your own risk.
+                        </p>
+                    </div>
+                </div>
+
+                <p class="content-block-text" style="margin-top: 32px;">
+                    For detailed terms of service, privacy policy, and comprehensive disclaimers, visit <span class="highlight">alibiprotocol.com/legal</span>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div style="color: var(--cyan); font-weight: 700; margin-bottom: 16px;">ALIBI PROTOCOL</div>
+            <p>Whitepaper v1.4 | Published March 2026</p>
+            <p style="margin-top: 8px;">The first DePIN-powered civil rights protection layer built on Solana.</p>
+            <div class="footer-divider"></div>
+            <p style="font-size: 11px; color: var(--text-muted);">
+                Stop the Lie. Save Your Life. <span class="highlight">Protecting Your Rights, Mathematically.</span>
+            </p>
+            <div style="font-size: 11px; color: #8B949E; margin-top: 16px;">
+                <a href="terms.html" style="color: #8B949E; text-decoration: none;">Terms</a> | <a href="contact.html" style="color: #8B949E; text-decoration: none;">Contact</a> | <a href="index.html" style="color: #8B949E; text-decoration: none;">Home</a><br>
+                © 2026 Alibi Protocol. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sidebar scroll-spy
+        const navLinks = document.querySelectorAll('.sidebar-nav a');
+        const sections = document.querySelectorAll('.section');
+
+        function updateActiveNav() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (window.scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveNav);
+        updateActiveNav();
+
+        // Smooth scroll for nav links
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            });
+        });
+    </script>
+    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}</script>
+</body>
+
+</html>

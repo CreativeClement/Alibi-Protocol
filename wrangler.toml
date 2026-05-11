@@ -1,0 +1,25 @@
+name = "alibi-api"
+main = "cloudflare-worker.js"
+compatibility_date = "2024-01-01"
+
+# ── KV Namespace (rate limiting) ──
+# wrangler kv:namespace create "alibi-rate-limit"
+# → paste the returned id below
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "51328ef6d756491786a50df934f17010"
+
+# ── D1 Database (founding shields, airdrop) ──
+# wrangler d1 create alibi-db
+# → paste the returned database_id below
+[[d1_databases]]
+binding = "DB"
+database_name = "alibi-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# ── Secrets (never put in this file — use CLI) ──
+# wrangler secret put ANTHROPIC_API_KEY
+#   → paste your sk-ant-... key when prompted
+
+# ── Deploy ──
+# wrangler deploy

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact — Alibi Protocol</title>
+    <meta name="description" content="Get in touch with the Alibi Protocol team. For support, partnerships, press, and legal inquiries.">
+    <meta property="og:title" content="Contact — Alibi Protocol">
+    <meta property="og:description" content="Reach the Alibi Protocol team for support, press, partnerships, and developer inquiries.">
+    <meta property="og:image" content="/og-image.png">
+    <meta property="og:url" content="https://alibiprotocol.com/contact">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@Alibi_Protocol">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0A0D12;
+            --bg-secondary: #0F1318;
+            --bg-card: #141920;
+            --bg-card-hover: #1A2130;
+            --border: #1E2A3A;
+            --border-glow: rgba(0, 240, 255, 0.2);
+            --cyan: #00F0FF;
+            --cyan-dim: rgba(0, 240, 255, 0.08);
+            --green: #00FF88;
+            --text-primary: #E8EDF5;
+            --text-secondary: #8B949E;
+            --text-muted: #4A5568;
+            --font-main: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-main); min-height: 100vh; }
+        body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px); background-size: 48px 48px; pointer-events: none; z-index: 0; }
+        header { position: sticky; top: 0; z-index: 100; background: rgba(10, 13, 18, 0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--cyan); text-decoration: none; letter-spacing: 0.05em; }
+        .header-nav { display: flex; gap: 24px; align-items: center; }
+        .header-nav a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .header-nav a:hover { color: var(--text-primary); }
+        .btn-back { padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary) !important; transition: all 0.2s !important; }
+        .btn-back:hover { border-color: var(--border-glow) !important; color: var(--cyan) !important; }
+        .page-container { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 64px 24px 80px; }
+        .page-header { text-align: center; margin-bottom: 56px; }
+        .page-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--cyan-dim); border: 1px solid var(--border-glow); border-radius: 100px; padding: 5px 14px; font-size: 11px; font-weight: 600; color: var(--cyan); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 20px; }
+        .page-header h1 { font-family: var(--font-display); font-size: clamp(32px, 5vw, 52px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
+        .page-header p { font-size: 17px; color: var(--text-secondary); line-height: 1.6; max-width: 520px; margin: 0 auto; }
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+        .contact-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; transition: all 0.2s; text-decoration: none; display: block; cursor: pointer; }
+        .contact-card:hover { border-color: var(--border-glow); background: var(--bg-card-hover); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+        .card-icon { font-size: 28px; margin-bottom: 14px; }
+        .card-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
+        .card-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; }
+        .card-email { font-size: 14px; font-weight: 600; color: var(--cyan); display: flex; align-items: center; gap: 6px; }
+        .social-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 48px; }
+        .social-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; text-decoration: none; transition: all 0.2s; }
+        .social-card:hover { border-color: var(--border-glow); transform: translateY(-2px); }
+        .social-icon { font-size: 24px; margin-bottom: 8px; }
+        .social-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .social-handle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+        .faq-section { border-top: 1px solid var(--border); padding-top: 48px; }
+        .faq-section h2 { font-family: var(--font-display); font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+        .faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+        .faq-question { padding: 18px 20px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .faq-question:hover { background: var(--bg-card); }
+        .faq-toggle { font-size: 20px; color: var(--text-muted); transition: transform 0.2s; line-height: 1; }
+        .faq-answer { display: none; padding: 0 20px 18px; font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .faq-item.open .faq-answer { display: block; }
+        .faq-item.open .faq-toggle { transform: rotate(45deg); }
+        .faq-item.open .faq-question { background: var(--bg-card); }
+        .faq-answer a { color: var(--cyan); }
+        .notice-box { background: var(--cyan-dim); border: 1px solid var(--border-glow); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; display: flex; gap: 14px; align-items: flex-start; }
+        .notice-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+        .notice-text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .notice-text strong { color: var(--cyan); }
+        footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; }
+        footer p { font-size: 13px; color: var(--text-muted); }
+        footer a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        footer a:hover { color: var(--cyan); }
+        @media (max-width: 640px) { header { padding: 14px 20px; } .contact-grid { grid-template-columns: 1fr; } .social-row { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">◈ ALIBI</a>
+        <nav class="header-nav">
+            <a href="/whitepaper.html">Whitepaper</a>
+            <a href="/tokenomics.html">Tokenomics</a>
+            <a href="/" class="btn-back">← Back to Site</a>
+        </nav>
+    </header>
+    <div class="page-container">
+        <div class="page-header">
+            <div class="page-badge">◈ Contact</div>
+            <h1>Get in Touch</h1>
+            <p>The Alibi Protocol team is pseudonymous by design — but we're always reachable. Choose the right channel below.</p>
+        </div>
+        <div class="notice-box">
+            <div class="notice-icon">🔒</div>
+            <div class="notice-text"><strong>Pseudonymous by design.</strong> We don't share personal identities, but we're fully reachable and responsive. For the fastest response, use Discord for general support and Twitter/X for public announcements.</div>
+        </div>
+        <div class="contact-grid">
+            <a class="contact-card" href="mailto:support@alibiprotocol.com">
+                <div class="card-icon">🛟</div>
+                <div class="card-title">General Support</div>
+                <div class="card-desc">App issues, account questions, technical problems, or anything that doesn't fit elsewhere.</div>
+                <div class="card-email">support@alibiprotocol.com</div>
+            </a>
+            <a class="contact-card" href="mailto:dev@alibiprotocol.com">
+                <div class="card-icon">⚙️</div>
+                <div class="card-title">Developer &amp; API</div>
+                <div class="card-desc">Integration questions, API access requests, SDK inquiries, or builder partnerships.</div>
+                <div class="card-email">dev@alibiprotocol.com</div>
+            </a>
+            <a class="contact-card" href="mailto:press@alibiprotocol.com">
+                <div class="card-icon">📰</div>
+                <div class="card-title">Press &amp; Media</div>
+                <div class="card-desc">Media inquiries, interview requests, editorial coverage, and press kit access.</div>
+                <div class="card-email">press@alibiprotocol.com</div>
+            </a>
+            <a class="contact-card" href="mailto:legal@alibiprotocol.com">
+                <div class="card-icon">⚖️</div>
+                <div class="card-title">Legal &amp; Compliance</div>
+                <div class="card-desc">DMCA notices, regulatory inquiries, compliance questions, and legal correspondence.</div>
+                <div class="card-email">legal@alibiprotocol.com</div>
+            </a>
+            <a class="contact-card" href="mailto:partners@alibiprotocol.com">
+                <div class="card-icon">🤝</div>
+                <div class="card-title">Partnerships</div>
+                <div class="card-desc">Strategic partnerships, DePIN integrations, exchange listings, and ecosystem collaborations.</div>
+                <div class="card-email">partners@alibiprotocol.com</div>
+            </a>
+            <a class="contact-card" href="mailto:investors@alibiprotocol.com">
+                <div class="card-icon">💎</div>
+                <div class="card-title">Investor Relations</div>
+                <div class="card-desc">Founding Shield inquiries, private sale access, VC and angel investor discussions.</div>
+                <div class="card-email">investors@alibiprotocol.com</div>
+            </a>
+        </div>
+        <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 14px; color: var(--text-secondary);">Community Channels</h2>
+        <div class="social-row">
+            <a class="social-card" href="https://x.com/Alibi_Protocol" target="_blank" rel="noopener">
+                <div class="social-icon">𝕏</div>
+                <div class="social-name">Twitter / X</div>
+                <div class="social-handle">@Alibi_Protocol</div>
+            </a>
+            <a class="social-card" href="https://discord.gg/d5cA9tTxU" target="_blank" rel="noopener">
+                <div class="social-icon">💬</div>
+                <div class="social-name">Discord</div>
+                <div class="social-handle">Alibi Protocol Server</div>
+            </a>
+            <a class="social-card" href="/whitepaper.html">
+                <div class="social-icon">📄</div>
+                <div class="social-name">Whitepaper</div>
+                <div class="social-handle">Read the Docs</div>
+            </a>
+        </div>
+        <div class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">How long does it take to get a response?<span class="faq-toggle">+</span></div>
+                <div class="faq-answer">For general support and dev inquiries, we typically respond within 24–48 hours. For urgent issues, Discord is the fastest channel — our team is active daily.</div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">I found a security vulnerability. What do I do?<span class="faq-toggle">+</span></div>
+                <div class="faq-answer">Please do NOT disclose vulnerabilities publicly. Send a detailed report to <a href="mailto:dev@alibiprotocol.com">dev@alibiprotocol.com</a> with subject line "SECURITY: [brief description]". We take security seriously and have a responsible disclosure process.</div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">Can I build on top of Alibi Protocol?<span class="faq-toggle">+</span></div>
+                <div class="faq-answer">Yes. We're building an open protocol. Reach out to <a href="mailto:dev@alibiprotocol.com">dev@alibiprotocol.com</a> to discuss API access, SDK integration, or grant funding for ecosystem projects.</div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">How do I get listed on an exchange?<span class="faq-toggle">+</span></div>
+                <div class="faq-answer">Exchange listing inquiries should go to <a href="mailto:partners@alibiprotocol.com">partners@alibiprotocol.com</a>. Include your exchange's volume, user base, and any listing requirements in your initial email.</div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">I'm a journalist. How do I get a press kit?<span class="faq-toggle">+</span></div>
+                <div class="faq-answer">Email <a href="mailto:press@alibiprotocol.com">press@alibiprotocol.com</a> with your outlet and what you're covering. We'll send logos, brand assets, and a fact sheet within 24 hours.</div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>
+            <a href="/terms.html">Terms</a> &nbsp;·&nbsp;
+            <a href="/privacy.html">Privacy</a> &nbsp;·&nbsp;
+            <a href="/disclaimer.html">Disclaimer</a> &nbsp;·&nbsp;
+            <a href="https://x.com/Alibi_Protocol" target="_blank" rel="noopener">Twitter</a> &nbsp;·&nbsp;
+            <a href="https://discord.gg/d5cA9tTxU" target="_blank" rel="noopener">Discord</a>
+        </p>
+        <p style="margin-top: 8px;">© 2026 Alibi Protocol. All rights reserved.</p>
+    </footer>
+    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}</script>
+</body>
+</html>

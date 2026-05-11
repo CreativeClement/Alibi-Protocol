@@ -1,0 +1,39 @@
+{
+  "name": "Alibi Protocol",
+  "symbol": "ALIBI",
+  "description": "The first DePIN-powered evidence vaulting protocol on Solana. Record, hash, anchor, and vault encounter evidence with AI legal guidance and blockchain-verified chain of custody. Earn $ALIBI by driving and reporting road hazards.",
+  "image": "https://alibiprotocol.com/assets/alibi-logo.png",
+  "external_url": "https://alibiprotocol.com",
+  "attributes": [
+    {
+      "trait_type": "Category",
+      "value": "DePIN"
+    },
+    {
+      "trait_type": "Chain",
+      "value": "Solana"
+    },
+    {
+      "trait_type": "Utility",
+      "value": "Evidence Vaulting + Navigation Rewards"
+    },
+    {
+      "trait_type": "Total Supply",
+      "value": "1,000,000,000"
+    },
+    {
+      "trait_type": "Burn Mechanism",
+      "value": "10% Revenue Buy-and-Burn (Governance Adjustable)"
+    }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://alibiprotocol.com/assets/alibi-logo.png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": []
+  }
+}

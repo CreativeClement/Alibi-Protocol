@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior:smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Alibi Protocol — Get Paid to Drive. Stay Protected.</title>
+  <!-- Open Graph / Twitter Card -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alibiprotocol.com/">
+  <meta property="og:title" content="Alibi Protocol — Stop the Lie. Save Your Life.">
+  <meta property="og:description" content="The navigation app that's already recording before the cop says a word. One tap. Evidence vaulted to chain. AI coaches your rights in real time.">
+  <meta property="og:image" content="https://alibiprotocol.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@Alibi_Protocol">
+  <meta name="twitter:title" content="Alibi Protocol — Stop the Lie. Save Your Life.">
+  <meta name="twitter:description" content="The navigation app that's already recording before the cop says a word. One tap. Evidence vaulted to chain. AI coaches your rights in real time.">
+  <meta name="twitter:image" content="https://alibiprotocol.com/og-image.png">
+<meta name="description" content="The navigation app that's already recording before the cop says a word. One tap. Evidence vaulted to chain. AI coaches your rights in real time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="canonical" href="https://alibiprotocol.com/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta name="theme-color" content="#020204">
+<style>
+:root{
+  --bg:#020204;--s1:#0A0A0E;--s2:#060608;
+  --cyan:#00E5FF;--cyan-d:rgba(0,229,255,.08);--cyan-b:rgba(0,229,255,.3);
+  --red:#FF3333;--red-d:rgba(255,51,51,.1);
+  --green:#00FF87;--green-d:rgba(0,255,135,.08);
+  --gold:#FFD700;--gold-d:rgba(255,215,0,.08);
+  --blue:#0071e3;
+  --white:#F8F7F3;--t2:#999;--t3:#555;--t4:#333;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --f:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;overflow-x:hidden;background:var(--bg);color:var(--white);font-family:var(--f)}
+a{text-decoration:none;color:inherit}
+.mono{font-family:var(--mono)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;top:-100px;left:50%;transform:translateX(-50%);background:var(--cyan);color:#000;padding:12px 24px;font-weight:800;z-index:10000;border-radius:0 0 8px 8px;transition:top .2s}
+.skip-link:focus{top:0}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}#webgl-container{display:none}}
+
+/* ─── WEBGL BG ─── */
+#webgl-container{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-1;pointer-events:none}
+
+/* ─── NAV ─── */
+nav{position:fixed;top:0;width:100%;height:80px;background:rgba(2,2,4,.8);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;padding:0 5%;z-index:1000;transition:all .4s}
+.logo-box{display:flex;align-items:center;gap:14px}
+.logo-text{font-size:24px;font-weight:900;letter-spacing:6px;background:linear-gradient(90deg,#fff,#888);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:36px}
+.nav-links a{color:var(--t2);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.btn-nav{background:var(--cyan);color:#000;padding:12px 28px;border-radius:100px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;transition:all .3s;border:none;cursor:pointer;font-family:var(--f)}
+.btn-nav:hover{background:#fff;transform:scale(1.04)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:9px 11px}
+.hamburger span{width:20px;height:2px;background:var(--cyan);border-radius:2px}
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(2,2,4,.98);backdrop-filter:blur(30px);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+.mob-overlay.on{display:flex}
+.mob-overlay a{color:#fff;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:3px}
+.mob-overlay a:hover{color:var(--cyan)}
+.mob-close{position:absolute;top:24px;right:24px;background:none;border:1px solid rgba(255,255,255,.15);border-radius:8px;width:44px;height:44px;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+@media(max-width:1100px){.nav-links{display:none}.hamburger{display:flex}}
+
+/* ─── HERO ANIMATION CONTAINER ─── */
+.hero-anim-top{
+  width:100%;
+  height:260px;
+  background:var(--bg);
+  overflow:hidden;
+  position:relative;
+}
+.ambient-cabin{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;animation:cabinFlash 1s infinite;mix-blend-mode:screen;opacity:.8}
+.windshield-rain{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:.2;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><line x1="10" y1="0" x2="0" y2="20" stroke="white" stroke-width="1" opacity="0.3"/><line x1="50" y1="10" x2="40" y2="40" stroke="white" stroke-width="0.5" opacity="0.4"/><line x1="80" y1="0" x2="70" y2="25" stroke="white" stroke-width="1" opacity="0.5"/><line x1="30" y1="40" x2="20" y2="60" stroke="white" stroke-width="0.5" opacity="0.3"/><line x1="90" y1="50" x2="80" y2="80" stroke="white" stroke-width="1" opacity="0.4"/></svg>');background-size:200px 200px;animation:rainFall .4s linear infinite;filter:blur(1px)}
+@keyframes rainFall{0%{background-position:0 0}100%{background-position:-50px 200px}}
+@keyframes cabinFlash{0%,5%,10%,15%{background:radial-gradient(ellipse at 50% 10%,rgba(255,0,0,.2) 0%,transparent 70%)}20%,40%{background:transparent}50%,55%,60%,65%{background:radial-gradient(ellipse at 50% 10%,rgba(0,100,255,.2) 0%,transparent 70%)}70%,100%{background:transparent}}
+@keyframes engineRumble{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(.5px) rotate(.1deg)}75%{transform:translateY(-.5px) rotate(-.1deg)}}
+@keyframes phoneFloat{0%,100%{transform:scale(1.08) rotateX(10deg) translateY(0)}50%{transform:scale(1.08) rotateX(12deg) translateY(-18px)}}
+@keyframes scanLine{0%,100%{top:10%;opacity:0}10%,90%{opacity:.7}50%{top:90%;opacity:.9}}
+
+.mirror-wrap{
+  position:absolute;
+  top:80px;
+  left:0;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  z-index:10;
+}
+.mirror-mount{width:12px;height:36px;background:#111;border-left:2px solid #333}
+.rearview-mirror{width:420px;height:136px;background:#000;border-radius:18px 18px 48px 48px;border:5px solid #1a1a1a;box-shadow:0 10px 40px rgba(0,0,0,.9),inset 0 2px 8px rgba(255,255,255,.12);overflow:hidden;animation:engineRumble .05s infinite}
+.mirror-glass{width:100%;height:100%;background:#151515;position:relative;overflow:hidden}
+.police-flash{position:absolute;top:20%;width:240px;height:130px;border-radius:50%;filter:blur(28px);mix-blend-mode:screen}
+.red-flash{left:-50px;background:rgba(255,0,0,1);animation:strobeRed 1s infinite}
+.blue-flash{right:-50px;background:rgba(0,100,255,1);animation:strobeBlue 1s infinite .5s}
+.white-flash{left:50%;transform:translateX(-50%);width:220px;height:60px;background:rgba(255,255,255,.8);filter:blur(28px);animation:strobeWhite 3s infinite}
+@keyframes strobeRed{0%,10%,20%,30%{opacity:1}5%,15%,25%,35%,100%{opacity:0}}
+@keyframes strobeBlue{0%,10%,20%,30%{opacity:1}5%,15%,25%,35%,100%{opacity:0}}
+@keyframes strobeWhite{0%,2%,4%{opacity:1}1%,3%,5%,100%{opacity:0}}
+
+@media(max-width:768px){
+  .hero-anim-top{height:220px}
+  .rearview-mirror{width:300px;height:98px}
+}
+
+.hero{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;
+  padding:60px 5% 80px;
+  text-align:center;
+}
+
+.hero-content{position:relative;z-index:10;max-width:1400px;margin:0 auto;width:100%;padding:0 5% 80px;text-align:center}
+
+.earn-hero-badge{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(0,255,135,.12),rgba(0,255,135,.04));border:1px solid rgba(0,255,135,.35);border-radius:100px;padding:10px 24px;margin-bottom:32px;animation:badgePulse 3s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,135,.15)}50%{box-shadow:0 0 30px 8px rgba(0,255,135,.08)}}
+.earn-hero-badge .edot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.5s infinite}
+.earn-hero-badge span{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green);letter-spacing:.15em;text-transform:uppercase}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+.hero-h1{font-size:clamp(46px,8vw,110px);font-weight:900;line-height:.92;letter-spacing:-.04em;margin-bottom:10px;text-transform:uppercase}
+.hero-h1 .line-earn{display:block;background:linear-gradient(135deg,var(--green) 0%,#00BFFF 50%,var(--cyan) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 40px rgba(0,255,135,.3))}
+.hero-h1 .line-protect{display:block;color:rgba(255,255,255,.9)}
+.hero-h1 .line-sub{display:block;font-size:clamp(28px,4vw,56px);color:var(--t2);font-weight:700;letter-spacing:-.02em;margin-top:6px}
+.hero-sub{font-size:clamp(17px,1.8vw,22px);color:rgba(255,255,255,.6);max-width:720px;margin:24px auto 40px;line-height:1.65;font-weight:400}
+
+.earn-counter-wrap{display:inline-flex;align-items:center;gap:0;background:rgba(0,0,0,.6);border:1px solid rgba(0,255,135,.25);border-radius:20px;overflow:hidden;margin-bottom:40px;backdrop-filter:blur(20px)}
+.ecw-left{padding:20px 32px;border-right:1px solid rgba(255,255,255,.06)}
+.ecw-right{padding:20px 32px}
+.ecw-label{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px}
+.ecw-val{font-family:var(--mono);font-size:28px;font-weight:900;color:var(--green);line-height:1}
+.ecw-val.white{color:#fff}
+
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+.btn-earn{background:linear-gradient(135deg,var(--green),#00BFFF);color:#000;padding:18px 40px;border-radius:100px;font-size:14px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;transition:all .3s;border:none;cursor:pointer;font-family:var(--f);box-shadow:0 0 40px rgba(0,255,135,.3)}
+.btn-earn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 60px rgba(0,255,135,.5)}
+.btn-ghost-hero{border:1px solid var(--border2);color:#fff;padding:18px 40px;border-radius:100px;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:all .3s;font-family:var(--f)}
+.btn-ghost-hero:hover{border-color:var(--cyan);color:var(--cyan)}
+.hero-note{font-family:var(--mono);font-size:11px;color:var(--t3);letter-spacing:.05em}
+
+.hero-phone-wrap{max-width:340px;height:650px;margin:50px auto 0;transform:scale(1.08) rotateX(10deg);transform-origin:bottom;animation:phoneFloat 6s infinite ease-in-out;border-radius:54px;box-shadow:0 0 100px rgba(0,0,0,.8),0 0 60px rgba(0,255,135,.08);position:relative;z-index:10}
+.phone-frame{width:100%;height:100%;border:2px solid #333;border-radius:50px;background:#000;overflow:hidden;position:relative}
+.ai-scanner{position:absolute;top:0;left:0;width:100%;height:2px;background:var(--cyan);box-shadow:0 0 20px var(--cyan);animation:scanLine 3s ease-in-out infinite;z-index:20;opacity:.7}
+.phone-ui{padding:30px 20px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(180deg,rgba(0,255,135,.05) 0%,rgba(0,0,0,1) 60%)}
+.p-earn-pill{display:flex;align-items:center;gap:8px;background:rgba(0,255,135,.1);border:1px solid rgba(0,255,135,.3);border-radius:100px;padding:8px 16px;margin-bottom:16px;width:fit-content}
+.p-earn-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.2s infinite}
+.p-earn-text{font-family:var(--mono);font-size:13px;font-weight:900;color:var(--green)}
+.p-shield-active{background:rgba(0,229,255,.12);border:1px solid rgba(0,229,255,.3);border-radius:16px;padding:16px;margin-bottom:16px}
+.p-shield-label{font-family:var(--mono);font-size:9px;color:var(--cyan);letter-spacing:.15em;margin-bottom:8px}
+.p-shield-text{font-size:15px;font-weight:800;line-height:1.4;color:#fff}
+.p-hash{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.35);margin-top:8px;word-break:break-all}
+.p-timer-row{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid rgba(255,255,255,.07);margin-bottom:16px}
+.p-timer-label{font-family:var(--mono);font-size:9px;color:var(--t3)}
+.p-timer{font-family:var(--mono);font-size:24px;font-weight:900;color:var(--red)}
+.p-shield-btn{background:var(--red);color:#fff;padding:16px;border-radius:14px;text-align:center;font-family:var(--f);font-size:12px;font-weight:900;letter-spacing:.1em;box-shadow:0 0 30px rgba(255,51,51,.3)}
+
+.ticker-bar{background:rgba(0,255,135,.04);border-top:1px solid rgba(0,255,135,.1);border-bottom:1px solid rgba(0,255,135,.1);padding:14px 0;overflow:hidden}
+.ticker-track{display:flex;gap:60px;animation:tickerScroll 35s linear infinite;width:max-content}
+.ticker-item{display:flex;align-items:center;gap:10px;white-space:nowrap;font-family:var(--mono);font-size:12px}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:pulse 2s infinite}
+.tdot.g{background:var(--green);box-shadow:0 0 8px var(--green)}
+.tdot.r{background:var(--red);box-shadow:0 0 8px var(--red)}
+.tlbl{color:#8B949E;font-size:10px;letter-spacing:1px;text-transform:uppercase}
+.tval{color:#fff;font-weight:800}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+.sec{padding:120px 0;position:relative}
+.sec-dark{background:rgba(0,0,0,.5);border-top:1px solid #0D0D0F;border-bottom:1px solid #0D0D0F}
+.wrap{max-width:1400px;margin:0 auto;padding:0 5%}
+.sec-tag{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px;border:1px solid rgba(0,229,255,.2);padding:7px 18px;border-radius:100px;background:rgba(0,229,255,.04)}
+.sec-h2{font-size:clamp(32px,5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-.04em}
+.sec-p{font-size:clamp(16px,1.6vw,20px);color:var(--t2);line-height:1.7;max-width:760px}
+.glass{background:rgba(8,8,12,.8);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:28px;padding:40px;position:relative;overflow:hidden}
+.glass::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.2}
+.fu{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+.fu.vis{opacity:1;transform:translateY(0)}
+.fu.d1{transition-delay:.1s}.fu.d2{transition-delay:.2s}.fu.d3{transition-delay:.3s}
+
+.earn-hero-sec{background:linear-gradient(180deg,#020204 0%,#000A06 50%,#020204 100%);padding:140px 0;text-align:center;position:relative;overflow:hidden}
+.earn-hero-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(0,255,135,.06),transparent)}
+.earn-big-num{font-family:var(--mono);font-size:clamp(80px,14vw,200px);font-weight:900;line-height:.85;color:var(--green);letter-spacing:-.05em;text-shadow:0 0 80px rgba(0,255,135,.4),0 0 160px rgba(0,255,135,.15);display:block;margin-bottom:10px}
+.earn-big-sub{font-family:var(--mono);font-size:clamp(14px,2vw,22px);color:rgba(0,255,135,.6);letter-spacing:.15em;text-transform:uppercase;margin-bottom:40px;display:block}
+.earn-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:70px;text-align:left}
+.earn-card{background:rgba(0,0,0,.6);border:1px solid rgba(0,255,135,.15);border-radius:24px;padding:36px;position:relative;overflow:hidden;transition:all .4s}
+.earn-card:hover{border-color:rgba(0,255,135,.4);transform:translateY(-6px);box-shadow:0 30px 60px rgba(0,0,0,.5),0 0 40px rgba(0,255,135,.06)}
+.earn-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);transform:scaleX(0);transition:transform .4s}
+.earn-card:hover::after{transform:scaleX(1)}
+.ec-amount{font-family:var(--mono);font-size:42px;font-weight:900;color:var(--green);margin-bottom:6px;line-height:1}
+.ec-rate{font-family:var(--mono);font-size:12px;color:rgba(0,255,135,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+.ec-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:10px}
+.ec-desc{font-size:14px;color:var(--t2);line-height:1.65}
+.ec-icon{font-size:32px;margin-bottom:20px}
+.earn-disclaimer{font-family:var(--mono);font-size:10px;color:var(--t4);margin-top:40px;letter-spacing:.03em;line-height:1.7}
+
+.origin-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.origin-quote{background:rgba(6,6,8,.9);border:1px solid rgba(255,255,255,.06);border-left:3px solid var(--red);border-radius:20px;padding:44px;position:relative;overflow:hidden}
+.origin-quote::before{content:'"';position:absolute;top:-8px;left:28px;font-size:100px;color:var(--red);opacity:.15;font-family:Georgia,serif;line-height:1}
+.origin-quote blockquote{font-size:19px;line-height:1.8;font-style:italic;color:rgba(255,255,255,.85);margin-bottom:22px;position:relative;z-index:1;font-family:Georgia,serif}
+.origin-quote cite{font-family:var(--mono);font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.12em}
+.origin-text p{font-size:16px;color:rgba(255,255,255,.6);line-height:1.85;margin-bottom:14px;font-family:Georgia,serif}
+
+.market-row{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border)}
+.mstat{background:var(--bg);padding:36px 28px;text-align:center;transition:background .3s}
+.mstat:hover{background:var(--s1)}
+.mstat .mv{font-family:var(--mono);font-size:36px;font-weight:900;color:#fff;display:block;margin-bottom:6px}
+.mstat .ml{font-size:11px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase}
+
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:50px}
+.comp-card{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:28px 22px;transition:border-color .3s}
+.comp-card:hover{border-color:var(--border2)}
+.cc-name{font-size:14px;font-weight:800;margin-bottom:8px;color:#fff}
+.cc-flaw{font-size:13px;color:rgba(255,255,255,.4);line-height:1.65;margin-bottom:14px;font-style:italic;font-family:Georgia,serif}
+.cc-tag{font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:20px;display:inline-block;letter-spacing:.06em;border:1px solid rgba(255,51,51,.2);background:rgba(255,51,51,.07);color:var(--red)}
+.comp-card.us{border-color:rgba(0,229,255,.2);background:linear-gradient(135deg,rgba(0,229,255,.04),rgba(0,229,255,.01))}
+.comp-card.us .cc-tag{border-color:rgba(0,229,255,.25);background:rgba(0,229,255,.07);color:var(--cyan)}
+.thesis-block{background:var(--bg);border:1px solid rgba(0,229,255,.2);border-radius:20px;padding:56px;text-align:center;margin-top:50px;position:relative;overflow:hidden}
+.thesis-block::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(0,229,255,.05),transparent)}
+.thesis-block h3{font-size:clamp(20px,3vw,34px);font-weight:900;line-height:1.3;letter-spacing:-.02em;position:relative}
+.thesis-block h3 span{color:var(--cyan)}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:60px}
+.step{background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:36px;position:relative;overflow:hidden;transition:border-color .3s}
+.step:hover{border-color:rgba(0,229,255,.2)}
+.step-n{font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:22px;display:flex;align-items:center;gap:8px;letter-spacing:.1em}
+.step-n::after{content:'';flex:1;height:1px;background:var(--border)}
+.step-ico{font-size:30px;margin-bottom:18px}
+.step h3{font-size:18px;font-weight:800;margin-bottom:12px;line-height:1.3;color:#fff}
+.step p{font-size:14px;color:var(--t2);line-height:1.75;font-family:Georgia,serif}
+.step-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);transform:scaleX(0);transition:transform .4s}
+.step:hover .step-bar{transform:scaleX(1)}
+
+.shield-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.shield-demo{background:rgba(4,2,2,.95);border:1px solid rgba(0,229,255,.2);border-radius:24px;padding:32px;position:relative;overflow:hidden}
+.shield-demo::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,51,51,.04),transparent)}
+.rec-hdr{display:flex;align-items:center;gap:10px;background:rgba(255,51,51,.07);border:1px solid rgba(255,51,51,.2);border-radius:20px;padding:10px 16px;margin-bottom:20px}
+.rdot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite;flex-shrink:0}
+.rlabel{font-family:var(--mono);font-size:10px;color:var(--red);font-weight:700;letter-spacing:.1em}
+.stag{display:inline-block;background:rgba(255,214,10,.07);border:1px solid rgba(255,214,10,.18);color:#FFD60A;font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:6px;letter-spacing:.06em;margin-bottom:14px}
+.sresponse{font-size:17px;font-weight:800;color:#fff;line-height:1.6;margin-bottom:16px}
+.lawbox{background:rgba(255,255,255,.03);border-radius:10px;padding:14px;margin-bottom:20px}
+.lawbox p{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4);line-height:1.8}
+.timer-row{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border)}
+.timer-val{font-family:var(--mono);font-size:30px;font-weight:900;color:var(--red)}
+.hash-box{margin-top:14px;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.12);border-radius:10px;padding:14px;text-align:center}
+.hash-lbl{font-family:var(--mono);font-size:9px;color:var(--cyan);letter-spacing:.12em;margin-bottom:6px}
+.hash-val{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.5);word-break:break-all}
+.spills{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.spill{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.03em}
+
+.invest-sec{background:linear-gradient(180deg,#020204 0%,#000510 50%,#020204 100%);padding:140px 0;position:relative;overflow:hidden}
+.invest-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(0,113,227,.07),transparent)}
+.invest-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:60px}
+.inv-card{background:rgba(0,0,0,.6);border:1px solid var(--border);border-radius:24px;padding:36px;transition:all .4s;position:relative;overflow:hidden}
+.inv-card:hover{border-color:rgba(0,229,255,.25);transform:translateY(-6px);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.inv-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:.6}
+.inv-card.c1::before{background:linear-gradient(90deg,var(--green),var(--cyan))}
+.inv-card.c2::before{background:linear-gradient(90deg,var(--cyan),var(--blue))}
+.inv-card.c3::before{background:linear-gradient(90deg,var(--gold),var(--red))}
+.inv-audience{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.inv-audience.green{color:var(--green)}.inv-audience.cyan{color:var(--cyan)}.inv-audience.gold{color:var(--gold)}
+.inv-h3{font-size:20px;font-weight:900;margin-bottom:14px;line-height:1.2;color:#fff}
+.inv-p{font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:20px;font-family:Georgia,serif}
+.inv-points{list-style:none;display:flex;flex-direction:column;gap:8px}
+.inv-points li{font-size:13px;color:rgba(255,255,255,.6);padding-left:18px;position:relative;font-family:Georgia,serif}
+.inv-points li::before{content:'→';position:absolute;left:0;color:var(--cyan);font-family:var(--mono)}
+
+.token-card{background:var(--s2);border:1px solid var(--border);border-radius:24px;padding:56px;margin-top:60px;position:relative;overflow:hidden}
+.token-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.token-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.tstats{display:flex;flex-direction:column;gap:16px}
+.tstat{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:24px}
+.tstat .tv{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--cyan);display:block;margin-bottom:6px}
+.tstat .tl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:block}
+.tstat .td{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;font-family:Georgia,serif}
+.tinfo h3{font-size:clamp(22px,3vw,32px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:18px;color:#fff}
+.tinfo p{font-size:15px;color:rgba(255,255,255,.58);line-height:1.85;margin-bottom:14px;font-family:Georgia,serif}
+.disc-inline{font-size:13px;color:rgba(255,255,255,.3);font-family:Georgia,serif;font-style:italic;margin-top:20px;padding:16px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--border);line-height:1.7}
+.mint-box{margin-top:24px;padding:22px;background:var(--bg);border:1px solid rgba(0,229,255,.18);border-radius:12px}
+.mint-box .ml{font-family:var(--mono);font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:.15em;margin-bottom:10px}
+.mint-box .ma{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.7);word-break:break-all;line-height:1.7;margin-bottom:12px}
+.mint-box a{font-family:var(--mono);font-size:10px;color:var(--cyan);display:inline-flex;align-items:center;gap:6px;letter-spacing:.05em;transition:color .2s}
+.mint-box a:hover{color:#fff}
+.verified{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,135,.07);border:1px solid rgba(0,255,135,.2);border-radius:6px;padding:5px 12px;margin-top:12px;font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:.06em}
+.verified::before{content:'●';font-size:6px}
+
+.rm-items{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-top:60px}
+.rmi{background:var(--s2);padding:32px 22px;border:1px solid var(--border);transition:border-color .3s}
+.rmi:first-child{border-radius:14px 0 0 14px}
+.rmi:last-child{border-radius:0 14px 14px 0}
+.rmi.now{border-color:rgba(0,255,135,.2);background:linear-gradient(160deg,rgba(0,255,135,.04),var(--s2))}
+.rmi .rp{font-family:var(--mono);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px}
+.rmi.now .rp{color:var(--green)}
+.rmi .rd{width:10px;height:10px;border-radius:50%;background:#222;border:2px solid #333;margin-bottom:18px}
+.rmi.now .rd{background:var(--green);border-color:var(--green);box-shadow:0 0 10px rgba(0,255,135,.5)}
+.rmi h3{font-size:14px;font-weight:800;margin-bottom:8px;line-height:1.3;color:#fff}
+.rmi p{font-size:12px;color:rgba(255,255,255,.4);line-height:1.65;font-family:Georgia,serif}
+.rm-tag{margin-top:14px;font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:20px;display:inline-block;letter-spacing:.06em;text-transform:uppercase}
+.rm-tag.live{background:rgba(0,255,135,.1);color:var(--green);border:1px solid rgba(0,255,135,.2)}
+.rm-tag.next{background:rgba(255,214,10,.07);color:#FFD60A;border:1px solid rgba(255,214,10,.18)}
+.rm-tag.future{background:var(--border);color:var(--t3);border:1px solid var(--border2)}
+
+.wl-inner{max-width:680px;margin:0 auto;text-align:center}
+.wl-inner h2{font-size:clamp(36px,5.5vw,72px);font-weight:900;letter-spacing:-.04em;margin-bottom:16px;line-height:.95;color:#fff}
+.wl-inner h2 .g{color:var(--green)}
+.wl-sub{font-size:18px;color:rgba(255,255,255,.5);margin-bottom:48px;line-height:1.6;font-family:Georgia,serif;font-style:italic}
+.wform{display:flex;gap:12px;max-width:500px;margin:0 auto 16px}
+.wform input{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:18px 22px;color:#fff;font-family:var(--f);font-size:15px;outline:none;transition:border-color .2s}
+.wform input:focus{border-color:var(--cyan)}
+.wform input::placeholder{color:var(--t3)}
+.wform button{background:linear-gradient(135deg,var(--green),var(--cyan));color:#000;border:none;padding:18px 28px;border-radius:12px;cursor:pointer;font-family:var(--f);font-size:13px;font-weight:900;letter-spacing:.08em;white-space:nowrap;transition:all .3s}
+.wform button:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(0,255,135,.3)}
+.wnote{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.05em}
+.wnote.ok{color:var(--green)}
+.social-row{display:flex;justify-content:center;gap:24px;margin-top:44px;flex-wrap:wrap}
+.social-row a{font-family:var(--mono);font-size:11px;color:var(--t3);letter-spacing:.05em;transition:color .2s}
+.social-row a:hover{color:var(--cyan)}
+
+.disc-sec{max-width:1400px;margin:0 auto;padding:40px 5%;border-top:1px solid #0D0D0F}
+.disc-sec p{font-family:var(--mono);font-size:10px;color:var(--t4);line-height:1.9;letter-spacing:.02em}
+.disc-sec p+p{margin-top:8px}
+footer{padding:60px 5%;background:#020204;border-top:1px solid #111;text-align:center}
+footer .logo-text{font-size:20px;-webkit-text-fill-color:transparent}
+.foot-links{display:flex;justify-content:center;gap:28px;margin:24px 0;flex-wrap:wrap}
+.foot-links a{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.05em;transition:color .2s}
+.foot-links a:hover{color:var(--white)}
+
+@media(max-width:900px){
+  .earn-cards,.steps,.invest-grid,.origin-grid,.token-grid,.shield-grid{grid-template-columns:1fr;gap:24px}
+  .rm-items{grid-template-columns:1fr 1fr;gap:10px}
+  .rmi:first-child,.rmi:last-child{border-radius:14px}
+  .market-row{grid-template-columns:1fr 1fr}
+  .wform{flex-direction:column}
+  .sec{padding:80px 0}
+  .earn-hero-sec{padding:100px 0}
+  .invest-sec{padding:100px 0}
+  .token-card{padding:32px 20px}
+  .disc-sec{padding:32px 20px}
+  footer{padding:40px 20px}
+}
+@keyframes liveGlow{0%,100%{opacity:1;box-shadow:0 0 20px rgba(0,229,255,.6)}50%{opacity:.5;box-shadow:0 0 10px rgba(0,229,255,.2)}}
+</style>
+</head>
+<body>
+<a href="#hero" class="skip-link">Skip to main content</a>
+<canvas id="webgl-container" aria-hidden="true"></canvas>
+
+<nav id="nav">
+  <div class="logo-box">
+    <svg width="40" height="48" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 14px rgba(0,229,255,.4))">
+      <path d="M50 4 L94 18 V65 C94 88 50 116 50 116 C50 116 6 88 6 65 V18 L50 4 Z" fill="rgba(10,12,18,.95)" stroke="#00E5FF" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="41" cy="38" r="6" fill="#3366FF"/><circle cx="59" cy="38" r="6" fill="#FF3B30"/>
+      <text x="50" y="70" text-anchor="middle" fill="white" font-size="22" font-family="Arial" font-weight="900">ALIBI</text>
+      <circle cx="50" cy="94" r="10" fill="none" stroke="#00E5FF" stroke-width="2.5"/><circle cx="50" cy="94" r="5" fill="#00E5FF"/>
+    </svg>
+    <div class="logo-text">ALIBI.</div>
+  </div>
+  <div class="nav-links">
+    <a href="#earn">Earn $ALIBI</a>
+    <a href="#origin">Our Story</a>
+    <a href="#how">How It Works</a>
+    <a href="#invest">Investors</a>
+    <a href="#token">Token</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <button class="hamburger" id="menuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+    <a href="#waitlist" class="btn-nav">Start Earning</a>
+  </div>
+</nav>
+
+<div class="mob-overlay" id="mobMenu">
+  <button class="mob-close" id="mobClose">&times;</button>
+  <a href="#earn">Earn $ALIBI</a>
+  <a href="#origin">Our Story</a>
+  <a href="#how">How It Works</a>
+  <a href="#invest">Investors</a>
+  <a href="#token">Token</a>
+  <a href="#roadmap">Roadmap</a>
+  <a href="#waitlist" class="btn-nav" style="margin-top:16px">Start Earning</a>
+</div>
+
+<main id="hero">
+<div class="hero-anim-top">
+  <div class="ambient-cabin"></div>
+  <div class="windshield-rain"></div>
+  <div class="mirror-wrap">
+    <div class="rearview-mirror">
+      <div class="mirror-glass">
+        <div class="police-flash red-flash"></div>
+        <div class="police-flash blue-flash"></div>
+        <div class="police-flash white-flash"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="earn-hero-badge">
+      <div class="edot"></div>
+      <span>Earn Real Money Just By Driving</span>
+    </div>
+
+    <h1 class="hero-h1 gs-reveal">
+      <span class="line-earn">GET PAID.</span>
+      <span class="line-protect">STAY PROTECTED.</span>
+      <span class="line-sub">Every. Single. Drive.</span>
+    </h1>
+
+    <p class="hero-sub gs-reveal">The only navigation app that <strong style="color:#fff">pays you $ALIBI tokens</strong> to drive your normal route — and activates <strong style="color:#fff">instant legal protection</strong> the moment police pull you over. Already running before anything happens.</p>
+
+    <div class="earn-counter-wrap gs-reveal">
+      <div class="ecw-left">
+        <div class="ecw-label">Drivers Earn Per Hour</div>
+        <div class="ecw-val">$ALIBI</div>
+      </div>
+      <div class="ecw-right">
+        <div class="ecw-label">With Legal Shield Active</div>
+        <div class="ecw-val white">+1.00 Bonus</div>
+      </div>
+    </div>
+
+    <div class="hero-btns gs-reveal">
+      <a href="#waitlist" class="btn-earn">Start Earning Free →</a>
+      <a href="#how" class="btn-ghost-hero">See How It Works</a>
+    </div>
+    <p class="hero-note gs-reveal">Free to use &nbsp;·&nbsp; No wallet required to start &nbsp;·&nbsp; Claim tokens at launch</p>
+
+    <div class="hero-phone-wrap gs-reveal">
+      <div class="phone-frame">
+        <div class="ai-scanner"></div>
+        <div class="phone-ui">
+          <div class="p-earn-pill">
+            <div class="p-earn-dot"></div>
+            <span class="p-earn-text">+2.45 $ALIBI EARNED TODAY</span>
+          </div>
+          <div class="p-shield-active">
+            <div class="p-shield-label">LEGAL SHIELD ACTIVE</div>
+            <div class="p-shield-text">"I do not consent to any searches. Am I being detained, or am I free to go?"</div>
+            <div class="p-hash">SHA-256: a3f9d1e8c2b74f05a1d9e3b76f2c...</div>
+          </div>
+          <div class="p-timer-row">
+            <div><div class="p-timer-label">STOP DURATION</div><div style="font-family:var(--mono);font-size:8px;color:var(--t4);margin-top:2px">Rodriguez v. US limit: ~10–15min</div></div>
+            <div class="p-timer">04:22</div>
+          </div>
+          <div class="p-shield-btn">INITIATE LEGAL SHIELD</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker-bar">
+  <div class="ticker-track">
+    <div class="ticker-item"><div class="tdot g"></div><span class="tlbl">Earn Rate</span><span class="tval">$ALIBI / Mile</span></div>
+    <div class="ticker-item"><div class="tdot"></div><span class="tlbl">Token Supply</span><span class="tval">1,000,000,000 FIXED</span></div>
+    <div class="ticker-item"><div class="tdot g"></div><span class="tlbl">Mint Authority</span><span class="tval">PERMANENTLY REVOKED</span></div>
+    <div class="ticker-item"><div class="tdot r"></div><span class="tlbl">US Police Stops / Year</span><span class="tval">50,000,000+</span></div>
+    <div class="ticker-item"><div class="tdot"></div><span class="tlbl">Recording Legal</span><span class="tval">ALL 50 STATES</span></div>
+    <div class="ticker-item"><div class="tdot g"></div><span class="tlbl">Network</span><span class="tval">SOLANA MAINNET</span></div>
+    <div class="ticker-item"><div class="tdot"></div><span class="tlbl">Core App</span><span class="tval">FREE FOREVER</span></div>
+    <div class="ticker-item"><div class="tdot r"></div><span class="tlbl">Stops Turning Violent</span><span class="tval">1 IN 7,000</span></div>
+    <div class="ticker-item"><div class="tdot g"></div><span class="tlbl">Earn Rate</span><span class="tval">$ALIBI / Mile</span></div>
+    <div class="ticker-item"><div class="tdot"></div><span class="tlbl">Token Supply</span><span class="tval">1,000,000,000 FIXED</span></div>
+    <div class="ticker-item"><div class="tdot g"></div><span class="tlbl">Mint Authority</span><span class="tval">PERMANENTLY REVOKED</span></div>
+    <div class="ticker-item"><div class="tdot r"></div><span class="tlbl">US Police Stops / Year</span><span class="tval">50,000,000+</span></div>
+    <div class="ticker-item"><div class="tdot"></div><span class="tlbl">Recording Legal</span><span class="tval">ALL 50 STATES</span></div>
+    <div class="ticker-item"><div class="tdot g"></div><span class="tlbl">Network</span><span class="tval">SOLANA MAINNET</span></div>
+    <div class="ticker-item"><div class="tdot"></div><span class="tlbl">Core App</span><span class="tval">FREE FOREVER</span></div>
+    <div class="ticker-item"><div class="tdot r"></div><span class="tlbl">Stops Turning Violent</span><span class="tval">1 IN 7,000</span></div>
+  </div>
+</div>
+
+<section class="earn-hero-sec" id="earn">
+  <div class="wrap text-center">
+    <div class="sec-tag fu" style="margin:0 auto 32px;display:inline-flex">💰 The Earn Mechanic</div>
+    <span class="earn-big-num fu">GET PAID</span>
+    <span class="earn-big-sub fu">to drive your normal route</span>
+    <p class="fu" style="font-size:clamp(17px,2vw,22px);color:rgba(255,255,255,.6);max-width:700px;margin:0 auto 16px;line-height:1.65;font-family:Georgia,serif">This is the only navigation app on earth that <strong style="color:#fff">pays you real tokens</strong> to do what you're already doing. Open it. Drive. Earn. No gimmick — the earning mechanic is why the app is running when you need it most.</p>
+    <p class="fu" style="font-family:var(--mono);font-size:13px;color:rgba(0,255,135,.6);letter-spacing:.1em;margin-bottom:60px">TOKENS ACCUMULATE NOW · CLAIM AT WALLET LAUNCH · NO SIGN-UP REQUIRED</p>
+
+    <div class="earn-cards">
+      <div class="earn-card fu">
+        <div class="ec-icon">🧭</div>
+        <div class="ec-amount">+ALIBI</div>
+        <div class="ec-rate">Per mile driven</div>
+        <div class="ec-title">Drive to Earn</div>
+        <div class="ec-desc">Open Alibi like Waze. Get turn-by-turn navigation. Earn $ALIBI tokens every few minutes while you're moving. Whether you're commuting, running errands, or on a road trip — you're earning.</div>
+      </div>
+      <div class="earn-card fu d1">
+        <div class="ec-icon">🚨</div>
+        <div class="ec-amount">+0.50</div>
+        <div class="ec-rate">Per verified report</div>
+        <div class="ec-title">Report & Earn</div>
+        <div class="ec-desc">Spot a police checkpoint, crash, speed trap, or road hazard? Report it in one tap. +0.50 $ALIBI instantly. You help every other driver on the road and get paid to do it.</div>
+      </div>
+      <div class="earn-card fu d2">
+        <div class="ec-icon">🛡️</div>
+        <div class="ec-amount">+1.00</div>
+        <div class="ec-rate">Per completed stop</div>
+        <div class="ec-title">Shield & Earn</div>
+        <div class="ec-desc">Every time Legal Shield activates and you document a police encounter, you earn a bonus. You protected yourself, documented the truth, and got paid for it. That's the whole point.</div>
+      </div>
+    </div>
+
+    <div class="earn-disclaimer fu">
+      * $ALIBI accumulates locally in your session. Wallet connect and on-chain claim launching in Phase 02.<br>
+      Earn rates are pre-launch estimates. Final rates set at token launch based on network conditions.<br>
+      $ALIBI is a utility token, not an investment. No financial return is guaranteed.
+    </div>
+  </div>
+</section>
+
+<div style="border-top:1px solid #0D0D0F;border-bottom:1px solid #0D0D0F">
+  <div class="market-row fu">
+    <div class="mstat"><span class="mv">50M+</span><span class="ml">Police stops / year (US)</span></div>
+    <div class="mstat"><span class="mv">$145B</span><span class="ml">Driver safety tech market</span></div>
+    <div class="mstat"><span class="mv">~0%</span><span class="ml">Drivers recording before the stop</span></div>
+    <div class="mstat"><span class="mv">All 50</span><span class="ml">States — recording is legal</span></div>
+  </div>
+</div>
+
+<section class="sec" id="origin">
+  <div class="wrap">
+    <div class="origin-grid">
+      <div class="origin-quote fu">
+        <blockquote>"I built this because I lived it. I've been pulled over, profiled, and watched people I know have their lives changed forever by a 10-minute encounter they weren't prepared for. This app will save lives, save futures, and hopefully weed out the cops who abuse their badge."</blockquote>
+        <cite>— Timothy Clement, Founder &nbsp;·&nbsp; Concord, NH</cite>
+      </div>
+      <div class="fu d1">
+        <div class="sec-tag">Why This Exists</div>
+        <h2 class="sec-h2" style="margin-bottom:22px;font-size:clamp(28px,4vw,52px)">Built from lived experience.<br>Not a thought experiment.</h2>
+        <p>Police encounters escalate in seconds. Rights get violated in a fog of stress and fear. Most people don't know what to say. Most apps aren't open. Most recordings never happen.</p>
+        <p>Alibi Protocol exists to fix the moment <em>before</em> the moment — keeping protection active in the background while you drive. When a stop happens, you're already covered. And while it runs in the background, you're earning.</p>
+        <p>The earn mechanic isn't decoration. It's the distribution solution. It's why the app is open when you need it.</p>
+        <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap">
+          <a href="#waitlist" class="btn-earn" style="font-size:13px;padding:14px 28px">Join Waitlist →</a>
+          <a href="#how" class="btn-ghost-hero" style="font-size:13px;padding:14px 28px">How It Works</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-dark" id="problem">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:64px" class="fu">
+      <div class="sec-tag" style="display:inline-flex;margin-bottom:16px">The Gap No Competitor Has Solved</div>
+      <h2 class="sec-h2">They all have the same<br><span style="color:var(--red)">fatal flaw.</span></h2>
+      <p class="sec-p" style="margin:16px auto 0;text-align:center">Every existing app requires you to activate it during the encounter — the exact moment you're least capable of doing anything calmly.</p>
+    </div>
+    <div class="comp-grid">
+      <div class="comp-card fu"><div class="cc-name">TurnSignl</div><div class="cc-flaw">Live attorney on-demand — but you have to call it during the stop. $7/month for a service that requires calm thinking under extreme pressure.</div><span class="cc-tag">Requires activation</span></div>
+      <div class="comp-card fu d1"><div class="cc-name">ACLU Mobile Justice</div><div class="cc-flaw">Record and report — but only if you remembered to open the app before or during the encounter. Most people don't.</div><span class="cc-tag">Requires activation</span></div>
+      <div class="comp-card fu d2"><div class="cc-name">Siri Shortcut</div><div class="cc-flaw">Voice-activated workaround. Requires custom setup, muscle memory, and the presence of mind to trigger it while being pulled over.</div><span class="cc-tag">Requires activation</span></div>
+      <div class="comp-card fu d3"><div class="cc-name">Cop Watch Apps</div><div class="cc-flaw">Bystander reporting only. Provides zero protection for the driver themselves — only works if someone else happens to be watching.</div><span class="cc-tag">Requires a bystander</span></div>
+      <div class="comp-card us fu" style="grid-column:span 1"><div class="cc-name" style="color:var(--cyan)">Alibi Protocol</div><div class="cc-flaw" style="color:rgba(255,255,255,.7)">You use it to drive. Drive-to-earn keeps it running. Legal Shield is one tap — and it's ready the second a stop happens. Already running. Already earning.</div><span class="cc-tag">Already running</span></div>
+    </div>
+    <div class="thesis-block fu">
+      <h3>The distribution problem <span>is</span> the product.<br>Drive-to-earn isn't a gimmick —<br>it's why the app is already open when your life depends on it.</h3>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="how">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:10px" class="fu">
+      <div class="sec-tag" style="display:inline-flex;margin-bottom:16px">How It Works</div>
+      <h2 class="sec-h2">Three things. All built.<br>All real.</h2>
+    </div>
+    <div class="steps">
+      <div class="step fu">
+        <div class="step-n">01 &nbsp;/&nbsp; Navigate & Earn</div>
+        <div class="step-ico">🧭</div>
+        <h3>Use Alibi like Waze — and get paid for every mile</h3>
+        <p>Real GPS navigation. Real turn-by-turn directions. Real hazard reporting. A genuinely useful daily driver that earns $ALIBI tokens while you drive. You use it because it's valuable — which means it's always open when you need it.</p>
+        <div class="step-bar"></div>
+      </div>
+      <div class="step fu d1">
+        <div class="step-n">02 &nbsp;/&nbsp; Encounter</div>
+        <div class="step-ico">🛡️</div>
+        <h3>One tap activates Legal Shield — recording and rights coaching instantly</h3>
+        <p>Hit Legal Shield and the app starts recording audio immediately. On screen: the exact words to say for your specific situation, backed by real constitutional case law. A live timer tracks your stop duration. Screen goes dark in stealth mode. You earn a bonus token when the stop ends.</p>
+        <div class="step-bar"></div>
+      </div>
+      <div class="step fu d2">
+        <div class="step-n">03 &nbsp;/&nbsp; Evidence</div>
+        <div class="step-ico">🔐</div>
+        <h3>Cryptographic proof, created the moment Shield activates</h3>
+        <p>The app generates a SHA-256 hash from your exact timestamp, GPS coordinates, and the verified $ALIBI contract address — before a word is spoken. This fingerprint proves when and where the recording started, and can't be faked retroactively. Download it instantly from the vault.</p>
+        <div class="step-bar"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-dark" id="shield">
+  <div class="wrap">
+    <div class="shield-grid">
+      <div class="shield-demo fu">
+        <div class="rec-hdr"><div class="rdot"></div><span class="rlabel">RECORDING · SAVING LOCALLY</span></div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:.1em;margin-bottom:10px">ALIBI LEGAL SHIELD ACTIVE</div>
+        <div class="stag">SEARCH REQUEST — SUGGESTED RESPONSE</div>
+        <div class="sresponse">"I do not consent to any searches. Am I being detained, or am I free to go?"</div>
+        <div class="lawbox"><p>4th Amendment — right against unreasonable searches<br>Florida v. Royer (1983) — you may ask if you are free to go<br>5th Amendment — right to remain silent</p></div>
+        <div class="timer-row">
+          <div><div style="font-size:10px;color:var(--t3);font-family:var(--mono)">STOP DURATION</div><div style="font-family:var(--mono);font-size:9px;color:var(--t4);margin-top:3px">Rodriguez v. US: ~10–15 min limit</div></div>
+          <div class="timer-val">04:22</div>
+        </div>
+        <div class="hash-box">
+          <div class="hash-lbl">EVIDENCE FINGERPRINT · SHA-256</div>
+          <div class="hash-val">a3f9d1e8c2b74f05a1d9e3b76f2c8a41d0e7f3b9c5a2e8d1f4b7c0a9e3d6f2b8...</div>
+        </div>
+      </div>
+      <div class="fu d1">
+        <div class="sec-tag">Legal Shield</div>
+        <h2 class="sec-h2" style="margin-bottom:20px;font-size:clamp(28px,4vw,50px)">Know exactly what to say.<br>While it records everything.</h2>
+        <p class="sec-p" style="font-size:16px;color:rgba(255,255,255,.6);margin-bottom:14px">The hardest part of a police stop isn't knowing your rights — it's remembering them when your heart is pounding. Alibi puts the exact words on screen, matched to your specific situation.</p>
+        <p class="sec-p" style="font-size:16px;color:rgba(255,255,255,.6);margin-bottom:14px">Every response is backed by real constitutional case law. While you're reading it, the app is capturing every word the officer says.</p>
+        <p class="sec-p" style="font-size:16px;color:rgba(255,255,255,.6)">And when the stop ends — you earn a $ALIBI bonus. Because you just did exactly what this app was built for.</p>
+        <div class="spills" style="margin-top:28px">
+          <div class="spill">4th Amendment</div>
+          <div class="spill">5th Amendment</div>
+          <div class="spill">Rodriguez v. US (2015)</div>
+          <div class="spill">Terry v. Ohio (1968)</div>
+          <div class="spill">Florida v. Royer (1983)</div>
+          <div class="spill">Pennsylvania v. Mimms (1977)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="invest-sec" id="invest">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:16px" class="fu">
+      <div class="sec-tag" style="display:inline-flex;margin-bottom:20px">Why Invest</div>
+      <h2 class="sec-h2" style="color:#fff;margin-bottom:16px">Three audiences.<br><span style="color:var(--cyan)">One massive opportunity.</span></h2>
+      <p class="sec-p" style="margin:0 auto;text-align:center">Alibi Protocol is positioned at the intersection of civil rights, DePIN infrastructure, and consumer fintech. Every audience has a compelling reason to participate.</p>
+    </div>
+    <div class="invest-grid">
+      <div class="inv-card c1 fu">
+        <div class="inv-audience green"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);display:inline-block"></span>FOR EVERYDAY DRIVERS</div>
+        <h3 class="inv-h3">Get paid to use the app that protects you</h3>
+        <p class="inv-p">50M+ police encounters happen in the US every year. Almost none of them are documented. This app fixes that — and pays you $ALIBI tokens just for driving with it open.</p>
+        <ul class="inv-points">
+          <li>Earn while you commute, zero extra effort</li>
+          <li>Legal Shield activated before a word is spoken</li>
+          <li>Evidence fingerprinted and vault-ready instantly</li>
+          <li>Free to use. Wallet connect coming in Phase 02</li>
+          <li>Early users accumulate the most tokens</li>
+        </ul>
+      </div>
+      <div class="inv-card c2 fu d1">
+        <div class="inv-audience cyan"><span style="width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);display:inline-block"></span>FOR RETAIL INVESTORS</div>
+        <h3 class="inv-h3">Early access to a working product with a real token</h3>
+        <p class="inv-p">The app is live. The token is deployed. Mint authority is permanently revoked — supply is fixed forever. No inflation. No rug mechanics. No fake numbers.</p>
+        <ul class="inv-points">
+          <li>1 billion $ALIBI — fixed forever on-chain</li>
+          <li>Mint authority revoked — verified on Solscan</li>
+          <li>Working app with real GPS and real recording</li>
+          <li>Drive-to-earn creates genuine daily demand</li>
+          <li>Pre-listing — accumulate before exchange listing</li>
+        </ul>
+      </div>
+      <div class="inv-card c3 fu d2">
+        <div class="inv-audience gold"><span style="width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);display:inline-block"></span>FOR INSTITUTIONAL / ANGEL</div>
+        <h3 class="inv-h3">Civil rights infrastructure with a built-in distribution moat</h3>
+        <p class="inv-p">Every competitor requires manual activation. Alibi's drive-to-earn mechanic solves the hardest problem in civic tech: daily active usage before an encounter occurs.</p>
+        <ul class="inv-points">
+          <li>$145B driver safety tech TAM</li>
+          <li>Drive-to-earn = defensible distribution moat</li>
+          <li>DePIN architecture on Solana mainnet</li>
+          <li>Attorney pipeline + mugshot monitoring coming</li>
+          <li>Mission-driven with founder's lived experience</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:60px;background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:24px;padding:48px" class="fu">
+      <div style="text-align:center;margin-bottom:40px">
+        <div class="sec-tag" style="display:inline-flex;margin-bottom:16px">What's Being Built</div>
+        <h3 style="font-size:clamp(24px,3.5vw,42px);font-weight:900;letter-spacing:-.03em;color:#fff">The product roadmap makes this<br><span style="color:var(--cyan)">significantly larger.</span></h3>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px">
+        <div style="background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);border-radius:16px;padding:28px">
+          <div style="font-size:28px;margin-bottom:14px">🔐</div>
+          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px">Cloud Evidence Vault</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.6;font-family:Georgia,serif">Encrypted cloud backup with immutable on-chain anchoring to Solana. Evidence packages formatted for civil rights attorneys.</div>
+        </div>
+        <div style="background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);border-radius:16px;padding:28px">
+          <div style="font-size:28px;margin-bottom:14px">⚖️</div>
+          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px">Attorney Pipeline</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.6;font-family:Georgia,serif">Verified civil rights attorney network. Evidence packages ready for contingency representation. Lawyer referral revenue model.</div>
+        </div>
+        <div style="background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);border-radius:16px;padding:28px">
+          <div style="font-size:28px;margin-bottom:14px">🗑️</div>
+          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px">Mugshot Removal</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.6;font-family:Georgia,serif">Automated monitoring and removal of mugshot listings for people who were never convicted. Post-encounter reputation protection.</div>
+        </div>
+        <div style="background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);border-radius:16px;padding:28px">
+          <div style="font-size:28px;margin-bottom:14px">📊</div>
+          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px">The Truth Map</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.6;font-family:Georgia,serif">Anonymized, aggregate reporting of encounter patterns. Real data that creates systemic accountability — the kind you can't ignore in court or in Congress.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-dark" id="token">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:10px" class="fu">
+      <div class="sec-tag" style="display:inline-flex;margin-bottom:16px">$ALIBI Token</div>
+      <h2 class="sec-h2">Real contract.<br>Fixed supply. No fiction.</h2>
+      <p class="sec-p" style="margin:16px auto 0;text-align:center">Deployed on Solana mainnet. Mint authority permanently revoked on-chain. No inflation possible. No fake treasury. No made-up numbers.</p>
+    </div>
+    <div class="token-card fu">
+      <div class="token-grid">
+        <div class="tstats">
+          <div class="tstat"><span class="tv">1,000,000,000</span><span class="tl">Total Supply — Fixed Forever</span><p class="td">Mint authority permanently revoked. No new tokens can ever be created — including by the founders. Verified on Solscan right now.</p></div>
+          <div class="tstat"><span class="tv">9</span><span class="tl">Decimals · Solana SPL Token</span><p class="td">Standard Solana SPL. Compatible with Phantom, Solflare, and all major Solana wallets.</p></div>
+          <div class="tstat"><span class="tv">None</span><span class="tl">Freeze Authority</span><p class="td">Nobody — including the founders — can ever freeze a wallet holding $ALIBI. Your tokens are fully yours.</p></div>
+        </div>
+        <div class="tinfo">
+          <h3>Pre-listing. Earning starts now. Product ships first.</h3>
+          <p>The token is live on Solana mainnet but not yet listed on any exchange. No active trading, no liquidity pool, no public sale. We are building the product before the token trades — because that's how you build something real.</p>
+          <p>Early users are accumulating $ALIBI through drive-to-earn right now. When the wallet feature launches, those balances become claimable on-chain. The people driving with the app today get in at the ground floor.</p>
+          <p>The token has one job before listing: give users a real reason to keep the app running every single day. That's the distribution moat. That's the whole idea.</p>
+          <div class="disc-inline">$ALIBI is a utility token. It is not a security and does not represent equity, profit-sharing, or any investment return. Nothing here is investment advice. Token listing, pricing, and future availability are not guaranteed.</div>
+          <div class="mint-box">
+            <div class="ml">Verified Contract Address · Solana Mainnet</div>
+            <div class="ma">396ypp7wKqVry36RhHcC8dLAxTWTg9juatoRFwnyzzRq</div>
+            <a href="https://solscan.io/token/396ypp7wKqVry36RhHcC8dLAxTWTg9juatoRFwnyzzRq" target="_blank">View on Solscan ↗</a>
+            <div class="verified">Mint Authority Revoked · Verified On-Chain</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="roadmap">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:10px" class="fu">
+      <div class="sec-tag" style="display:inline-flex;margin-bottom:16px">Roadmap</div>
+      <h2 class="sec-h2">Honest phases.<br>No vaporware.</h2>
+      <p class="sec-p" style="margin:16px auto 0;text-align:center">Each phase ships before the next begins. We build the product. Then we launch the token. Then we scale.</p>
+    </div>
+    <div class="rm-items fu">
+      <div class="rmi now"><div class="rp">Phase 01</div><div class="rd"></div><h3>Core App Live</h3><p>Navigation, Legal Shield recording, evidence vault, drive-to-earn accumulation, real GPS and turn-by-turn routing.</p><span class="rm-tag live">Live Now</span></div>
+      <div class="rmi"><div class="rp">Phase 02</div><div class="rd"></div><h3>Wallet + Token Claim</h3><p>Phantom wallet connect. Claim earned $ALIBI on-chain. On-chain evidence anchoring. Token goes live on DEX.</p><span class="rm-tag next">Next</span></div>
+      <div class="rmi"><div class="rp">Phase 03</div><div class="rd"></div><h3>Cloud Evidence Vault</h3><p>Encrypted cloud backup of all recordings. Tamper-proof. Shareable evidence packages for civil rights attorneys.</p><span class="rm-tag future">Coming</span></div>
+      <div class="rmi"><div class="rp">Phase 04</div><div class="rd"></div><h3>Attorney Pipeline</h3><p>Verified civil rights attorney network. Evidence formatted for contingency cases. Lawyer referral revenue stream.</p><span class="rm-tag future">Coming</span></div>
+      <div class="rmi"><div class="rp">Phase 05</div><div class="rd"></div><h3>Mugshot + Truth Map</h3><p>Mugshot monitoring and removal tools. Aggregate anonymized encounter data for systemic accountability reporting.</p><span class="rm-tag future">Coming</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-dark" id="waitlist">
+  <div class="wrap">
+    <div class="wl-inner">
+      <div class="sec-tag fu" style="display:inline-flex;margin-bottom:24px">Join the Movement</div>
+      <h2 class="fu">Start earning.<br><span class="g">Drive protected.</span></h2>
+      <p class="wl-sub fu">Get early access to wallet launch, token claim, and every feature as it ships. The people here first earn the most.</p>
+      <form class="wform fu" id="wl-form">
+        <input type="email" id="wl-email" placeholder="your@email.com" required>
+        <button type="button" id="wl-btn">Claim My Spot →</button>
+      </form>
+      <div class="wnote fu" id="wl-note">No spam. Only ship updates. Unsubscribe anytime.</div>
+      <div class="social-row fu">
+        <a href="https://x.com/Alibi_Protocol" target="_blank">Twitter / X ↗</a>
+        <a href="https://discord.gg/d5cA9tTxU" target="_blank">Discord ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="disc-sec">
+  <p>⚠ Legal Disclaimer: Alibi Protocol is a navigation and evidence-recording application. Nothing on this website or within the app constitutes legal advice. AI-generated rights guidance is general information only and does not create an attorney-client relationship. Recording laws vary by state — it is your responsibility to understand the laws in your jurisdiction before recording. The app is provided as-is with no guarantees of accuracy, completeness, or fitness for any purpose. Use at your own risk.</p>
+  <p>$ALIBI is a utility token deployed on the Solana blockchain. It is not a security, does not represent equity or ownership, and does not entitle holders to any profit-sharing or investment return. This page contains no offer or solicitation to purchase any financial instrument. Token listing, pricing, and availability are not guaranteed. Earn rates shown are estimates and subject to change at token launch.</p>
+</div>
+
+<footer>
+  <div style="max-width:1400px;margin:0 auto">
+    <div class="logo-box" style="justify-content:center;margin-bottom:24px">
+      <svg width="36" height="44" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 5px rgba(0,229,255,.4))">
+        <path d="M50 4 L94 18 V65 C94 88 50 116 50 116 C50 116 6 88 6 65 V18 L50 4 Z" fill="rgba(10,12,18,.95)" stroke="#00E5FF" stroke-width="4" stroke-linejoin="round"/>
+        <circle cx="41" cy="38" r="6" fill="#3366FF"/><circle cx="59" cy="38" r="6" fill="#FF3B30"/>
+        <text x="50" y="70" text-anchor="middle" fill="white" font-size="22" font-family="Arial" font-weight="900">ALIBI</text>
+        <circle cx="50" cy="94" r="10" fill="none" stroke="#00E5FF" stroke-width="2.5"/><circle cx="50" cy="94" r="5" fill="#00E5FF"/>
+      </svg>
+      <div class="logo-text">ALIBI.</div>
+    </div>
+    <div class="foot-links">
+      <a href="https://solscan.io/token/396ypp7wKqVry36RhHcC8dLAxTWTg9juatoRFwnyzzRq" target="_blank">Solscan</a>
+      <a href="https://x.com/Alibi_Protocol" target="_blank">Twitter/X</a>
+      <a href="https://discord.gg/d5cA9tTxU" target="_blank">Discord</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </div>
+    <p style="font-family:var(--mono);font-size:10px;color:var(--t4);margin-bottom:6px">CA: 396ypp7wKqVry36RhHcC8dLAxTWTg9juatoRFwnyzzRq</p>
+    <p style="font-family:var(--mono);font-size:10px;color:var(--t4)">© 2026 Alibi Protocol. All rights reserved. Built on Solana. · Stop the Lie. Save Your Life.</p>
+  </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  var mob = document.getElementById('mobMenu');
+  document.getElementById('menuBtn').onclick = function(){ mob.classList.add('on'); };
+  document.getElementById('mobClose').onclick = function(){ mob.classList.remove('on'); };
+  mob.querySelectorAll('a').forEach(function(a){ a.onclick = function(){ mob.classList.remove('on'); }; });
+
+  var obs = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('vis'); }); }, {threshold:.07,rootMargin:'0px 0px -30px 0px'});
+  document.querySelectorAll('.fu').forEach(function(el){ obs.observe(el); });
+
+  document.getElementById('wl-btn').onclick = function(){
+    var em = document.getElementById('wl-email');
+    var n = document.getElementById('wl-note');
+    var btn = document.getElementById('wl-btn');
+    if(!em || !em.value.includes('@')) return;
+    var email = em.value.trim();
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+    fetch('https://formspree.io/f/xkopjdeb', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email: email, source: 'waitlist-section' })
+    })
+    .then(function(res){ return res.json().then(function(data){ return {ok: res.ok, data: data}; }); })
+    .then(function(result){
+      if(result.ok){
+        n.textContent = "✓ You're on the list. First to know when wallet launch drops.";
+        n.className = 'wnote ok';
+        em.value = '';
+        btn.textContent = '✓ On The List';
+        showToast('WAITLIST_CONFIRMED');
+      } else {
+        n.textContent = 'Something went wrong. Try again.';
+        n.className = 'wnote';
+        btn.disabled = false;
+        btn.textContent = 'Claim My Spot →';
+      }
+    })
+    .catch(function(){
+      n.textContent = 'Network error. Check your connection.';
+      n.className = 'wnote';
+      btn.disabled = false;
+      btn.textContent = 'Claim My Spot →';
+    });
+  };
+
+  function showToast(msg){
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:32px;right:32px;background:rgba(0,255,135,.1);border:1px solid rgba(0,255,135,.4);color:var(--green);padding:18px 32px;border-radius:12px;font-family:var(--mono);font-size:12px;font-weight:800;backdrop-filter:blur(30px);z-index:10000;letter-spacing:2px;text-transform:uppercase;transform:translateY(80px);opacity:0;transition:all .5s cubic-bezier(.16,1,.3,1)';
+    t.textContent = '[ALIBI]: ' + msg;
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.transform='translateY(0)';t.style.opacity='1'; },10);
+    setTimeout(function(){ t.style.transform='translateY(80px)';t.style.opacity='0';setTimeout(function(){t.remove();},500); },4000);
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.from('.gs-reveal', {y:50,opacity:0,duration:1.6,ease:'power3.out',stagger:.18});
+
+  var canvas = document.querySelector('#webgl-container');
+  var scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x020204, 0.001);
+  var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  var renderer = new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+  var pCount = mob ? 600 : 1600;
+  var geo = new THREE.BufferGeometry();
+  var pos = new Float32Array(pCount*3);
+  for(var i=0;i<pCount*3;i++) pos[i]=(Math.random()-.5)*20;
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  var mat = new THREE.PointsMaterial({color:0x00E5FF,size:.03,transparent:true,opacity:.45,sizeAttenuation:true});
+  var particles = new THREE.Points(geo, mat);
+  scene.add(particles);
+
+  var lMat = new THREE.LineBasicMaterial({color:0x00E5FF,opacity:.025,transparent:true});
+  for(var j=0;j<(mob?30:80);j++){
+    var lg=new THREE.BufferGeometry();
+    lg.setFromPoints([new THREE.Vector3((Math.random()-.5)*18,(Math.random()-.5)*18,(Math.random()-.5)*18),new THREE.Vector3((Math.random()-.5)*18,(Math.random()-.5)*18,(Math.random()-.5)*18)]);
+    scene.add(new THREE.Line(lg,lMat));
+  }
+  camera.position.z=8;
+  var mx=0,my=0;
+  document.addEventListener('mousemove',function(e){mx=(e.clientX/window.innerWidth-.5)*.35;my=(e.clientY/window.innerHeight-.5)*.35;});
+  (function loop(){
+    requestAnimationFrame(loop);
+    if(document.hidden) return;
+    particles.rotation.y+=.001;
+    particles.rotation.x+=.0004;
+    camera.position.x+=(mx-camera.position.x)*.04;
+    camera.position.y+=(-my-camera.position.y)*.04;
+    renderer.render(scene,camera);
+  })();
+  window.addEventListener('resize',function(){
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+});
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"6a04b6308afd4a15ae8d5117409f1ae2","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+

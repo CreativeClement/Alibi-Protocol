@@ -1,0 +1,18 @@
+{
+  "name": "Alibi Protocol",
+  "symbol": "ALIBI",
+  "description": "Civil rights protection protocol on Solana. Utility token for drive-to-earn navigation, legal-shield recording, and post-encounter evidence packaging. Before, during, and after — the evidence weapon civilians are missing.",
+  "image": "https://raw.githubusercontent.com/Str8-Profits/Alibi-Protocol/main/assets/token/alibi-logo-512.png",
+  "external_url": "https://alibiprotocol.com",
+  "attributes": [],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://raw.githubusercontent.com/Str8-Profits/Alibi-Protocol/main/assets/token/alibi-logo-512.png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": []
+  }
+}

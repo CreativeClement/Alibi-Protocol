@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*; connect-src 'self' https://*; frame-src 'self';">
+    <title>ALIBI PROTOCOL | Protocol Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020204">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="canonical" href="https://alibiprotocol.com/pitchdeck">
+
+    <!-- Meta Tags for SEO -->
+    <meta name="title" content="ALIBI PROTOCOL | Protocol Overview">
+    <meta name="description" content="Blockchain-Anchored Civil Rights Protection. Pitch deck for the Alibi Protocol DePIN safety layer.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ALIBI PROTOCOL | Protocol Overview">
+    <meta property="og:description" content="Blockchain-Anchored Civil Rights Protection. Evidence preservation and real-time AI legal guidance.">
+    <meta property="og:url" content="https://alibiprotocol.com/pitchdeck">
+    <meta property="og:image" content="https://alibiprotocol.com/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="ALIBI PROTOCOL | Protocol Overview">
+    <meta property="twitter:description" content="Blockchain-Anchored Civil Rights Protection. Evidence preservation and real-time AI legal guidance.">
+    <meta property="twitter:image" content="https://alibiprotocol.com/og-image.png">
+
+    <style>
+        :root {
+            --bg: #020204;
+            --bg-light: #0A0A0A;
+            --surface: rgba(8, 8, 12, 0.7);
+            --border: rgba(0, 229, 255, 0.12);
+            --cyan: #00E5FF;
+            --cyan-glow: #00F0FF;
+            --green: #00FF88;
+            --amber: #FF9F0A;
+            --red: #FF3B30;
+            --text-pri: #ffffff;
+            --text-sec: #8B949E;
+            --glass-glow: rgba(0, 229, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--cyan);
+            outline-offset: 3px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* Performance: skip rendering of off-screen sections */
+        section {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 600px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-pri);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* SLIDE CONTAINER */
+        .pitchdeck-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 5%;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #0D1117 100%);
+            border-bottom: 1px solid var(--border);
+            opacity: 0;
+            animation: slideIn 0.8s ease-out forwards;
+            overflow: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* CLASSIFIED WATERMARK */
+        .classified-watermark {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: var(--amber);
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(255, 159, 10, 0.3);
+            z-index: 100;
+            pointer-events: none;
+            background: rgba(255, 159, 10, 0.05);
+            border: 1px solid rgba(255, 159, 10, 0.3);
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+
+        /* SLIDE COUNTER */
+        .slide-counter {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            z-index: 100;
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+        }
+
+        /* NAVIGATION DOTS */
+        .nav-dots {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 229, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(0, 229, 255, 0.1);
+        }
+
+        .dot.active {
+            border-color: var(--cyan);
+            background: var(--cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+            transform: scale(1.4);
+        }
+
+        /* BACK TO SITE BUTTON */
+        .back-to-site {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            background: rgba(0, 229, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            color: var(--cyan);
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 800;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+            z-index: 100;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .back-to-site:hover {
+            background: var(--cyan);
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
+            transform: scale(1.05);
+        }
+
+        /* SLIDE CONTENT */
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .slide-content.left-align {
+            text-align: left;
+        }
+
+        /* TYPOGRAPHY */
+        .title-mega {
+            font-size: 4.5rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg, var(--cyan-glow), var(--cyan), #00AA88);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(0, 229, 255, 0.2);
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 1.6rem;
+            color: var(--text-sec);
+            margin-bottom: 30px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--green);
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .label.amber {
+            color: var(--amber);
+            text-shadow: 0 0 15px rgba(255, 159, 10, 0.3);
+        }
+
+        .label.red {
+            color: var(--red);
+            text-shadow: 0 0 15px rgba(255, 59, 48, 0.3);
+        }
+
+        h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+            color: var(--text-pri);
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--text-sec);
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .stat-block {
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--cyan);
+            font-family: 'JetBrains Mono', monospace;
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-sec);
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* GRID LAYOUT FOR STATS */
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 40px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* GLASS CARD */
+        .glass-card {
+            background: rgba(8, 8, 12, 0.5);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            border-radius: 12px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(8, 8, 12, 0.8);
+            border-color: rgba(0, 229, 255, 0.4);
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        /* FLOW DIAGRAM */
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: rgba(0, 229, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            padding: 20px 30px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--cyan);
+            text-align: center;
+            min-width: 150px;
+            backdrop-filter: blur(20px);
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--cyan);
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        /* ROADMAP TIMELINE */
+        .roadmap-item {
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .roadmap-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            color: var(--cyan);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .roadmap-details {
+            color: var(--text-sec);
+            font-size: 1rem;
+            margin-left: 20px;
+        }
+
+        /* TOKENOMICS PIE */
+        .tokenomics-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 229, 255, 0.05);
+            border-left: 3px solid var(--cyan);
+            border-radius: 4px;
+        }
+
+        .tokenomics-percent {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            color: var(--cyan);
+            font-size: 1.2rem;
+            min-width: 60px;
+            margin-right: 20px;
+        }
+
+        .tokenomics-label {
+            flex: 1;
+            color: var(--text-sec);
+            font-size: 1rem;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .grid-2x2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .title-mega {
+                font-size: 3rem;
+            }
+
+            .subtitle {
+                font-size: 1.2rem;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+
+            .nav-dots {
+                right: 20px;
+            }
+
+            .classified-watermark {
+                right: 20px;
+                top: 20px;
+            }
+
+            .back-to-site {
+                left: 20px;
+                top: 20px;
+            }
+
+            .slide-counter {
+                left: 20px;
+                bottom: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 40px 5%;
+            }
+
+            .title-mega {
+                font-size: 2.2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+
+            p {
+                font-size: 0.95rem;
+            }
+
+            .nav-dots {
+                display: none;
+            }
+
+            .flow-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- BACK TO SITE LINK -->
+    <a href="index.html" class="back-to-site mono">← Back to Main Site</a>
+
+    <!-- CLASSIFIED WATERMARK -->
+    <div class="classified-watermark">CLASSIFIED</div>
+
+    <!-- SLIDE COUNTER -->
+    <div class="slide-counter mono"><span id="current-slide">01</span> / <span id="total-slides">11</span></div>
+
+    <!-- NAVIGATION DOTS -->
+    <div class="nav-dots" id="nav-dots"></div>
+
+    <!-- PITCHDECK CONTAINER -->
+    <div class="pitchdeck-container">
+
+        <!-- SLIDE 1: COVER -->
+        <section class="slide" data-slide="1">
+            <div class="slide-content">
+                <div class="label amber">CLASSIFIED: PROTOCOL OVERVIEW</div>
+                <h1 class="title-mega">ALIBI PROTOCOL</h1>
+                <p class="subtitle">Blockchain-Anchored Civil Rights Protection</p>
+                <div style="margin-top: 80px; display: flex; justify-content: center; gap: 60px; flex-wrap: wrap;">
+                    <div>
+                        <div class="label">Network</div>
+                        <p style="font-size: 1.4rem; color: var(--cyan); font-weight: 700;">SOLANA</p>
+                    </div>
+                    <div>
+                        <div class="label">Status</div>
+                        <p style="font-size: 1.4rem; color: var(--green); font-weight: 700;">ACTIVE</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: THE PROBLEM -->
+        <section class="slide" data-slide="2">
+            <div class="slide-content left-align">
+                <h2>The Problem</h2>
+                <div class="grid-2x2">
+                    <div class="stat-block">
+                        <div class="stat-number">20M+</div>
+                        <div class="stat-label">Traffic Stops Annually (USA)</div>
+                        <p style="font-size: 0.85rem; margin-top: 10px; color: var(--text-sec);">Stanford Open Policing Project</p>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Civilian-Controlled Evidence Standards</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">⚠</div>
+                        <div class="stat-label">Dash Cam Footage Controlled by Accused Department</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">⚠</div>
+                        <div class="stat-label">Body Cameras Can Be "Accidentally" Disabled</div>
+                    </div>
+                </div>
+                <div style="margin-top: 40px; padding: 30px; background: rgba(255, 59, 48, 0.08); border: 1px solid rgba(255, 59, 48, 0.3); border-radius: 8px;">
+                    <p style="font-size: 1.2rem; color: var(--red); font-weight: 700;">Current Solution: <span style="color: var(--text-sec);">None. No app combines recording + legal AI + blockchain evidence.</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: THE SOLUTION -->
+        <section class="slide" data-slide="3">
+            <div class="slide-content left-align">
+                <h2>The Solution</h2>
+                <div style="margin-top: 40px; max-width: 1000px;">
+                    <p style="font-size: 1.3rem; font-weight: 700; color: var(--cyan); margin-bottom: 30px;">ALIBI PROTOCOL: Record → Protect → Prove</p>
+
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px;">
+                            <span style="color: var(--cyan); font-size: 1.4rem; font-weight: 900;">①</span>
+                            <div style="text-align: left;">
+                                <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem;">Real-Time AI Legal Guidance</p>
+                                <p style="font-size: 0.95rem;">Claude-powered, jurisdiction-aware legal advice during traffic encounters</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px;">
+                            <span style="color: var(--cyan); font-size: 1.4rem; font-weight: 900;">②</span>
+                            <div style="text-align: left;">
+                                <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem;">Tamper-Proof Evidence Anchoring</p>
+                                <p style="font-size: 0.95rem;">SHA-256 hash anchored to Solana blockchain via memo TX — immutable proof-of-existence</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px;">
+                            <span style="color: var(--cyan); font-size: 1.4rem; font-weight: 900;">③</span>
+                            <div style="text-align: left;">
+                                <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem;">Civilian-Controlled Evidence Vault</p>
+                                <p style="font-size: 0.95rem;">Encrypted local storage with on-chain proof. Evidence belongs to the driver, not the state.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px;">
+                            <span style="color: var(--cyan); font-size: 1.4rem; font-weight: 900;">④</span>
+                            <div style="text-align: left;">
+                                <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem;">Emergency Stealth Mode</p>
+                                <p style="font-size: 0.95rem;">One-tap activation for immediate, tamper-proof recording with real-time legal guidance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 4: HOW IT WORKS -->
+        <section class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2>How It Works</h2>
+                <div style="margin-top: 60px; max-width: 1100px; text-align: left;">
+                    <div style="margin-bottom: 40px;">
+                        <div class="flow-row">
+                            <div class="flow-step">Driver Activates App</div>
+                            <div class="flow-arrow">→</div>
+                            <div class="flow-step">Emergency Recording</div>
+                        </div>
+                        <div class="flow-row">
+                            <div class="flow-step">AI Legal Guidance</div>
+                            <div class="flow-arrow">→</div>
+                            <div class="flow-step">GPS Jurisdiction Check</div>
+                        </div>
+                        <div class="flow-row">
+                            <div class="flow-step">SHA-256 Hash</div>
+                            <div class="flow-arrow">→</div>
+                            <div class="flow-step">Solana Memo TX</div>
+                        </div>
+                        <div class="flow-row">
+                            <div class="flow-step">Evidence Vault</div>
+                            <div class="flow-arrow">→</div>
+                            <div class="flow-step">Encrypted Local Storage</div>
+                        </div>
+                        <div class="flow-row">
+                            <div class="flow-step">On-Chain Proof</div>
+                            <div class="flow-arrow">→</div>
+                            <div class="flow-step">Solscan Verification</div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 8px; padding: 30px; margin-top: 40px;">
+                        <p style="font-size: 0.95rem; color: var(--text-sec); line-height: 2;">
+                            <span style="color: var(--cyan); font-weight: 700;">RESULT:</span> Immutable, public-verifiable, civilian-controlled evidence.
+                            Every interaction is timestamped on-chain.
+                            Drivers generate a Solscan link that proves their recording existed before any alleged incident.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 5: MARKET SIZE -->
+        <section class="slide" data-slide="5">
+            <div class="slide-content left-align">
+                <h2>Market Size</h2>
+                <div class="grid-2x2">
+                    <div class="glass-card">
+                        <div class="stat-number">230M</div>
+                        <div class="stat-label">TAM: Licensed Drivers (USA)</div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="stat-number">85M</div>
+                        <div class="stat-label">SAM: Dashcam/Safety App Users</div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="stat-number">5M</div>
+                        <div class="stat-label">SOM: Early Adopters (Civil Rights + Crypto)</div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="stat-number">$4.2B</div>
+                        <div class="stat-label">Dashcam Market (Growing 12% YoY)</div>
+                    </div>
+                </div>
+                <div style="margin-top: 40px; padding: 25px; background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px;">
+                    <p style="color: var(--green); font-weight: 700;">ADJACENT MARKETS:</p>
+                    <p style="color: var(--text-sec); font-size: 0.95rem; margin-top: 10px;">Fleet Management • Rideshare Drivers • Journalism & Activism • Human Rights NGOs</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 6: TOKENOMICS -->
+        <section class="slide" data-slide="6">
+            <div class="slide-content left-align">
+                <h2>Tokenomics</h2>
+                <div style="max-width: 900px;">
+                    <div style="background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 8px; padding: 20px; margin-bottom: 30px; text-align: center;">
+                        <p style="color: var(--text-sec); font-size: 0.9rem; margin-bottom: 10px;">TOKEN</p>
+                        <p style="font-size: 1.6rem; font-weight: 900; color: var(--cyan); font-family: 'JetBrains Mono', monospace;">$ALIBI</p>
+                        <p style="color: var(--text-sec); font-size: 0.9rem; margin-top: 10px;">Solana Network | 1B Total Supply</p>
+                    </div>
+
+                    <div class="tokenomics-item">
+                        <div class="tokenomics-percent">40%</div>
+                        <div class="tokenomics-label">Community DePIN Rewards</div>
+                    </div>
+                    <div class="tokenomics-item">
+                        <div class="tokenomics-percent">10%</div>
+                        <div class="tokenomics-label">Community Launch</div>
+                    </div>
+                    <div class="tokenomics-item">
+                        <div class="tokenomics-percent">15%</div>
+                        <div class="tokenomics-label">Treasury</div>
+                    </div>
+                    <div class="tokenomics-item">
+                        <div class="tokenomics-percent">10%</div>
+                        <div class="tokenomics-label">Team (Vested)</div>
+                    </div>
+                    <div class="tokenomics-item">
+                        <div class="tokenomics-percent">10%</div>
+                        <div class="tokenomics-label">Liquidity</div>
+                    </div>
+                    <div class="tokenomics-item">
+                        <div class="tokenomics-percent">10%</div>
+                        <div class="tokenomics-label">Ecosystem</div>
+                    </div>
+                    <div class="tokenomics-item">
+                        <div class="tokenomics-percent">5%</div>
+                        <div class="tokenomics-label">Strategic Reserve</div>
+                    </div>
+
+                    <div style="margin-top: 40px; padding: 20px; background: rgba(255, 159, 10, 0.08); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: 8px;">
+                        <p style="color: var(--amber); font-weight: 700; font-size: 0.95rem;">REVENUE-BACKED SCARCITY</p>
+                        <p style="color: var(--text-sec); font-size: 0.9rem; margin-top: 10px;">15% of all Data Marketplace revenue is used to buy $ALIBI from the open market and permanently burn it. Revenue-proportional scarcity — no arbitrary targets.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 7: DePIN EARN MODEL -->
+        <section class="slide" data-slide="7">
+            <div class="slide-content left-align">
+                <h2>DePIN Earn Model</h2>
+                <p style="font-size: 1.3rem; color: var(--cyan); font-weight: 700; margin-bottom: 40px;">Proof-of-Coverage-Navigation (PoCN)</p>
+
+                <div class="grid-2x2">
+                    <div class="glass-card">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 15px;">Earn $ALIBI</p>
+                        <p style="font-size: 0.9rem;">Drivers earn tokens passively by running the app during daily commutes.</p>
+                    </div>
+                    <div class="glass-card">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 15px;">GPS Verified</p>
+                        <p style="font-size: 0.9rem;">Real movement verification. Speed-gated to prevent spoofing.</p>
+                    </div>
+                    <div class="glass-card">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 15px;">Anti-Farm Protection</p>
+                        <p style="font-size: 0.9rem;">Progressive difficulty scaling. Device attestation required.</p>
+                    </div>
+                    <div class="glass-card">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 15px;">Network Effects</p>
+                        <p style="font-size: 0.9rem;">More drivers = more data = better AI = more drivers.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; padding: 30px; background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px;">
+                    <p style="color: var(--green); font-weight: 700; font-size: 1.1rem;">THE LARGEST DECENTRALIZED TRAFFIC SAFETY NETWORK</p>
+                    <p style="color: var(--text-sec); font-size: 0.95rem; margin-top: 15px;">Users drive the network growth. Every mile logged = community-owned data pool. Every legal guidance interaction = training data for better AI. Every verified incident = network security.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 8: ROADMAP -->
+        <section class="slide" data-slide="8">
+            <div class="slide-content left-align">
+                <h2>Roadmap</h2>
+                <div style="max-width: 1000px; margin-top: 40px;">
+                    <div class="roadmap-item">
+                        <div class="roadmap-header">Q1 2026</div>
+                        <div class="roadmap-details">Landing page live • Token deployed on Solana • Community launch opens</div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-header">Q2 2026</div>
+                        <div class="roadmap-details">Mobile app beta (iOS + Android) • Claude AI integration live • Evidence vaulting beta</div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-header">Q3 2026</div>
+                        <div class="roadmap-details">DePIN earn loop active • Evidence vaulting on mainnet • 1K active navigators</div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-header">Q4 2026</div>
+                        <div class="roadmap-details">DAO governance launch • DEX listing • 10K active navigators • Community voting live</div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-header">2027+</div>
+                        <div class="roadmap-details">Fleet partnerships • API licensing • International expansion • Law enforcement integrations (opt-in)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 9: COMPETITIVE ADVANTAGE -->
+        <section class="slide" data-slide="9">
+            <div class="slide-content left-align">
+                <h2>Competitive Advantage</h2>
+                <div style="max-width: 1000px;">
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 10px;">① First-Mover Advantage</p>
+                        <p style="font-size: 0.95rem;">No existing product combines AI legal guidance + blockchain evidence + DePIN incentives.</p>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 10px;">② Solana Speed</p>
+                        <p style="font-size: 0.95rem;">Sub-second finality for evidence anchoring. Cheaper than Ethereum. Enterprise-grade throughput.</p>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 10px;">③ Claude AI Advantage</p>
+                        <p style="font-size: 0.95rem;">Most capable LLM for nuanced legal reasoning. Handles jurisdiction-specific statutes in real-time.</p>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 10px;">④ Token Alignment</p>
+                        <p style="font-size: 0.95rem;">Users earn by contributing to network. Every mile = stake in protocol's success. Self-sustaining flywheel.</p>
+                    </div>
+
+                    <div class="glass-card">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 10px;">⑤ Network Effects</p>
+                        <p style="font-size: 0.95rem;">More drivers → more routes logged → better AI predictions → more value → more drivers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 10: TEAM -->
+        <section class="slide" data-slide="10">
+            <div class="slide-content">
+                <h2>Team</h2>
+                <div style="margin-top: 60px; max-width: 900px;">
+                    <div style="padding: 40px; background: rgba(0, 229, 255, 0.08); border: 2px solid rgba(0, 229, 255, 0.2); border-radius: 12px; margin-bottom: 40px;">
+                        <p class="label" style="margin: 0 0 20px 0;">Anonymous Core Team — Pseudonymous by Design</p>
+                        <p style="font-size: 1.1rem; color: var(--text-pri); margin-bottom: 20px;">We believe the protocol should speak louder than personalities. Our strength lies in our code, not our credentials.</p>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.2rem; margin-bottom: 10px;">Timothy Clement</p>
+                        <p style="color: var(--text-sec); font-size: 0.95rem;">Founder — Serial builder, NH-based. 10+ years shipping products in privacy + security.</p>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.2rem; margin-bottom: 10px;">Core Contributors</p>
+                        <p style="color: var(--text-sec); font-size: 0.95rem;">Operate under operational codenames. Deep expertise in Solana development, cryptography, and constitutional law.</p>
+                    </div>
+
+                    <div class="glass-card">
+                        <p style="color: var(--cyan); font-weight: 700; font-size: 1.2rem; margin-bottom: 10px;">Advisors</p>
+                        <p style="color: var(--text-sec); font-size: 0.95rem;">To be announced. Leading voices in decentralized governance, civil rights, and blockchain policy.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 11: THE ASK -->
+        <section class="slide" data-slide="11">
+            <div class="slide-content left-align">
+                <h2>The Ask</h2>
+                <div class="grid-2x2" style="margin-top: 40px;">
+                    <div class="stat-block">
+                        <div class="stat-number">$150K</div>
+                        <div class="stat-label">Community Launch</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">Fair Launch</div>
+                        <div class="stat-label">No Discount</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">40%</div>
+                        <div class="stat-label">Engineering</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">25%</div>
+                        <div class="stat-label">Legal & Compliance</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px;">
+                    <div class="glass-card">
+                        <p style="color: var(--amber); font-weight: 700; font-size: 1rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">20% Marketing</p>
+                        <p style="font-size: 0.9rem;">Community building, PR, social amplification, partnership development.</p>
+                    </div>
+                    <div class="glass-card">
+                        <p style="color: var(--amber); font-weight: 700; font-size: 1rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">15% Infrastructure</p>
+                        <p style="font-size: 0.9rem;">Solana validator integration, RPC redundancy, evidence vault hosting.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; padding: 30px; background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 8px;">
+                    <p style="color: var(--cyan); font-weight: 700; font-size: 1.1rem; margin-bottom: 15px;">COMMUNITY LAUNCH TERMS</p>
+                    <ul style="color: var(--text-sec); font-size: 0.95rem; line-height: 2; list-style-position: inside;">
+                        <li>Same listing price for everyone. 3-month cliff, 12-month vest.</li>
+                        <li>Priority allocation in DePIN airdrop</li>
+                        <li>Leadership Council governance seat</li>
+                        <li>Custom reporting dashboard</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 40px; padding: 20px; background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; font-family: 'JetBrains Mono', monospace; text-align: center;">
+                    <p style="font-size: 0.85rem; color: var(--text-sec); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Seed Smart Contract</p>
+                    <p style="font-size: 0.9rem; color: var(--green); font-weight: 700; word-break: break-all;">396ypp7wKqVry36RhHcC8dLAxTWTg9juatoRFwnyzzRq</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // SLIDE NAVIGATION
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let currentSlide = 0;
+
+        // Create navigation dots
+        const dotsContainer = document.getElementById('nav-dots');
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (index === 0 ? ' active' : '');
+            dot.addEventListener('click', () => goToSlide(index));
+            dotsContainer.appendChild(dot);
+        });
+
+        function updateSlideCounter() {
+            document.getElementById('current-slide').textContent = String(currentSlide + 1).padStart(2, '0');
+            document.getElementById('total-slides').textContent = String(totalSlides).padStart(2, '0');
+        }
+
+        function updateDots() {
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function goToSlide(n) {
+            currentSlide = (n + totalSlides) % totalSlides;
+            updateSlideCounter();
+            updateDots();
+            const slideOffset = currentSlide * 100;
+            const container = document.querySelector('.pitchdeck-container');
+            container.style.transform = `translateY(-${slideOffset}vh)`;
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === ' ') {
+                goToSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowUp') {
+                goToSlide(currentSlide - 1);
+            }
+        });
+
+        // Mouse wheel navigation
+        let wheelTimeout;
+        document.addEventListener('wheel', (e) => {
+            if (wheelTimeout) return;
+            wheelTimeout = true;
+            if (e.deltaY > 0) {
+                goToSlide(currentSlide + 1);
+            } else {
+                goToSlide(currentSlide - 1);
+            }
+            setTimeout(() => wheelTimeout = false, 800);
+        });
+
+        // Initialize
+        updateSlideCounter();
+        updateDots();
+
+        // Smooth container transitions
+        const container = document.querySelector('.pitchdeck-container');
+        container.style.transition = 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+        container.style.transform = 'translateY(0)';
+    </script>
+    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}</script>
+
+    <!-- Footer -->
+    <footer style="padding: 40px 20px; background: #000; border-top: 1px solid #111; text-align: center; position: fixed; bottom: 0; width: 100%; font-size: 11px; color: #8B949E;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <a href="terms.html" style="color: #8B949E; text-decoration: none; margin: 0 10px;">Terms</a> |
+            <a href="whitepaper.html" style="color: #8B949E; text-decoration: none; margin: 0 10px;">Whitepaper</a><br>
+            © 2026 Alibi Protocol. All rights reserved. | Stop the Lie. Save Your Life.
+        </div>
+    </footer>
+
+</body>
+
+</html>

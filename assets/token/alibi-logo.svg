@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Alibi Protocol">
+  <!-- Black coin background -->
+  <circle cx="256" cy="256" r="256" fill="#000000"/>
+
+  <!-- Shield outline -->
+  <path d="M 140 120 Q 140 108 152 108 L 360 108 Q 372 108 372 120 L 372 270 Q 372 400 256 412 Q 140 400 140 270 Z"
+        fill="none" stroke="#00E5FF" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Police lights -->
+  <circle cx="212" cy="188" r="23" fill="#2B5CE5"/>
+  <circle cx="300" cy="188" r="23" fill="#E63946"/>
+
+  <!-- ALIBI wordmark -->
+  <text x="256" y="298"
+        font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="900"
+        font-size="64"
+        fill="#FFFFFF"
+        text-anchor="middle"
+        letter-spacing="1.5">ALIBI</text>
+
+  <!-- Steering wheel -->
+  <g transform="translate(256, 358)" fill="none" stroke="#00E5FF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="0" r="32"/>
+    <circle cx="0" cy="0" r="5" fill="#00E5FF"/>
+    <line x1="-27" y1="0" x2="-8" y2="0"/>
+    <line x1="27" y1="0" x2="8" y2="0"/>
+    <line x1="0" y1="8" x2="0" y2="27"/>
+  </g>
+</svg>

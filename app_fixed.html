@@ -1624,6 +1624,16 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
 </head>
 <body>
 
+<!-- HACKATHON DEMO BANNER -->
+<div id="hackathon-banner" style="position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(90deg,rgba(0,229,255,.12),rgba(0,255,136,.08),rgba(0,229,255,.12));border-bottom:1px solid rgba(0,229,255,.25);padding:7px 16px;display:flex;align-items:center;justify-content:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(0,229,255,.9);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)">
+  <span style="color:#00FF88">&#9889;</span>
+  <span>COLOSSEUM FRONTIER HACKATHON 2026 &mdash; LIVE DEMO</span>
+  <span style="color:rgba(255,255,255,.2)">|</span>
+  <a href="https://alibiprotocol.com" target="_blank" rel="noopener noreferrer" style="color:rgba(0,229,255,.7);text-decoration:none;border-bottom:1px solid rgba(0,229,255,.3)">alibiprotocol.com &#8599;</a>
+  <button onclick="document.getElementById('hackathon-banner').style.display='none'" style="position:absolute;right:12px;background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:14px;padding:0;line-height:1" aria-label="Dismiss banner">&#10005;</button>
+</div>
+<style>body { padding-top: 36px; } .legal-gate, .consent-overlay { top: 36px; }</style>
+
 <!-- LEGAL GATE — First Launch -->
 <div class="legal-gate" id="legal-gate">
   <div class="legal-gate-card">
@@ -4065,7 +4075,13 @@ function renderVault(){
           <div class="incident-date">${dateStr}</div>
           <span class="incident-state-badge">${e.state}</span>
         </div>
-        <div class="incident-hash">SHA-256: ${shortHash}</div>
+        <div class="incident-hash" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span>SHA-256: ${shortHash}</span>
+          ${e.solanaTx
+            ? '<a href="https://solscan.io/tx/'+e.solanaTx+'" target="_blank" rel="noopener noreferrer" style="color:var(--cyan);font-size:9px;font-family:\'JetBrains Mono\',monospace;font-weight:700;text-decoration:none;border:1px solid rgba(0,229,255,.3);border-radius:6px;padding:2px 7px;white-space:nowrap">VIEW ON SOLSCAN &#8599;</a>'
+            : '<span style="color:rgba(255,255,255,.2);font-size:9px;font-family:\'JetBrains Mono\',monospace;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:2px 7px">HASH SEALED &middot; LOCAL</span>'
+          }
+        </div>
         <div style="color:rgba(255,255,255,.6);font-size:13px;line-height:1.5">
           ${e.gps ? '📍 '+e.gps.lat.toFixed(4)+'°, '+e.gps.lng.toFixed(4)+'°' : '📍 GPS not available'}
         </div>
@@ -4488,11 +4504,19 @@ function shareFoundingShield(){
 // GUARDIAN NODE SYSTEM
 // ════════════════════════════════════════════════════════
 const GUARDIAN_TIERS = [
-  { name:'RECRUIT',   min:0,   max:24,  mult:1.0, color:'#8B949E', icon:'🔰' },
-  { name:'SCOUT',     min:25,  max:99,  mult:1.5, color:'#00FF88', icon:'🛡️' },
-  { name:'GUARDIAN',  min:100, max:499, mult:2.0, color:'#00E5FF', icon:'⚡' },
-
+  { name:'RECRUIT',   min:0,    max:24,       mult:1.0, color:'#8B949E', icon:'🔰' },
+  { name:'SCOUT',     min:25,   max:99,       mult:1.5, color:'#00FF88', icon:'🛡️' },
+  { name:'GUARDIAN',  min:100,  max:499,      mult:2.0, color:'#00E5FF', icon:'⚡' },
+  { name:'SENTINEL',  min:500,  max:Infinity, mult:3.0, color:'#FFD700', icon:'🔱' },
 ];
+
+function getGuardianTier(reports){
+  const count = Number(reports) || 0;
+  for(let i = GUARDIAN_TIERS.length - 1; i >= 0; i--){
+    if(count >= GUARDIAN_TIERS[i].min) return GUARDIAN_TIERS[i];
+  }
+  return GUARDIAN_TIERS[0];
+}
 
 </script>
 </body>
