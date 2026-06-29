@@ -9,8 +9,9 @@ import {
   Alert,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
-import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
+import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOW } from '../constants/theme';
 import { NAVIGATION_CONFIG } from '../constants/api';
 import { LocationCoords } from '../types';
 import { speedMsToMph, getStateFromCoordinates } from '../services/location';
@@ -186,9 +187,12 @@ export function NavigationScreen({
       <ScrollView style={styles.overlay} scrollEnabled={true}>
         {/* Status Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>ALIBI NAVIGATION ACTIVE</Text>
+          <View style={styles.headerRow}>
+            <View style={[styles.statusDot, { backgroundColor: isNavigating ? COLORS.success : COLORS.textMuted }]} />
+            <Text style={styles.headerTitle}>ALIBI NAVIGATION</Text>
+          </View>
           <Text style={styles.headerSubtitle}>
-            {isNavigating ? 'Earning Mode' : 'Passive Mode'}
+            {isNavigating ? 'Earning mode active' : 'Passive mode'}
           </Text>
         </View>
 
@@ -218,8 +222,14 @@ export function NavigationScreen({
           accessibilityLabel={isNavigating ? 'Stop navigation' : 'Start navigation'}
           accessibilityState={{ selected: isNavigating }}
         >
-          <Text style={styles.buttonText}>
-            {isNavigating ? '✓ NAVIGATING' : 'START NAVIGATION'}
+          <Ionicons
+            name={isNavigating ? 'checkmark-circle' : 'navigate'}
+            size={18}
+            color={isNavigating ? COLORS.background : COLORS.primary}
+            style={{ marginRight: SPACING.sm }}
+          />
+          <Text style={[styles.buttonText, isNavigating && styles.buttonTextActive]}>
+            {isNavigating ? 'NAVIGATING' : 'START NAVIGATION'}
           </Text>
         </TouchableOpacity>
 
@@ -237,8 +247,11 @@ export function NavigationScreen({
             accessibilityLabel="Report police encounter"
             accessibilityHint="Submit a police encounter report with your current location"
           >
-            <Text style={styles.reportIcon}>👮</Text>
+            <View style={[styles.reportIconWrap, { backgroundColor: COLORS.errorMuted }]}>
+              <MaterialCommunityIcons name="police-badge" size={18} color={COLORS.error} />
+            </View>
             <Text style={styles.reportLabel}>Police Encounter</Text>
+            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -249,8 +262,11 @@ export function NavigationScreen({
             accessibilityRole="button"
             accessibilityLabel="Report traffic crash"
           >
-            <Text style={styles.reportIcon}>🚗</Text>
+            <View style={[styles.reportIconWrap, { backgroundColor: COLORS.warningMuted }]}>
+              <MaterialCommunityIcons name="car-emergency" size={18} color={COLORS.warning} />
+            </View>
             <Text style={styles.reportLabel}>Traffic Crash</Text>
+            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -261,8 +277,11 @@ export function NavigationScreen({
             accessibilityRole="button"
             accessibilityLabel="Report road hazard"
           >
-            <Text style={styles.reportIcon}>⚠️</Text>
+            <View style={[styles.reportIconWrap, { backgroundColor: COLORS.warningMuted }]}>
+              <Ionicons name="warning" size={18} color={COLORS.warning} />
+            </View>
             <Text style={styles.reportLabel}>Road Hazard</Text>
+            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -276,7 +295,7 @@ export function NavigationScreen({
           accessibilityLabel="Initiate legal shield"
           accessibilityHint="Activate emergency recording mode with camera and legal guidance"
         >
-          <Text style={styles.emergencyIcon}>🛡️</Text>
+          <MaterialCommunityIcons name="shield-alert" size={22} color={COLORS.background} style={{ marginRight: SPACING.sm }} />
           <Text style={styles.emergencyText}>INITIATE LEGAL SHIELD</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -325,12 +344,13 @@ const styles = StyleSheet.create({
     bottom: 80,
     left: SPACING.md,
     right: SPACING.md,
-    maxHeight: 400,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    maxHeight: 420,
+    backgroundColor: COLORS.overlay,
+    borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderStrong,
+    ...SHADOW.lg,
   },
   header: {
     marginBottom: SPACING.lg,
@@ -338,12 +358,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: SPACING.sm,
+  },
   headerTitle: {
     fontSize: FONTS.size.lg,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.primary,
-    letterSpacing: 1,
-    marginBottom: SPACING.xs,
+    fontWeight: FONTS.weight.heavy,
+    color: COLORS.text,
+    letterSpacing: FONTS.tracking.wider,
   },
   headerSubtitle: {
     fontSize: FONTS.size.sm,
@@ -385,13 +415,15 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   button: {
-    backgroundColor: COLORS.surfaceAlt,
+    flexDirection: 'row',
+    backgroundColor: COLORS.primaryMuted,
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(0,229,255,0.35)',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonActive: {
     backgroundColor: COLORS.success,
@@ -400,8 +432,11 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: FONTS.size.base,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.text,
-    letterSpacing: 0.5,
+    color: COLORS.primary,
+    letterSpacing: FONTS.tracking.wide,
+  },
+  buttonTextActive: {
+    color: COLORS.background,
   },
   reportSection: {
     marginBottom: SPACING.lg,
@@ -410,31 +445,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
+    padding: SPACING.sm + 2,
     marginBottom: SPACING.sm,
     borderWidth: 1,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
   },
-  reportIcon: {
-    fontSize: FONTS.size.lg,
+  reportIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: BORDER_RADIUS.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: SPACING.md,
   },
   reportLabel: {
     flex: 1,
     fontSize: FONTS.size.sm,
-    fontWeight: FONTS.weight.medium,
+    fontWeight: FONTS.weight.semibold,
     color: COLORS.text,
   },
   reportPolice: {
-    backgroundColor: 'rgba(255, 51, 51, 0.1)',
-    borderColor: COLORS.error,
+    borderColor: 'rgba(255,59,71,0.4)',
   },
   reportCrash: {
-    backgroundColor: 'rgba(255, 149, 0, 0.1)',
-    borderColor: COLORS.warning,
+    borderColor: 'rgba(255,176,32,0.4)',
   },
   reportHazard: {
-    backgroundColor: 'rgba(255, 149, 0, 0.1)',
-    borderColor: COLORS.warning,
+    borderColor: 'rgba(255,176,32,0.4)',
   },
   reportButtonDisabled: {
     opacity: 0.5,
@@ -442,16 +480,11 @@ const styles = StyleSheet.create({
   emergencyButton: {
     backgroundColor: COLORS.error,
     borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.lg,
+    padding: SPACING.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.error,
-  },
-  emergencyIcon: {
-    fontSize: FONTS.size.xl,
-    marginRight: SPACING.md,
+    ...SHADOW.md,
   },
   emergencyText: {
     fontSize: FONTS.size.base,

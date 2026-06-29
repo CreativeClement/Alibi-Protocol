@@ -11,6 +11,7 @@ import {
   Platform,
   Share,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
 import { LocationCoords } from '../types';
 import { getStateFromCoordinates } from '../services/location';
@@ -88,7 +89,7 @@ const RECORDING_LAWS: Record<string, StateLaw> = {
 // ─────────────────────────────────────────────
 interface RightsScript {
   id: string;
-  emoji: string;
+  icon: keyof typeof Ionicons.glyphMap;
   label: string;
   prompt: string;
   script: string;
@@ -99,7 +100,7 @@ interface RightsScript {
 const RIGHTS_SCRIPTS: RightsScript[] = [
   {
     id: 'detained',
-    emoji: '🚔',
+    icon: 'help-circle-outline',
     label: 'Am I Being Detained?',
     prompt: 'SAY CALMLY AND CLEARLY:',
     script: '"Officer, am I being detained, or am I free to go?"',
@@ -108,7 +109,7 @@ const RIGHTS_SCRIPTS: RightsScript[] = [
   },
   {
     id: 'search',
-    emoji: '🔍',
+    icon: 'search-outline',
     label: 'Search Refusal',
     prompt: 'IF ASKED TO SEARCH:',
     script: '"I do not consent to any searches of my person, vehicle, or belongings."',
@@ -117,7 +118,7 @@ const RIGHTS_SCRIPTS: RightsScript[] = [
   },
   {
     id: 'stop',
-    emoji: '🛑',
+    icon: 'hand-left-outline',
     label: 'Traffic Stop',
     prompt: 'WHEN PULLED OVER:',
     script: '"Here is my license and registration. I am exercising my right to remain silent beyond identification. I do not consent to any searches."',
@@ -126,7 +127,7 @@ const RIGHTS_SCRIPTS: RightsScript[] = [
   },
   {
     id: 'recording',
-    emoji: '📱',
+    icon: 'videocam-outline',
     label: 'Recording Rights',
     prompt: 'IF OFFICER OBJECTS:',
     script: '"I have the constitutional right to record police officers performing their duties in a public space. I am not interfering."',

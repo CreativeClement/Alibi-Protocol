@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { PublicKey } from '@solana/web3.js';
-import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOW } from '../constants/theme';
 import { WalletState } from '../types';
 import { getDePINEarnings } from '../services/storage';
 
@@ -66,7 +67,10 @@ export function WalletScreen({ wallet, onConnect, onDisconnect }: WalletScreenPr
 
             {wallet.connected ? (
               <View style={styles.connectedBox}>
-                <Text style={styles.connectedLabel}>CONNECTED</Text>
+                <View style={styles.statusLabelRow}>
+                  <View style={[styles.statusDot, { backgroundColor: COLORS.success }]} />
+                  <Text style={styles.connectedLabel}>CONNECTED</Text>
+                </View>
                 <Text style={styles.publicKey}>{truncatePublicKey(wallet.publicKey)}</Text>
                 <TouchableOpacity
                   style={styles.disconnectButton}
@@ -91,6 +95,7 @@ export function WalletScreen({ wallet, onConnect, onDisconnect }: WalletScreenPr
                   accessibilityLabel="Connect Phantom wallet"
                   accessibilityHint="Opens Phantom app to connect your Solana wallet"
                 >
+                  <Ionicons name="wallet" size={18} color={COLORS.background} style={{ marginRight: SPACING.sm }} />
                   <Text style={styles.connectButtonText}>CONNECT PHANTOM WALLET</Text>
                 </TouchableOpacity>
               </View>
@@ -143,7 +148,10 @@ export function WalletScreen({ wallet, onConnect, onDisconnect }: WalletScreenPr
 
           {/* Security Info */}
           <View style={styles.securityBox}>
-            <Text style={styles.securityTitle}>🔐 SECURITY</Text>
+            <View style={styles.securityTitleRow}>
+              <Ionicons name="shield-checkmark" size={16} color={COLORS.primary} style={{ marginRight: SPACING.sm }} />
+              <Text style={styles.securityTitle}>SECURITY</Text>
+            </View>
             <Text style={styles.securityText}>
               • Private keys stored in Hardware Enclave (Apple Secure Enclave / Android Keystore)
             </Text>
@@ -173,14 +181,30 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: FONTS.size.xl,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.primary,
-    letterSpacing: 1,
+    fontWeight: FONTS.weight.heavy,
+    color: COLORS.text,
+    letterSpacing: FONTS.tracking.wider,
     marginBottom: SPACING.xs,
   },
   headerSubtitle: {
     fontSize: FONTS.size.sm,
     color: COLORS.textSecondary,
+  },
+  statusLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: SPACING.sm,
+  },
+  securityTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
   },
   loadingContainer: {
     flex: 1,
@@ -215,8 +239,7 @@ const styles = StyleSheet.create({
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
     color: COLORS.success,
-    letterSpacing: 1,
-    marginBottom: SPACING.md,
+    letterSpacing: FONTS.tracking.wider,
   },
   publicKey: {
     fontFamily: FONTS.family.mono,
@@ -253,10 +276,13 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   connectButton: {
+    flexDirection: 'row',
     backgroundColor: COLORS.primary,
     borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.lg,
+    padding: SPACING.md,
     alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOW.glow,
   },
   connectButtonText: {
     fontSize: FONTS.size.base,
@@ -371,8 +397,7 @@ const styles = StyleSheet.create({
     fontSize: FONTS.size.sm,
     fontWeight: FONTS.weight.bold,
     color: COLORS.primary,
-    letterSpacing: 1,
-    marginBottom: SPACING.md,
+    letterSpacing: FONTS.tracking.wider,
   },
   securityText: {
     fontSize: FONTS.size.xs,

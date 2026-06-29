@@ -11,7 +11,8 @@ import {
   Linking,
   RefreshControl,
 } from 'react-native';
-import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOW } from '../constants/theme';
 import { VaultIncident } from '../types';
 import { getIncidents, deleteIncident, updateIncidentTxSignature } from '../services/storage';
 import { getSolscanUrl, checkTransactionStatus } from '../services/solana';
@@ -125,9 +126,23 @@ export function VaultScreen() {
               item.onChainStatus === 'failed' && styles.statusFailed,
             ]}
           >
-            <Text style={styles.statusText}>
-              {item.onChainStatus === 'confirmed' ? '✓' : item.onChainStatus === 'pending' ? '⏳' : '✗'}
-            </Text>
+            <Ionicons
+              name={
+                item.onChainStatus === 'confirmed'
+                  ? 'checkmark-sharp'
+                  : item.onChainStatus === 'pending'
+                  ? 'time-outline'
+                  : 'close-sharp'
+              }
+              size={16}
+              color={
+                item.onChainStatus === 'confirmed'
+                  ? COLORS.success
+                  : item.onChainStatus === 'pending'
+                  ? COLORS.warning
+                  : COLORS.error
+              }
+            />
           </View>
         </View>
 
@@ -176,7 +191,8 @@ export function VaultScreen() {
             accessibilityRole="button"
             accessibilityLabel="Share incident report"
           >
-            <Text style={styles.actionButtonText}>📤 SHARE</Text>
+            <Ionicons name="share-outline" size={15} color={COLORS.text} style={styles.actionIcon} />
+            <Text style={styles.actionButtonText}>SHARE</Text>
           </TouchableOpacity>
 
           {item.txSignature && (
@@ -199,7 +215,8 @@ export function VaultScreen() {
               accessibilityRole="link"
               accessibilityLabel="View transaction on Solscan"
             >
-              <Text style={styles.actionButtonText}>⛓️ SOLSCAN</Text>
+              <Ionicons name="link-outline" size={15} color={COLORS.text} style={styles.actionIcon} />
+              <Text style={styles.actionButtonText}>SOLSCAN</Text>
             </TouchableOpacity>
           )}
 
@@ -211,7 +228,8 @@ export function VaultScreen() {
             accessibilityLabel="Delete incident"
             accessibilityHint="Permanently delete this incident from the vault"
           >
-            <Text style={styles.deleteButtonText}>🗑️ DELETE</Text>
+            <Ionicons name="trash-outline" size={15} color={COLORS.error} style={styles.actionIcon} />
+            <Text style={styles.deleteButtonText}>DELETE</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -235,7 +253,9 @@ export function VaultScreen() {
         </View>
       ) : incidents.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>🔐</Text>
+          <View style={styles.emptyIconWrap}>
+            <Ionicons name="lock-closed-outline" size={40} color={COLORS.primary} />
+          </View>
           <Text style={styles.emptyText}>No incidents recorded yet</Text>
           <Text style={styles.emptySubtext}>
             Activate emergency mode to record evidence
@@ -278,9 +298,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: FONTS.size.xl,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.primary,
-    letterSpacing: 1,
+    fontWeight: FONTS.weight.heavy,
+    color: COLORS.text,
+    letterSpacing: FONTS.tracking.wider,
     marginBottom: SPACING.xs,
   },
   headerSubtitle: {
@@ -295,8 +315,9 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
     overflow: 'hidden',
+    ...SHADOW.sm,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -387,22 +408,28 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
+    flexDirection: 'row',
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.sm,
     backgroundColor: COLORS.surfaceAlt,
     borderRadius: BORDER_RADIUS.md,
     alignItems: 'center',
+    justifyContent: 'center',
     marginHorizontal: SPACING.xs,
     borderWidth: 1,
     borderColor: COLORS.border,
+  },
+  actionIcon: {
+    marginRight: SPACING.xs,
   },
   actionButtonText: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text,
+    letterSpacing: FONTS.tracking.wide,
   },
   deleteButton: {
-    borderColor: COLORS.error,
+    borderColor: 'rgba(255,59,71,0.4)',
   },
   deleteButtonText: {
     fontSize: FONTS.size.xs,
@@ -415,8 +442,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
   },
-  emptyIcon: {
-    fontSize: 64,
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.primaryMuted,
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: SPACING.lg,
   },
   emptyText: {

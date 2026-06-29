@@ -1,24 +1,47 @@
 import { Platform } from 'react-native';
 
 export const COLORS = {
-  background: '#0A0A0C',
-  surface: '#1A1A1F',
-  surfaceAlt: '#2A2A32',
+  // Base surfaces — deep, slightly blue-shifted near-black for a tactical feel
+  background: '#06080C',
+  backgroundAlt: '#0A0E15',
+  surface: '#11161F',
+  surfaceAlt: '#19202C',
+  surfaceHover: '#212B3A',
+
+  // Brand
   primary: '#00E5FF',
-  primaryDark: '#00B8CC',
-  accent: '#FF3333',
-  success: '#32D74B',
-  warning: '#FF9500',
-  error: '#FF3333',
-  text: '#FFFFFF',
-  textSecondary: '#A0A0A8',
-  border: '#3A3A42',
+  primaryDark: '#00A6BD',
+  primaryMuted: 'rgba(0,229,255,0.12)',
+  primarySubtle: 'rgba(0,229,255,0.06)',
+
+  // Accents / semantic
+  accent: '#FF3B47',
+  accentMuted: 'rgba(255,59,71,0.12)',
+  success: '#2EE6A0',
+  successMuted: 'rgba(46,230,160,0.12)',
+  warning: '#FFB020',
+  warningMuted: 'rgba(255,176,32,0.12)',
+  error: '#FF3B47',
+  errorMuted: 'rgba(255,59,71,0.12)',
+
+  // Text
+  text: '#F4F7FB',
+  textSecondary: '#8B96A8',
+  textMuted: '#5A6577',
+
+  // Lines
+  border: '#212A38',
+  borderStrong: '#2E3A4C',
+
+  // Effects
+  glow: 'rgba(0,229,255,0.45)',
+  overlay: 'rgba(6,8,12,0.72)',
 };
 
 export const FONTS = {
   family: {
     primary: 'Inter',
-    mono: Platform.select({ ios: 'Courier', android: 'monospace', default: 'monospace' }),
+    mono: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
   },
   size: {
     xs: 11,
@@ -27,6 +50,7 @@ export const FONTS = {
     lg: 18,
     xl: 24,
     '2xl': 32,
+    '3xl': 40,
   },
   weight: {
     light: '300' as const,
@@ -34,6 +58,14 @@ export const FONTS = {
     medium: '500' as const,
     semibold: '600' as const,
     bold: '700' as const,
+    heavy: '800' as const,
+  },
+  tracking: {
+    tight: -0.4,
+    normal: 0,
+    wide: 0.5,
+    wider: 1,
+    widest: 2,
   },
 };
 
@@ -49,8 +81,8 @@ export const SPACING = {
 export const BORDER_RADIUS = {
   sm: 8,
   md: 12,
-  lg: 16,
-  xl: 24,
+  lg: 18,
+  xl: 26,
   full: 9999,
 };
 
@@ -58,23 +90,30 @@ export const SHADOW = {
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.18,
-    shadowRadius: 1.0,
-    elevation: 1,
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   md: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
     elevation: 8,
   },
   lg: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.45,
+    shadowRadius: 18,
+    elevation: 14,
+  },
+  glow: {
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.55,
+    shadowRadius: 12,
+    elevation: 10,
   },
 };
 

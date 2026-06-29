@@ -63,11 +63,11 @@ export default function App() {
   }, [currentTab, fadeAnim]);
 
   const tabs = [
-    { id: 'NAVIGATION', label: 'Navigate', icon: '🧭' },
-    { id: 'VAULT', label: 'Vault', icon: '🔐' },
-    { id: 'AFTER', label: 'After', icon: '⚖️' },
-    { id: 'WALLET', label: 'Wallet', icon: '💎' },
-    { id: 'STEALTH', label: 'Stealth', icon: '🕵️' },
+    { id: 'NAVIGATION', label: 'Navigate', icon: 'navigate' as const },
+    { id: 'VAULT', label: 'Vault', icon: 'lock-closed' as const },
+    { id: 'AFTER', label: 'After', icon: 'shield-checkmark' as const },
+    { id: 'WALLET', label: 'Wallet', icon: 'wallet' as const },
+    { id: 'STEALTH', label: 'Stealth', icon: 'eye-off' as const },
   ];
 
   if (emergencyActive) {
