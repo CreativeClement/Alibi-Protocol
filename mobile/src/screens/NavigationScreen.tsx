@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MapBackground } from '../components/MapBackground';
 import * as Crypto from 'expo-crypto';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOW } from '../constants/theme';
 import { NAVIGATION_CONFIG } from '../constants/api';
@@ -150,26 +150,7 @@ export function NavigationScreen({
   return (
     <View style={styles.container}>
       {/* Map */}
-      {location && (
-        <MapView
-          provider={PROVIDER_GOOGLE}
-          style={StyleSheet.absoluteFill}
-          initialRegion={{
-            latitude: location.latitude,
-            longitude: location.longitude,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
-          showsUserLocation
-          showsMyLocationButton
-        >
-          <Marker
-            coordinate={{ latitude: location.latitude, longitude: location.longitude }}
-            title="Your Location"
-            description={`Speed: ${speedMph.toFixed(1)} MPH`}
-          />
-        </MapView>
-      )}
+      {location && <MapBackground location={location} speedMph={speedMph} />}
 
       {/* Bottom overlay panel */}
       <View style={styles.panel}>
