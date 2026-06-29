@@ -22,6 +22,7 @@ import { EmergencyScreen } from './src/screens/EmergencyScreen';
 import { StealthScreen } from './src/screens/StealthScreen';
 import { TabBar } from './src/components/TabBar';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { SplashScreen } from './src/components/SplashScreen';
 
 const { height } = Dimensions.get('window');
 
@@ -31,6 +32,7 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<AppTab>('NAVIGATION');
   const [emergencyActive, setEmergencyActive] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [booting, setBooting] = useState(true);
 
   const { location, error: locationError, loading: locationLoading } = useLocation({
     enabled: true,
@@ -69,6 +71,17 @@ export default function App() {
     { id: 'WALLET', label: 'Wallet', icon: 'wallet' as const },
     { id: 'STEALTH', label: 'Stealth', icon: 'eye-off' as const },
   ];
+
+  if (booting) {
+    return (
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <ExpoStatusBar style="light" />
+          <SplashScreen onFinish={() => setBooting(false)} />
+        </View>
+      </SafeAreaProvider>
+    );
+  }
 
   if (emergencyActive) {
     return (

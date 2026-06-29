@@ -26,9 +26,7 @@
       "package": "com.alibiprotocol.android",
       "adaptiveIcon": {
         "backgroundColor": "#0A0A0C",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/adaptive-icon.png"
       },
       "permissions": [
         "CAMERA",
