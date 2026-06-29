@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOW } from '../constants/theme';
 import { WalletState } from '../types';
 import { getDePINEarnings } from '../services/storage';
+import { ScreenHeader } from '../components/primitives';
 
 interface WalletScreenProps {
   wallet: WalletState;
@@ -35,79 +36,79 @@ export function WalletScreen({ wallet, onConnect, onDisconnect }: WalletScreenPr
     }
   }, []);
 
-  useEffect(() => {
-    loadWalletData();
-  }, [loadWalletData]);
+  useEffect(() => { loadWalletData(); }, [loadWalletData]);
 
-  const truncatePublicKey = (pubkey: PublicKey | null): string => {
+  const truncateKey = (pubkey: PublicKey | null): string => {
     if (!pubkey) return '';
-    const str = pubkey.toBase58();
-    return `${str.slice(0, 8)}...${str.slice(-8)}`;
+    const s = pubkey.toBase58();
+    return `${s.slice(0, 8)}...${s.slice(-8)}`;
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>WALLET</Text>
-        <Text style={styles.headerSubtitle}>
-          {wallet.connected ? 'Connected' : 'Not connected'}
-        </Text>
-      </View>
+      <ScreenHeader
+        title="WALLET"
+        subtitle={wallet.connected ? 'Phantom connected' : 'Not connected'}
+      />
 
       {isLoading ? (
-        <View style={styles.loadingContainer}>
+        <View style={styles.centered}>
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       ) : (
-        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-          {/* Wallet Connection Status */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>WALLET STATUS</Text>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Wallet Connection */}
+          <Text style={styles.sectionLabel}>WALLET STATUS</Text>
 
-            {wallet.connected ? (
-              <View style={styles.connectedBox}>
-                <View style={styles.statusLabelRow}>
-                  <View style={[styles.statusDot, { backgroundColor: COLORS.success }]} />
-                  <Text style={styles.connectedLabel}>CONNECTED</Text>
+          {wallet.connected ? (
+            <View style={[styles.card, styles.cardConnected]}>
+              <View style={styles.connectedTopRow}>
+                <View style={styles.statusPill}>
+                  <View style={styles.statusDot} />
+                  <Text style={styles.statusPillText}>CONNECTED</Text>
                 </View>
-                <Text style={styles.publicKey}>{truncatePublicKey(wallet.publicKey)}</Text>
                 <TouchableOpacity
-                  style={styles.disconnectButton}
+                  style={styles.disconnectBtn}
                   onPress={onDisconnect}
-                  activeOpacity={0.7}
+                  activeOpacity={0.75}
                   testID="btn-disconnect-wallet"
                   accessibilityRole="button"
-                  accessibilityLabel="Disconnect Phantom wallet"
+                  accessibilityLabel="Disconnect wallet"
                 >
-                  <Text style={styles.disconnectButtonText}>DISCONNECT PHANTOM</Text>
+                  <Text style={styles.disconnectBtnText}>Disconnect</Text>
                 </TouchableOpacity>
               </View>
-            ) : (
-              <View style={styles.disconnectedBox}>
-                <Text style={styles.disconnectedLabel}>NOT CONNECTED</Text>
-                <TouchableOpacity
-                  style={styles.connectButton}
-                  onPress={onConnect}
-                  activeOpacity={0.7}
-                  testID="btn-connect-wallet"
-                  accessibilityRole="button"
-                  accessibilityLabel="Connect Phantom wallet"
-                  accessibilityHint="Opens Phantom app to connect your Solana wallet"
-                >
-                  <Ionicons name="wallet" size={18} color={COLORS.background} style={{ marginRight: SPACING.sm }} />
-                  <Text style={styles.connectButtonText}>CONNECT PHANTOM WALLET</Text>
-                </TouchableOpacity>
+              <Text style={styles.publicKey}>{truncateKey(wallet.publicKey)}</Text>
+            </View>
+          ) : (
+            <View style={styles.card}>
+              <Text style={styles.disconnectedNote}>Connect your Phantom wallet to vault evidence on-chain and claim DePIN rewards.</Text>
+              <TouchableOpacity
+                style={styles.connectBtn}
+                onPress={onConnect}
+                activeOpacity={0.8}
+                testID="btn-connect-wallet"
+                accessibilityRole="button"
+                accessibilityLabel="Connect Phantom wallet"
+              >
+                <Ionicons name="wallet" size={18} color={COLORS.textInverse} style={{ marginRight: SPACING.sm }} />
+                <Text style={styles.connectBtnText}>CONNECT PHANTOM WALLET</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Balance */}
+          <Text style={styles.sectionLabel}>BALANCE</Text>
+          <View style={styles.card}>
+            <View style={styles.balanceRow}>
+              <View style={styles.balanceIconWrap}>
+                <Ionicons name="logo-bitcoin" size={18} color={COLORS.warning} />
               </View>
-            )}
-          </View>
-
-          {/* Balance Information */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>BALANCE</Text>
-
-            <View style={styles.balanceCard}>
-              <View style={styles.balanceRow}>
+              <View style={styles.balanceInfo}>
                 <Text style={styles.balanceLabel}>SOL BALANCE</Text>
                 <Text style={styles.balanceValue}>{wallet.balance.toFixed(3)} SOL</Text>
               </View>
@@ -115,52 +116,49 @@ export function WalletScreen({ wallet, onConnect, onDisconnect }: WalletScreenPr
           </View>
 
           {/* DePIN Earnings */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>DEPIN EARNINGS</Text>
-
-            <View style={styles.earningsCard}>
-              <View style={styles.earningsRow}>
-                <Text style={styles.earningsLabel}>TOTAL EARNED</Text>
+          <Text style={styles.sectionLabel}>DEPIN EARNINGS</Text>
+          <View style={[styles.card, styles.cardEarnings]}>
+            <View style={styles.earningsHeader}>
+              <Text style={styles.earningsLabel}>TOTAL EARNED</Text>
+              <View style={styles.earningsValueRow}>
                 <Text style={styles.earningsValue}>{depinEarnings.toFixed(2)}</Text>
                 <Text style={styles.earningsCurrency}>$ALIBI</Text>
               </View>
+            </View>
+            <View style={styles.earningsDivider} />
+            <Text style={styles.earningsNote}>Earn rewards by driving with navigation active</Text>
+          </View>
 
-              <View style={styles.earningsDetail}>
-                <Text style={styles.detailText}>
-                  Earn rewards by driving with navigation active
-                </Text>
+          {/* Staking */}
+          <Text style={styles.sectionLabel}>STAKING</Text>
+          <View style={[styles.card, styles.cardDashed]}>
+            <View style={styles.comingSoonBadgeRow}>
+              <View style={styles.comingSoonBadge}>
+                <Text style={styles.comingSoonBadgeText}>COMING SOON</Text>
               </View>
             </View>
+            <Text style={styles.comingSoonTitle}>$ALIBI STAKING</Text>
+            <Text style={styles.comingSoonBody}>
+              Stake your $ALIBI tokens to earn yield and unlock DAO voting power. Staking contracts are currently under development.
+            </Text>
           </View>
 
-          {/* Staking Section — COMING SOON */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>STAKING</Text>
-
-            <View style={styles.comingSoonCard}>
-              <Text style={styles.comingSoonBadge}>COMING SOON</Text>
-              <Text style={styles.comingSoonTitle}>$ALIBI STAKING</Text>
-              <Text style={styles.comingSoonText}>
-                Stake your $ALIBI tokens to earn yield and unlock DAO voting power. Staking contracts are currently under development.
-              </Text>
-            </View>
-          </View>
-
-          {/* Security Info */}
-          <View style={styles.securityBox}>
-            <View style={styles.securityTitleRow}>
-              <Ionicons name="shield-checkmark" size={16} color={COLORS.primary} style={{ marginRight: SPACING.sm }} />
+          {/* Security */}
+          <View style={[styles.card, styles.cardSecurity]}>
+            <View style={styles.securityHeaderRow}>
+              <Ionicons name="shield-checkmark" size={16} color={COLORS.primary} />
               <Text style={styles.securityTitle}>SECURITY</Text>
             </View>
-            <Text style={styles.securityText}>
-              • Private keys stored in Hardware Enclave (Apple Secure Enclave / Android Keystore)
-            </Text>
-            <Text style={styles.securityText}>
-              • Phantom wallet used for signing transactions
-            </Text>
-            <Text style={styles.securityText}>
-              • Evidence vaulted immutably on Solana blockchain
-            </Text>
+            {[
+              'Private keys stored in Hardware Enclave (Apple Secure Enclave / Android Keystore)',
+              'Phantom wallet used for signing transactions',
+              'Evidence vaulted immutably on Solana blockchain',
+            ].map((item) => (
+              <View key={item} style={styles.securityRow}>
+                <Ionicons name="checkmark" size={12} color={COLORS.success} style={{ marginTop: 2 }} />
+                <Text style={styles.securityText}>{item}</Text>
+              </View>
+            ))}
           </View>
         </ScrollView>
       )}
@@ -173,225 +171,233 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerTitle: {
-    fontSize: FONTS.size.xl,
-    fontWeight: FONTS.weight.heavy,
-    color: COLORS.text,
-    letterSpacing: FONTS.tracking.wider,
-    marginBottom: SPACING.xs,
-  },
-  headerSubtitle: {
-    fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
-  },
-  statusLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: SPACING.sm,
-  },
-  securityTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  loadingContainer: {
+  centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  content: {
-    flex: 1,
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xl,
   },
-  contentContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-  },
-  section: {
-    marginBottom: SPACING.xl,
-  },
-  sectionTitle: {
-    fontSize: FONTS.size.sm,
+
+  sectionLabel: {
+    fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.textSecondary,
-    letterSpacing: 1,
-    marginBottom: SPACING.md,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
+    marginBottom: SPACING.sm,
+    textTransform: 'uppercase',
   },
-  connectedBox: {
+
+  card: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: COLORS.success,
+    borderColor: COLORS.border,
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
   },
-  connectedLabel: {
+  cardConnected: {
+    borderColor: COLORS.successBorder,
+  },
+  cardEarnings: {
+    borderColor: COLORS.successBorder,
+  },
+  cardDashed: {
+    borderStyle: 'dashed',
+    borderColor: COLORS.borderStrong,
+    alignItems: 'center',
+  },
+  cardSecurity: {
+    borderColor: COLORS.primaryBorder,
+    marginBottom: SPACING.xl,
+  },
+
+  // Connected
+  connectedTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.successMuted,
+    borderRadius: BORDER_RADIUS.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: COLORS.successBorder,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.success,
+  },
+  statusPillText: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
     color: COLORS.success,
-    letterSpacing: FONTS.tracking.wider,
+    letterSpacing: FONTS.tracking.label,
   },
-  publicKey: {
-    fontFamily: FONTS.family.mono,
-    fontSize: FONTS.size.sm,
-    color: COLORS.primary,
-    marginBottom: SPACING.lg,
-    letterSpacing: 0.5,
-  },
-  disconnectButton: {
-    backgroundColor: 'rgba(255, 51, 51, 0.1)',
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
+  disconnectBtn: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.sm,
     borderWidth: 1,
-    borderColor: COLORS.error,
-    alignItems: 'center',
+    borderColor: COLORS.errorBorder,
+    backgroundColor: COLORS.errorMuted,
   },
-  disconnectButtonText: {
-    fontSize: FONTS.size.sm,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.error,
-  },
-  disconnectedBox: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  disconnectedLabel: {
+  disconnectBtnText: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.textSecondary,
-    letterSpacing: 1,
-    marginBottom: SPACING.lg,
+    color: COLORS.error,
+    letterSpacing: FONTS.tracking.wide,
   },
-  connectButton: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.primary,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOW.glow,
-  },
-  connectButtonText: {
-    fontSize: FONTS.size.base,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.background,
+  publicKey: {
+    fontFamily: undefined,
+    fontSize: FONTS.size.sm,
+    color: COLORS.primary,
     letterSpacing: 0.5,
   },
-  balanceCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+
+  // Disconnected
+  disconnectedNote: {
+    fontSize: FONTS.size.sm,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    marginBottom: SPACING.md,
   },
+  connectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.md,
+    ...SHADOW.glow,
+  },
+  connectBtnText: {
+    fontSize: FONTS.size.base,
+    fontWeight: FONTS.weight.heavy,
+    color: COLORS.textInverse,
+    letterSpacing: FONTS.tracking.wide,
+  },
+
+  // Balance
   balanceRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: SPACING.md,
   },
+  balanceIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.warningMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.warningBorder,
+  },
+  balanceInfo: { flex: 1 },
   balanceLabel: {
-    fontSize: FONTS.size.sm,
-    fontWeight: FONTS.weight.medium,
-    color: COLORS.textSecondary,
+    fontSize: FONTS.size.xs,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
+    marginBottom: 2,
   },
   balanceValue: {
     fontSize: FONTS.size.lg,
-    fontWeight: FONTS.weight.bold,
+    fontWeight: FONTS.weight.heavy,
     color: COLORS.primary,
   },
-  earningsCard: {
-    backgroundColor: COLORS.surfaceAlt,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  earningsRow: {
+
+  // Earnings
+  earningsHeader: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: SPACING.md,
   },
   earningsLabel: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.textSecondary,
-    letterSpacing: 1,
-    marginRight: SPACING.md,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
+  },
+  earningsValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: SPACING.xs,
   },
   earningsValue: {
     fontSize: FONTS.size.xl,
-    fontWeight: FONTS.weight.bold,
+    fontWeight: FONTS.weight.heavy,
     color: COLORS.success,
+    letterSpacing: -0.5,
   },
   earningsCurrency: {
-    marginLeft: SPACING.sm,
-    fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
-    fontWeight: FONTS.weight.medium,
-  },
-  earningsDetail: {
-    paddingTop: SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  detailText: {
     fontSize: FONTS.size.xs,
     color: COLORS.textSecondary,
+    fontWeight: FONTS.weight.semibold,
+    letterSpacing: FONTS.tracking.wide,
+    marginBottom: 2,
   },
-  comingSoonCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-  },
-  comingSoonBadge: {
-    fontSize: FONTS.size.xs,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.warning,
-    letterSpacing: 2,
+  earningsDivider: {
+    height: 1,
+    backgroundColor: COLORS.border,
     marginBottom: SPACING.md,
+  },
+  earningsNote: {
+    fontSize: FONTS.size.xs,
+    color: COLORS.textMuted,
+    letterSpacing: 0.2,
+  },
+
+  // Staking
+  comingSoonBadgeRow: { marginBottom: SPACING.md },
+  comingSoonBadge: {
+    alignSelf: 'center',
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     borderWidth: 1,
     borderColor: COLORS.warning,
     borderRadius: BORDER_RADIUS.sm,
-    overflow: 'hidden',
+  },
+  comingSoonBadgeText: {
+    fontSize: FONTS.size.xs,
+    fontWeight: FONTS.weight.heavy,
+    color: COLORS.warning,
+    letterSpacing: FONTS.tracking.wider,
   },
   comingSoonTitle: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text,
     marginBottom: SPACING.sm,
+    textAlign: 'center',
   },
-  comingSoonText: {
+  comingSoonBody: {
     fontSize: FONTS.size.sm,
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
-  securityBox: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: SPACING.xl,
+
+  // Security
+  securityHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
   },
   securityTitle: {
     fontSize: FONTS.size.sm,
@@ -399,10 +405,16 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     letterSpacing: FONTS.tracking.wider,
   },
+  securityRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.sm,
+    marginBottom: SPACING.sm,
+  },
   securityText: {
+    flex: 1,
     fontSize: FONTS.size.xs,
     color: COLORS.text,
-    marginBottom: SPACING.sm,
-    lineHeight: 16,
+    lineHeight: 18,
   },
 });

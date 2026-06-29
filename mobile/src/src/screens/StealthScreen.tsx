@@ -8,10 +8,12 @@ import {
   GestureResponderEvent,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
-import { Audio } from 'expo-av';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
 import { startRecordingSession } from '../services/recording';
+
+const MONO = Platform.select({ ios: 'SF Mono', android: 'monospace', default: 'monospace' });
 
 interface StealthScreenProps {
   onEmergency: () => void;
@@ -24,55 +26,38 @@ export function StealthScreen({ onEmergency }: StealthScreenProps) {
   const [recordingMessage, setRecordingMessage] = useState('Recording in background');
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Pulse animation for recording dot
+  // Pulse animation for the REC dot
   useEffect(() => {
     if (!isRecording) return;
-
     const pulse = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 0.3,
-          duration: 800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
+        Animated.timing(pulseAnim, { toValue: 0.2, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1,   duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       ])
     );
     pulse.start();
-
     return () => pulse.stop();
   }, [isRecording, pulseAnim]);
 
   const [panResponder] = React.useState(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderRelease: (evt: GestureResponderEvent, gestureState) => {
-        // Long press detection: if held for a moment
-        if (gestureState.dy < 50 && gestureState.dx < 50) {
-          // Long press detected - reveal emergency UI
+      onMoveShouldSetPanResponder:  () => true,
+      onPanResponderRelease: (_evt: GestureResponderEvent, gestureState) => {
+        if (Math.abs(gestureState.dy) < 50 && Math.abs(gestureState.dx) < 50) {
           onEmergency();
         }
       },
     })
   );
 
-  // Timer effect
   useEffect(() => {
     const interval = setInterval(() => {
       setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
     }, 100);
-
     return () => clearInterval(interval);
   }, [startTime]);
 
-  // Start recording on mount
   useEffect(() => {
     let isMounted = true;
     (async () => {
@@ -93,30 +78,37 @@ export function StealthScreen({ onEmergency }: StealthScreenProps) {
     return () => { isMounted = false; };
   }, []);
 
-  const minutes = Math.floor(elapsedTime / 60);
-  const seconds = elapsedTime % 60;
-  const timeDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  const minutes  = Math.floor(elapsedTime / 60);
+  const seconds  = elapsedTime % 60;
+  const timeDisplay = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
   return (
     <View
       style={[styles.container, !isRecording && styles.containerInactive]}
       {...panResponder.panHandlers}
     >
-      {/* Black screen with minimal UI */}
-      <View style={styles.display}>
-        {/* Clock display */}
+      <View style={styles.content}>
+        {/* Clock */}
         <Text style={styles.clock}>{timeDisplay}</Text>
 
-        {/* Recording indicator - only visible if actually recording */}
-        {isRecording && (
-          <View style={styles.recordingIndicator}>
-            <Animated.View style={[styles.recordingDot, { opacity: pulseAnim }]} />
-            <Text style={styles.recordingText}>{recordingMessage}</Text>
+        {/* Recording indicator */}
+        {isRecording ? (
+          <View style={styles.recRow}>
+            <Animated.View style={[styles.recDot, { opacity: pulseAnim }]} />
+            <Text style={styles.recText}>{recordingMessage.toUpperCase()}</Text>
           </View>
-        )}
+        ) : null}
+
+        {/* Divider */}
+        <View style={styles.divider} />
 
         {/* Help text */}
-        <Text style={styles.helpText} accessibilityHint="Long press anywhere on screen to activate emergency mode">Long press to activate emergency mode</Text>
+        <Text
+          style={styles.helpText}
+          accessibilityHint="Tap anywhere on screen to activate emergency mode"
+        >
+          TAP ANYWHERE TO ACTIVATE LEGAL SHIELD
+        </Text>
       </View>
     </View>
   );
@@ -132,40 +124,44 @@ const styles = StyleSheet.create({
   containerInactive: {
     backgroundColor: '#000000',
   },
-  display: {
-    flex: 1,
-    width: '100%',
-    justifyContent: 'center',
+  content: {
     alignItems: 'center',
+    gap: SPACING.lg,
   },
   clock: {
-    fontSize: 72,
-    fontWeight: FONTS.weight.bold,
+    fontFamily: MONO,
+    fontSize: 68,
+    fontWeight: '200',
     color: COLORS.text,
-    fontFamily: FONTS.family.mono,
-    letterSpacing: 4,
-    marginBottom: SPACING.xl,
+    letterSpacing: 6,
   },
-  recordingIndicator: {
+  recRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.xl,
+    gap: SPACING.sm,
   },
-  recordingDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  recDot: {
+    width: 8,
+    height: 8,
+    borderRadius: BORDER_RADIUS.full,
     backgroundColor: COLORS.error,
-    marginRight: SPACING.md,
   },
-  recordingText: {
-    fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
-    fontWeight: FONTS.weight.medium,
+  recText: {
+    fontSize: FONTS.size.xs,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
+  },
+  divider: {
+    width: 40,
+    height: 1,
+    backgroundColor: COLORS.border,
   },
   helpText: {
-    fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.xl,
+    fontSize: FONTS.size.xs,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
+    textAlign: 'center',
+    fontWeight: FONTS.weight.semibold,
   },
 });

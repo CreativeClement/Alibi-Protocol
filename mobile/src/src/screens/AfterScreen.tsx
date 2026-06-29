@@ -15,15 +15,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
 import { LocationCoords } from '../types';
 import { getStateFromCoordinates } from '../services/location';
+import { ScreenHeader } from '../components/primitives';
 
-// Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// ─────────────────────────────────────────────
-// 50-STATE RECORDING LAW KNOWLEDGE BASE
-// ─────────────────────────────────────────────
+// ─── Recording Laws ─────────────────────────────────────────────────────────
 interface StateLaw {
   consent: 'one' | 'two';
   statute: string;
@@ -31,62 +29,60 @@ interface StateLaw {
 }
 
 const RECORDING_LAWS: Record<string, StateLaw> = {
-  AL: { consent: 'one', statute: 'Ala. Code § 13A-11-30', summary: 'One-party consent. You can record your own conversations.' },
-  AK: { consent: 'one', statute: 'Alaska Stat. § 42.20.300', summary: 'One-party consent state.' },
-  AZ: { consent: 'one', statute: 'Ariz. Rev. Stat. § 13-3005', summary: 'One-party consent state.' },
-  AR: { consent: 'one', statute: 'Ark. Code Ann. § 5-60-120', summary: 'One-party consent state.' },
-  CA: { consent: 'two', statute: 'Cal. Penal Code § 632', summary: 'All-party consent required for private conversations. Recording police in public is legal and protected.' },
-  CO: { consent: 'one', statute: 'Colo. Rev. Stat. § 18-9-303', summary: 'One-party consent state.' },
-  CT: { consent: 'two', statute: 'Conn. Gen. Stat. § 52-570d', summary: 'All-party consent required for private conversations.' },
-  DE: { consent: 'two', statute: 'Del. Code Ann. tit. 11, § 1335', summary: 'All-party consent required.' },
-  FL: { consent: 'two', statute: 'Fla. Stat. § 934.03', summary: 'All-party consent required. Felony to violate. Recording police in public is still protected.' },
-  GA: { consent: 'one', statute: 'Ga. Code Ann. § 16-11-62', summary: 'One-party consent state.' },
-  HI: { consent: 'one', statute: 'Haw. Rev. Stat. § 803-42', summary: 'One-party consent state.' },
-  ID: { consent: 'one', statute: 'Idaho Code § 18-6702', summary: 'One-party consent state.' },
-  IL: { consent: 'two', statute: '720 Ill. Comp. Stat. 5/14-2', summary: 'All-party consent required for private conversations.' },
-  IN: { consent: 'one', statute: 'Ind. Code § 35-33.5-1-5', summary: 'One-party consent state.' },
-  IA: { consent: 'one', statute: 'Iowa Code § 808B.2', summary: 'One-party consent state.' },
-  KS: { consent: 'one', statute: 'Kan. Stat. Ann. § 21-6101', summary: 'One-party consent state.' },
-  KY: { consent: 'one', statute: 'Ky. Rev. Stat. Ann. § 526.010', summary: 'One-party consent state.' },
-  LA: { consent: 'one', statute: 'La. Rev. Stat. Ann. § 15:1303', summary: 'One-party consent state.' },
-  ME: { consent: 'one', statute: 'Me. Rev. Stat. tit. 15, § 709', summary: 'One-party consent state.' },
-  MD: { consent: 'two', statute: 'Md. Code Ann., Cts. § 10-402', summary: 'All-party consent required.' },
-  MA: { consent: 'two', statute: 'Mass. Gen. Laws ch. 272, § 99', summary: 'All-party consent required. Felony to violate.' },
-  MI: { consent: 'two', statute: 'Mich. Comp. Laws § 750.539c', summary: 'All-party consent required.' },
-  MN: { consent: 'one', statute: 'Minn. Stat. § 626A.02', summary: 'One-party consent state.' },
-  MS: { consent: 'one', statute: 'Miss. Code Ann. § 41-29-531', summary: 'One-party consent state.' },
-  MO: { consent: 'one', statute: 'Mo. Rev. Stat. § 542.402', summary: 'One-party consent state.' },
-  MT: { consent: 'two', statute: 'Mont. Code Ann. § 45-8-213', summary: 'All-party consent required.' },
-  NE: { consent: 'one', statute: 'Neb. Rev. Stat. § 86-290', summary: 'One-party consent state.' },
-  NV: { consent: 'two', statute: 'Nev. Rev. Stat. § 200.620', summary: 'All-party consent required.' },
-  NH: { consent: 'two', statute: 'N.H. Rev. Stat. Ann. § 570-A:2', summary: 'All-party consent required.' },
-  NJ: { consent: 'one', statute: 'N.J. Stat. Ann. § 2A:156A-3', summary: 'One-party consent state.' },
-  NM: { consent: 'one', statute: 'N.M. Stat. Ann. § 30-12-1', summary: 'One-party consent state.' },
-  NY: { consent: 'one', statute: 'N.Y. Penal Law § 250.00', summary: 'One-party consent state.' },
-  NC: { consent: 'one', statute: 'N.C. Gen. Stat. § 15A-287', summary: 'One-party consent state.' },
-  ND: { consent: 'one', statute: 'N.D. Cent. Code § 12.1-15-02', summary: 'One-party consent state.' },
-  OH: { consent: 'one', statute: 'Ohio Rev. Code Ann. § 2933.52', summary: 'One-party consent state.' },
-  OK: { consent: 'one', statute: 'Okla. Stat. tit. 13, § 176.4', summary: 'One-party consent state.' },
-  OR: { consent: 'two', statute: 'Or. Rev. Stat. § 165.540', summary: 'All-party consent required.' },
-  PA: { consent: 'two', statute: '18 Pa. Cons. Stat. § 5704', summary: 'All-party consent required. Strictly enforced.' },
-  RI: { consent: 'one', statute: 'R.I. Gen. Laws § 11-35-21', summary: 'One-party consent state.' },
-  SC: { consent: 'one', statute: 'S.C. Code Ann. § 17-30-30', summary: 'One-party consent state.' },
-  SD: { consent: 'one', statute: 'S.D. Codified Laws § 23A-35A-20', summary: 'One-party consent state.' },
-  TN: { consent: 'one', statute: 'Tenn. Code Ann. § 39-13-601', summary: 'One-party consent state.' },
-  TX: { consent: 'one', statute: 'Tex. Penal Code Ann. § 16.02', summary: 'One-party consent state.' },
-  UT: { consent: 'one', statute: 'Utah Code Ann. § 77-23a-4', summary: 'One-party consent state.' },
-  VT: { consent: 'one', statute: 'Vt. Stat. Ann. tit. 13, § 4601', summary: 'One-party consent state.' },
-  VA: { consent: 'one', statute: 'Va. Code Ann. § 19.2-62', summary: 'One-party consent state.' },
-  WA: { consent: 'two', statute: 'Wash. Rev. Code § 9.73.030', summary: 'All-party consent required.' },
-  WV: { consent: 'one', statute: 'W. Va. Code § 62-1D-3', summary: 'One-party consent state.' },
-  WI: { consent: 'one', statute: 'Wis. Stat. § 968.31', summary: 'One-party consent state.' },
-  WY: { consent: 'one', statute: 'Wyo. Stat. Ann. § 7-3-702', summary: 'One-party consent state.' },
-  DC: { consent: 'one', statute: 'D.C. Code § 23-542', summary: 'One-party consent.' },
+  AL: { consent: 'one', statute: 'Ala. Code § 13A-11-30',            summary: 'One-party consent. You can record your own conversations.' },
+  AK: { consent: 'one', statute: 'Alaska Stat. § 42.20.300',         summary: 'One-party consent state.' },
+  AZ: { consent: 'one', statute: 'Ariz. Rev. Stat. § 13-3005',       summary: 'One-party consent state.' },
+  AR: { consent: 'one', statute: 'Ark. Code Ann. § 5-60-120',        summary: 'One-party consent state.' },
+  CA: { consent: 'two', statute: 'Cal. Penal Code § 632',            summary: 'All-party consent required for private conversations. Recording police in public is legal and protected.' },
+  CO: { consent: 'one', statute: 'Colo. Rev. Stat. § 18-9-303',     summary: 'One-party consent state.' },
+  CT: { consent: 'two', statute: 'Conn. Gen. Stat. § 52-570d',      summary: 'All-party consent required for private conversations.' },
+  DE: { consent: 'two', statute: 'Del. Code Ann. tit. 11, § 1335',  summary: 'All-party consent required.' },
+  FL: { consent: 'two', statute: 'Fla. Stat. § 934.03',             summary: 'All-party consent required. Felony to violate. Recording police in public is still protected.' },
+  GA: { consent: 'one', statute: 'Ga. Code Ann. § 16-11-62',        summary: 'One-party consent state.' },
+  HI: { consent: 'one', statute: 'Haw. Rev. Stat. § 803-42',        summary: 'One-party consent state.' },
+  ID: { consent: 'one', statute: 'Idaho Code § 18-6702',            summary: 'One-party consent state.' },
+  IL: { consent: 'two', statute: '720 Ill. Comp. Stat. 5/14-2',    summary: 'All-party consent required for private conversations.' },
+  IN: { consent: 'one', statute: 'Ind. Code § 35-33.5-1-5',        summary: 'One-party consent state.' },
+  IA: { consent: 'one', statute: 'Iowa Code § 808B.2',              summary: 'One-party consent state.' },
+  KS: { consent: 'one', statute: 'Kan. Stat. Ann. § 21-6101',      summary: 'One-party consent state.' },
+  KY: { consent: 'one', statute: 'Ky. Rev. Stat. Ann. § 526.010',  summary: 'One-party consent state.' },
+  LA: { consent: 'one', statute: 'La. Rev. Stat. Ann. § 15:1303',  summary: 'One-party consent state.' },
+  ME: { consent: 'one', statute: 'Me. Rev. Stat. tit. 15, § 709',  summary: 'One-party consent state.' },
+  MD: { consent: 'two', statute: 'Md. Code Ann., Cts. § 10-402',   summary: 'All-party consent required.' },
+  MA: { consent: 'two', statute: 'Mass. Gen. Laws ch. 272, § 99',  summary: 'All-party consent required. Felony to violate.' },
+  MI: { consent: 'two', statute: 'Mich. Comp. Laws § 750.539c',    summary: 'All-party consent required.' },
+  MN: { consent: 'one', statute: 'Minn. Stat. § 626A.02',          summary: 'One-party consent state.' },
+  MS: { consent: 'one', statute: 'Miss. Code Ann. § 41-29-531',    summary: 'One-party consent state.' },
+  MO: { consent: 'one', statute: 'Mo. Rev. Stat. § 542.402',       summary: 'One-party consent state.' },
+  MT: { consent: 'two', statute: 'Mont. Code Ann. § 45-8-213',     summary: 'All-party consent required.' },
+  NE: { consent: 'one', statute: 'Neb. Rev. Stat. § 86-290',       summary: 'One-party consent state.' },
+  NV: { consent: 'two', statute: 'Nev. Rev. Stat. § 200.620',      summary: 'All-party consent required.' },
+  NH: { consent: 'two', statute: 'N.H. Rev. Stat. Ann. § 570-A:2',summary: 'All-party consent required.' },
+  NJ: { consent: 'one', statute: 'N.J. Stat. Ann. § 2A:156A-3',   summary: 'One-party consent state.' },
+  NM: { consent: 'one', statute: 'N.M. Stat. Ann. § 30-12-1',     summary: 'One-party consent state.' },
+  NY: { consent: 'one', statute: 'N.Y. Penal Law § 250.00',        summary: 'One-party consent state.' },
+  NC: { consent: 'one', statute: 'N.C. Gen. Stat. § 15A-287',      summary: 'One-party consent state.' },
+  ND: { consent: 'one', statute: 'N.D. Cent. Code § 12.1-15-02',   summary: 'One-party consent state.' },
+  OH: { consent: 'one', statute: 'Ohio Rev. Code Ann. § 2933.52',  summary: 'One-party consent state.' },
+  OK: { consent: 'one', statute: 'Okla. Stat. tit. 13, § 176.4',  summary: 'One-party consent state.' },
+  OR: { consent: 'two', statute: 'Or. Rev. Stat. § 165.540',       summary: 'All-party consent required.' },
+  PA: { consent: 'two', statute: '18 Pa. Cons. Stat. § 5704',      summary: 'All-party consent required. Strictly enforced.' },
+  RI: { consent: 'one', statute: 'R.I. Gen. Laws § 11-35-21',      summary: 'One-party consent state.' },
+  SC: { consent: 'one', statute: 'S.C. Code Ann. § 17-30-30',      summary: 'One-party consent state.' },
+  SD: { consent: 'one', statute: 'S.D. Codified Laws § 23A-35A-20',summary: 'One-party consent state.' },
+  TN: { consent: 'one', statute: 'Tenn. Code Ann. § 39-13-601',    summary: 'One-party consent state.' },
+  TX: { consent: 'one', statute: 'Tex. Penal Code Ann. § 16.02',   summary: 'One-party consent state.' },
+  UT: { consent: 'one', statute: 'Utah Code Ann. § 77-23a-4',      summary: 'One-party consent state.' },
+  VT: { consent: 'one', statute: 'Vt. Stat. Ann. tit. 13, § 4601',summary: 'One-party consent state.' },
+  VA: { consent: 'one', statute: 'Va. Code Ann. § 19.2-62',        summary: 'One-party consent state.' },
+  WA: { consent: 'two', statute: 'Wash. Rev. Code § 9.73.030',     summary: 'All-party consent required.' },
+  WV: { consent: 'one', statute: 'W. Va. Code § 62-1D-3',          summary: 'One-party consent state.' },
+  WI: { consent: 'one', statute: 'Wis. Stat. § 968.31',            summary: 'One-party consent state.' },
+  WY: { consent: 'one', statute: 'Wyo. Stat. Ann. § 7-3-702',      summary: 'One-party consent state.' },
+  DC: { consent: 'one', statute: 'D.C. Code § 23-542',             summary: 'One-party consent.' },
 };
 
-// ─────────────────────────────────────────────
-// RIGHTS SCRIPTS
-// ─────────────────────────────────────────────
+// ─── Rights Scripts ──────────────────────────────────────────────────────────
 interface RightsScript {
   id: string;
   icon: keyof typeof Ionicons.glyphMap;
@@ -136,7 +132,7 @@ const RIGHTS_SCRIPTS: RightsScript[] = [
   },
   {
     id: 'silence',
-    emoji: '🤐',
+    icon: 'mic-off-outline',
     label: 'Invoke Silence',
     prompt: 'TO INVOKE YOUR 5th AMENDMENT RIGHT:',
     script: '"I am invoking my Fifth Amendment right to remain silent. I will not answer questions without my attorney present."',
@@ -146,14 +142,12 @@ const RIGHTS_SCRIPTS: RightsScript[] = [
 ];
 
 const LEGAL_RESOURCES = [
-  { name: 'ACLU Know Your Rights', desc: 'Free legal guides by state', url: 'https://www.aclu.org/know-your-rights' },
+  { name: 'ACLU Know Your Rights',                desc: 'Free legal guides by state',        url: 'https://www.aclu.org/know-your-rights' },
   { name: 'National Police Accountability Project', desc: 'Civil rights attorney referrals', url: 'https://www.napapoliceaccountability.org' },
-  { name: 'NAACP Legal Defense Fund', desc: 'Civil rights legal assistance', url: 'https://www.naacpldf.org' },
+  { name: 'NAACP Legal Defense Fund',             desc: 'Civil rights legal assistance',     url: 'https://www.naacpldf.org' },
 ];
 
-// ─────────────────────────────────────────────
-// COMPONENT
-// ─────────────────────────────────────────────
+// ─── Component ──────────────────────────────────────────────────────────────
 interface AfterScreenProps {
   location: LocationCoords | null;
 }
@@ -162,7 +156,6 @@ export function AfterScreen({ location }: AfterScreenProps) {
   const [detectedState, setDetectedState] = useState<string | null>(null);
   const [expandedScript, setExpandedScript] = useState<string | null>(null);
 
-  // Detect state from GPS on mount / location change
   useEffect(() => {
     if (location && !detectedState) {
       getStateFromCoordinates(location.latitude, location.longitude)
@@ -173,14 +166,11 @@ export function AfterScreen({ location }: AfterScreenProps) {
 
   const toggleScript = useCallback((id: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedScript(prev => (prev === id ? null : id));
+    setExpandedScript((prev) => (prev === id ? null : id));
   }, []);
 
   const copyToClipboard = useCallback(async (text: string) => {
-    try {
-      // Clipboard import avoided to keep dependencies minimal — use Share instead
-      await Share.share({ message: text });
-    } catch {}
+    try { await Share.share({ message: text }); } catch {}
   }, []);
 
   const openURL = useCallback(async (url: string) => {
@@ -198,28 +188,34 @@ export function AfterScreen({ location }: AfterScreenProps) {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>AFTER THE STOP</Text>
-        <Text style={styles.headerSubtitle}>Evidence · Rights · Resources</Text>
-      </View>
+      <ScreenHeader
+        title="AFTER THE STOP"
+        subtitle="Evidence · Rights · Resources"
+        noBorder
+      />
 
       {/* State Recording Law */}
       <View style={[styles.card, styles.cardCyan]}>
-        <Text style={styles.sectionLabel}>YOUR STATE · RECORDING LAW</Text>
+        <Text style={styles.sectionLabel}>YOUR STATE — RECORDING LAW</Text>
         {stateLaw ? (
           <>
             <View style={styles.stateRow}>
               <Text style={styles.stateAbbr}>{detectedState}</Text>
               <View style={[
                 styles.consentBadge,
-                { backgroundColor: stateLaw.consent === 'two' ? 'rgba(255,149,0,0.12)' : 'rgba(50,215,75,0.10)' },
+                { backgroundColor: stateLaw.consent === 'two' ? COLORS.warningMuted : COLORS.successMuted,
+                  borderColor: stateLaw.consent === 'two' ? COLORS.warningBorder : COLORS.successBorder },
               ]}>
+                <Ionicons
+                  name={stateLaw.consent === 'two' ? 'warning-outline' : 'checkmark-circle-outline'}
+                  size={12}
+                  color={stateLaw.consent === 'two' ? COLORS.warning : COLORS.success}
+                />
                 <Text style={[
                   styles.consentText,
                   { color: stateLaw.consent === 'two' ? COLORS.warning : COLORS.success },
                 ]}>
-                  {stateLaw.consent === 'two' ? '⚠️ TWO-PARTY CONSENT' : '✓ ONE-PARTY CONSENT'}
+                  {stateLaw.consent === 'two' ? 'TWO-PARTY CONSENT' : 'ONE-PARTY CONSENT'}
                 </Text>
               </View>
             </View>
@@ -227,15 +223,18 @@ export function AfterScreen({ location }: AfterScreenProps) {
             <Text style={styles.lawStatute}>{stateLaw.statute}</Text>
             {stateLaw.consent === 'two' && (
               <View style={styles.warningBox}>
+                <Ionicons name="information-circle-outline" size={14} color={COLORS.warning} style={{ marginRight: 6 }} />
                 <Text style={styles.warningText}>
-                  Note: Even in two-party consent states, recording police officers in public spaces is protected by the First Amendment.
+                  Even in two-party consent states, recording police in public is protected by the First Amendment.
                 </Text>
               </View>
             )}
           </>
         ) : (
           <Text style={styles.stateEmpty}>
-            {location ? 'Detecting your state...' : 'Enable location access to see your state\'s recording law.'}
+            {location
+              ? 'Detecting your state...'
+              : 'Enable location access to see your recording law.'}
           </Text>
         )}
       </View>
@@ -243,15 +242,26 @@ export function AfterScreen({ location }: AfterScreenProps) {
       {/* Rights Scripts */}
       <View style={styles.card}>
         <Text style={styles.sectionLabel}>KNOW YOUR RIGHTS — REFERENCE SCRIPTS</Text>
-        {RIGHTS_SCRIPTS.map(script => (
+        {RIGHTS_SCRIPTS.map((script) => (
           <View key={script.id} style={styles.scriptRow}>
             <TouchableOpacity
               style={styles.scriptHeader}
               onPress={() => toggleScript(script.id)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={script.label}
             >
-              <Text style={styles.scriptTitle}>{script.emoji} {script.label}</Text>
-              <Text style={styles.chevron}>{expandedScript === script.id ? '∧' : '›'}</Text>
+              <View style={styles.scriptHeaderLeft}>
+                <View style={styles.scriptIconWrap}>
+                  <Ionicons name={script.icon} size={16} color={COLORS.primary} />
+                </View>
+                <Text style={styles.scriptTitle}>{script.label}</Text>
+              </View>
+              <Ionicons
+                name={expandedScript === script.id ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={COLORS.textMuted}
+              />
             </TouchableOpacity>
 
             {expandedScript === script.id && (
@@ -262,7 +272,7 @@ export function AfterScreen({ location }: AfterScreenProps) {
                 </View>
                 <Text style={styles.scriptNote}>{script.note}</Text>
                 <View style={styles.casesRow}>
-                  {script.cases.map(c => (
+                  {script.cases.map((c) => (
                     <View key={c} style={styles.caseTag}>
                       <Text style={styles.caseTagText}>{c}</Text>
                     </View>
@@ -273,6 +283,7 @@ export function AfterScreen({ location }: AfterScreenProps) {
                   onPress={() => copyToClipboard(script.script)}
                   activeOpacity={0.7}
                 >
+                  <Ionicons name="share-outline" size={13} color={COLORS.primary} />
                   <Text style={styles.copyBtnText}>SHARE SCRIPT</Text>
                 </TouchableOpacity>
               </View>
@@ -283,10 +294,13 @@ export function AfterScreen({ location }: AfterScreenProps) {
       </View>
 
       {/* Evidence Packaging */}
-      <View style={[styles.card, { borderColor: 'rgba(0,229,255,0.3)' }]}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>📦 Evidence Packaging</Text>
-          <View style={[styles.badge, { backgroundColor: 'rgba(0,229,255,0.12)', borderColor: 'rgba(0,229,255,0.3)' }]}>
+      <View style={[styles.card, styles.cardCyanBorder]}>
+        <View style={styles.cardHeaderRow}>
+          <View style={styles.cardIconWrap}>
+            <Ionicons name="archive-outline" size={16} color={COLORS.primary} />
+          </View>
+          <Text style={styles.cardTitle}>Evidence Packaging</Text>
+          <View style={[styles.badge, { backgroundColor: COLORS.primaryMuted, borderColor: COLORS.primaryBorder }]}>
             <Text style={[styles.badgeText, { color: COLORS.primary }]}>READY</Text>
           </View>
         </View>
@@ -294,53 +308,65 @@ export function AfterScreen({ location }: AfterScreenProps) {
           Download a complete evidence package from any vault entry — SHA-256 hash, GPS coordinates, timestamp, detention duration, and applicable case law. Ready to send to counsel.
         </Text>
         <Text style={[styles.cardBody, { color: COLORS.textSecondary, marginTop: SPACING.sm }]}>
-          Go to <Text style={{ color: COLORS.text, fontWeight: '700' }}>🔐 Vault</Text> → tap <Text style={{ color: COLORS.primary, fontWeight: '700' }}>Package</Text> on any incident.
+          Go to <Text style={{ color: COLORS.text, fontWeight: '700' }}>Vault</Text>
+          {' '} then tap <Text style={{ color: COLORS.primary, fontWeight: '700' }}>Package</Text> on any incident.
         </Text>
       </View>
 
       {/* Legal Resources */}
       <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>📞 Legal Resources</Text>
-          <View style={[styles.badge, { backgroundColor: 'rgba(50,215,75,0.10)', borderColor: 'rgba(50,215,75,0.25)' }]}>
+        <View style={styles.cardHeaderRow}>
+          <View style={styles.cardIconWrap}>
+            <Ionicons name="call-outline" size={16} color={COLORS.success} />
+          </View>
+          <Text style={styles.cardTitle}>Legal Resources</Text>
+          <View style={[styles.badge, { backgroundColor: COLORS.successMuted, borderColor: COLORS.successBorder }]}>
             <Text style={[styles.badgeText, { color: COLORS.success }]}>FREE</Text>
           </View>
         </View>
-        {LEGAL_RESOURCES.map(resource => (
+        {LEGAL_RESOURCES.map((resource) => (
           <TouchableOpacity
             key={resource.name}
             style={styles.resourceRow}
             onPress={() => openURL(resource.url)}
             activeOpacity={0.7}
+            accessibilityRole="link"
+            accessibilityLabel={resource.name}
           >
             <View style={styles.resourceInfo}>
               <Text style={styles.resourceName}>{resource.name}</Text>
               <Text style={styles.resourceDesc}>{resource.desc}</Text>
             </View>
-            <Text style={styles.resourceArrow}>→</Text>
+            <Ionicons name="arrow-forward" size={16} color={COLORS.textMuted} />
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Mugshot Monitor — COMING SOON */}
-      <View style={[styles.card, styles.comingSoonCard]}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>🔭 Mugshot Monitor</Text>
+      {/* Mugshot Monitor */}
+      <View style={[styles.card, styles.cardComingSoon]}>
+        <View style={styles.cardHeaderRow}>
+          <View style={[styles.cardIconWrap, { backgroundColor: COLORS.surfaceAlt }]}>
+            <Ionicons name="eye-off-outline" size={16} color={COLORS.textSecondary} />
+          </View>
+          <Text style={[styles.cardTitle, { color: COLORS.textSecondary }]}>Mugshot Monitor</Text>
           <View style={[styles.badge, { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: COLORS.border }]}>
-            <Text style={[styles.badgeText, { color: COLORS.textSecondary }]}>COMING SOON</Text>
+            <Text style={[styles.badgeText, { color: COLORS.textMuted }]}>COMING SOON</Text>
           </View>
         </View>
         <Text style={styles.comingSoonBody}>
-          Automated scanning and removal requests for your image on mugshot aggregator sites. If charges are dropped or you're acquitted, your image gets removed.
+          Automated scanning and removal requests for your image on mugshot aggregator sites. If charges are dropped or you are acquitted, your image gets removed.
         </Text>
       </View>
 
-      {/* Reputation Defense — COMING SOON */}
-      <View style={[styles.card, styles.comingSoonCard]}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>🛡️ Reputation Defense</Text>
+      {/* Reputation Defense */}
+      <View style={[styles.card, styles.cardComingSoon]}>
+        <View style={styles.cardHeaderRow}>
+          <View style={[styles.cardIconWrap, { backgroundColor: COLORS.surfaceAlt }]}>
+            <Ionicons name="shield-outline" size={16} color={COLORS.textSecondary} />
+          </View>
+          <Text style={[styles.cardTitle, { color: COLORS.textSecondary }]}>Reputation Defense</Text>
           <View style={[styles.badge, { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: COLORS.border }]}>
-            <Text style={[styles.badgeText, { color: COLORS.textSecondary }]}>COMING SOON</Text>
+            <Text style={[styles.badgeText, { color: COLORS.textMuted }]}>COMING SOON</Text>
           </View>
         </View>
         <Text style={styles.comingSoonBody}>
@@ -348,17 +374,14 @@ export function AfterScreen({ location }: AfterScreenProps) {
         </Text>
       </View>
 
-      {/* Legal disclaimer */}
+      {/* Disclaimer */}
       <Text style={styles.disclaimer}>
-        Recording laws vary by state. This app provides general information, not legal advice. In two-party consent states, obtain all-party consent before recording private conversations. Recording police in public spaces is generally protected by the First Amendment. Consult an attorney for your specific situation.
+        Recording laws vary by state. This app provides general information, not legal advice. In two-party consent states, obtain all-party consent before recording private conversations. Recording police in public is generally protected by the First Amendment. Consult an attorney for your specific situation.
       </Text>
     </ScrollView>
   );
 }
 
-// ─────────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -368,23 +391,9 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     paddingBottom: SPACING['2xl'],
   },
-  header: {
-    marginBottom: SPACING.lg,
-    marginTop: SPACING.sm,
-  },
-  headerTitle: {
-    fontSize: FONTS.size['2xl'],
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text,
-    letterSpacing: 0.3,
-  },
-  headerSubtitle: {
-    fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
-    marginTop: 4,
-  },
+
   card: {
-    backgroundColor: 'rgba(20,20,24,0.65)',
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.md,
@@ -392,21 +401,28 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   cardCyan: {
-    backgroundColor: 'rgba(0,229,255,0.04)',
-    borderColor: 'rgba(0,229,255,0.25)',
+    backgroundColor: COLORS.primarySubtle,
+    borderColor: COLORS.primaryBorder,
   },
-  comingSoonCard: {
-    backgroundColor: 'rgba(255,149,0,0.03)',
-    borderColor: 'rgba(255,149,0,0.18)',
+  cardCyanBorder: {
+    borderColor: COLORS.primaryBorder,
   },
+  cardComingSoon: {
+    borderStyle: 'dashed',
+    borderColor: COLORS.borderStrong,
+    backgroundColor: 'rgba(255,255,255,0.01)',
+  },
+
   sectionLabel: {
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    letterSpacing: 1.5,
-    fontFamily: FONTS.family.mono,
+    letterSpacing: FONTS.tracking.label,
     marginBottom: SPACING.sm,
+    textTransform: 'uppercase',
   },
+
+  // State
   stateRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -415,18 +431,23 @@ const styles = StyleSheet.create({
   },
   stateAbbr: {
     fontSize: FONTS.size['2xl'],
-    fontWeight: FONTS.weight.bold,
+    fontWeight: FONTS.weight.heavy,
     color: COLORS.text,
+    letterSpacing: -0.5,
   },
   consentBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 5,
     borderRadius: BORDER_RADIUS.sm,
+    borderWidth: 1,
   },
   consentText: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    fontFamily: FONTS.family.mono,
+    letterSpacing: FONTS.tracking.wide,
   },
   lawSummary: {
     color: COLORS.text,
@@ -437,15 +458,21 @@ const styles = StyleSheet.create({
   lawStatute: {
     color: COLORS.textSecondary,
     fontSize: FONTS.size.xs,
-    fontFamily: FONTS.family.mono,
+    fontFamily: undefined,
+    letterSpacing: 0.3,
   },
   warningBox: {
-    backgroundColor: 'rgba(255,149,0,0.08)',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: COLORS.warningMuted,
     borderRadius: BORDER_RADIUS.sm,
     padding: SPACING.sm,
     marginTop: SPACING.sm,
+    borderWidth: 1,
+    borderColor: COLORS.warningBorder,
   },
   warningText: {
+    flex: 1,
     color: COLORS.warning,
     fontSize: FONTS.size.xs,
     lineHeight: 17,
@@ -455,6 +482,8 @@ const styles = StyleSheet.create({
     fontSize: FONTS.size.sm,
     fontStyle: 'italic',
   },
+
+  // Scripts
   scriptRow: {
     marginBottom: 2,
   },
@@ -462,17 +491,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.sm + 2,
+    paddingVertical: SPACING.md,
+  },
+  scriptHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    flex: 1,
+  },
+  scriptIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: COLORS.primaryMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
   scriptTitle: {
+    flex: 1,
     color: COLORS.text,
     fontSize: FONTS.size.base,
     fontWeight: FONTS.weight.semibold,
-  },
-  chevron: {
-    color: COLORS.textSecondary,
-    fontSize: 18,
-    fontWeight: FONTS.weight.bold,
   },
   scriptDivider: {
     height: 1,
@@ -482,20 +522,20 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
   },
   scriptBox: {
-    backgroundColor: 'rgba(0,229,255,0.04)',
+    backgroundColor: COLORS.primarySubtle,
     borderWidth: 1,
-    borderColor: 'rgba(0,229,255,0.25)',
+    borderColor: COLORS.primaryBorder,
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
   },
   scriptPrompt: {
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    fontFamily: FONTS.family.mono,
-    letterSpacing: 1,
+    letterSpacing: FONTS.tracking.label,
     marginBottom: SPACING.xs,
+    textTransform: 'uppercase',
   },
   scriptText: {
     color: COLORS.text,
@@ -516,54 +556,70 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   caseTag: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    paddingHorizontal: 8,
+    backgroundColor: COLORS.surfaceAlt,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: BORDER_RADIUS.xs,
   },
   caseTagText: {
     color: COLORS.textSecondary,
     fontSize: FONTS.size.xs,
-    fontFamily: FONTS.family.mono,
+    letterSpacing: 0.3,
   },
   copyBtn: {
-    backgroundColor: 'rgba(0,229,255,0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.primaryMuted,
     borderWidth: 1,
-    borderColor: 'rgba(0,229,255,0.25)',
+    borderColor: COLORS.primaryBorder,
     borderRadius: BORDER_RADIUS.sm,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
     alignSelf: 'flex-start',
   },
   copyBtnText: {
     color: COLORS.primary,
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    fontFamily: FONTS.family.mono,
-    letterSpacing: 0.5,
+    letterSpacing: FONTS.tracking.wide,
   },
-  cardHeader: {
+
+  // Card header row (for info/resource cards)
+  cardHeaderRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: SPACING.sm,
     marginBottom: SPACING.sm,
   },
+  cardIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: COLORS.primaryMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   cardTitle: {
+    flex: 1,
     color: COLORS.text,
     fontSize: FONTS.size.base,
     fontWeight: FONTS.weight.bold,
   },
   badge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: BORDER_RADIUS.xs,
     borderWidth: 1,
   },
   badgeText: {
-    fontSize: FONTS.size.xs,
+    fontSize: 9,
     fontWeight: FONTS.weight.bold,
-    fontFamily: FONTS.family.mono,
-    letterSpacing: 0.5,
+    letterSpacing: FONTS.tracking.label,
+    textTransform: 'uppercase',
   },
   cardBody: {
     color: COLORS.textSecondary,
@@ -571,46 +627,40 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   comingSoonBody: {
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
     fontSize: FONTS.size.sm,
     lineHeight: 20,
   },
+
+  // Resources
   resourceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.sm,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    marginTop: SPACING.xs,
+    paddingVertical: SPACING.sm + 2,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    gap: SPACING.sm,
   },
-  resourceInfo: {
-    flex: 1,
-  },
+  resourceInfo: { flex: 1 },
   resourceName: {
     color: COLORS.text,
     fontSize: FONTS.size.sm,
     fontWeight: FONTS.weight.semibold,
   },
   resourceDesc: {
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
     fontSize: FONTS.size.xs,
     marginTop: 2,
   },
-  resourceArrow: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.size.base,
-    marginLeft: SPACING.sm,
-  },
+
   disclaimer: {
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
     fontSize: FONTS.size.xs,
     lineHeight: 17,
     textAlign: 'center',
     paddingVertical: SPACING.md,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
-    marginTop: SPACING.sm,
+    marginTop: SPACING.xs,
   },
 });

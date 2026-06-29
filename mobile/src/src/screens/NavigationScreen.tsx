@@ -43,65 +43,61 @@ export function NavigationScreen({
 
   const speedMph = location ? speedMsToMph(location.speed ?? null) : 0;
 
-  const handleReportSubmission = useCallback(async (reportType: 'police_encounter' | 'traffic_crash' | 'road_hazard') => {
-    if (!location) {
-      Alert.alert('Location Required', 'Cannot submit a report without GPS location.');
-      return;
-    }
-
-    try {
-      setIsSubmittingReport(true);
-
-      const state = await getStateFromCoordinates(location.latitude, location.longitude);
-      const reportId = `report_${reportType}_${Date.now()}`;
-      const hashInput = `${reportId}_${location.latitude}_${location.longitude}_${Date.now()}`;
-      const hash = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        hashInput,
-        { encoding: Crypto.CryptoEncoding.HEX }
-      );
-
-      const descriptions: Record<string, string> = {
-        police_encounter: 'Police encounter reported',
-        traffic_crash: 'Traffic crash reported',
-        road_hazard: 'Road hazard reported',
-      };
-
-      await saveIncident({
-        id: reportId,
-        timestamp: Date.now(),
-        hash: hash.slice(0, 32),
-        recordingPath: '',
-        description: descriptions[reportType],
-        state,
-        duration: 0,
-        onChainStatus: 'pending',
-        latitude: location.latitude,
-        longitude: location.longitude,
-        speed: speedMph,
-      });
-
-      Alert.alert(
-        'Report Submitted',
-        `${descriptions[reportType]} at ${speedMph.toFixed(0)} MPH.\nHash: ${hash.slice(0, 12)}...\n\nGo to Vault to view or anchor on-chain.`,
-        reportType === 'police_encounter'
-          ? [
-              { text: 'OK' },
-              { text: 'LEGAL SHIELD', onPress: onEmergency, style: 'destructive' as const },
-            ]
-          : [{ text: 'OK' }]
-      );
-    } catch (err) {
-      Alert.alert('Report Failed', err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setIsSubmittingReport(false);
-    }
-  }, [location, speedMph, onEmergency]);
+  const handleReportSubmission = useCallback(
+    async (reportType: 'police_encounter' | 'traffic_crash' | 'road_hazard') => {
+      if (!location) {
+        Alert.alert('Location Required', 'Cannot submit a report without GPS location.');
+        return;
+      }
+      try {
+        setIsSubmittingReport(true);
+        const state = await getStateFromCoordinates(location.latitude, location.longitude);
+        const reportId = `report_${reportType}_${Date.now()}`;
+        const hash = await Crypto.digestStringAsync(
+          Crypto.CryptoDigestAlgorithm.SHA256,
+          `${reportId}_${location.latitude}_${location.longitude}_${Date.now()}`,
+          { encoding: Crypto.CryptoEncoding.HEX }
+        );
+        const descriptions: Record<string, string> = {
+          police_encounter: 'Police encounter reported',
+          traffic_crash:    'Traffic crash reported',
+          road_hazard:      'Road hazard reported',
+        };
+        await saveIncident({
+          id: reportId,
+          timestamp: Date.now(),
+          hash: hash.slice(0, 32),
+          recordingPath: '',
+          description: descriptions[reportType],
+          state,
+          duration: 0,
+          onChainStatus: 'pending',
+          latitude: location.latitude,
+          longitude: location.longitude,
+          speed: speedMph,
+        });
+        Alert.alert(
+          'Report Submitted',
+          `${descriptions[reportType]} at ${speedMph.toFixed(0)} MPH.\nHash: ${hash.slice(0, 12)}...\n\nGo to Vault to view or anchor on-chain.`,
+          reportType === 'police_encounter'
+            ? [
+                { text: 'OK' },
+                { text: 'LEGAL SHIELD', onPress: onEmergency, style: 'destructive' as const },
+              ]
+            : [{ text: 'OK' }]
+        );
+      } catch (err) {
+        Alert.alert('Report Failed', err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setIsSubmittingReport(false);
+      }
+    },
+    [location, speedMph, onEmergency]
+  );
 
   // DePIN earning loop
   useEffect(() => {
     let earnInterval: NodeJS.Timeout;
-
     if (location && isNavigating) {
       earnInterval = setInterval(async () => {
         try {
@@ -111,26 +107,20 @@ export function NavigationScreen({
             location.mocked || false,
             lastEarnTime
           );
-
           if (canEarn.canEarn && canEarn.amount != null) {
-            const amount = canEarn.amount;
-            await processEarn(amount);
-            setAlibiEarned((prev) => prev + amount);
+            await processEarn(canEarn.amount);
+            setAlibiEarned((prev) => prev + canEarn.amount!);
             setLastEarnTime(Date.now());
             setEarnError(null);
           }
         } catch (err) {
           setEarnError(err instanceof Error ? err.message : 'Earning error');
         }
-      }, NAVIGATION_CONFIG.earnCheckIntervalMs); // Cooldown is 30s, no need to poll faster
+      }, NAVIGATION_CONFIG.earnCheckIntervalMs);
     }
-
-    return () => {
-      if (earnInterval) clearInterval(earnInterval);
-    };
+    return () => { if (earnInterval) clearInterval(earnInterval); };
   }, [location, isNavigating, lastEarnTime]);
 
-  // Load initial earnings
   useEffect(() => {
     (async () => {
       const earnings = await getDePINEarnings();
@@ -140,29 +130,30 @@ export function NavigationScreen({
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Initializing Navigation...</Text>
+        <Text style={styles.centeredLabel}>Initializing Navigation...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Location Error</Text>
-        <Text style={styles.errorMessage}>{error}</Text>
+      <View style={styles.centered}>
+        <Ionicons name="location-outline" size={40} color={COLORS.error} />
+        <Text style={styles.centeredTitle}>Location Error</Text>
+        <Text style={styles.centeredLabel}>{error}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Map View */}
+      {/* Map */}
       {location && (
         <MapView
           provider={PROVIDER_GOOGLE}
-          style={styles.map}
+          style={StyleSheet.absoluteFill}
           initialRegion={{
             latitude: location.latitude,
             longitude: location.longitude,
@@ -173,132 +164,127 @@ export function NavigationScreen({
           showsMyLocationButton
         >
           <Marker
-            coordinate={{
-              latitude: location.latitude,
-              longitude: location.longitude,
-            }}
+            coordinate={{ latitude: location.latitude, longitude: location.longitude }}
             title="Your Location"
             description={`Speed: ${speedMph.toFixed(1)} MPH`}
           />
         </MapView>
       )}
 
-      {/* Overlay Controls */}
-      <ScrollView style={styles.overlay} scrollEnabled={true}>
-        {/* Status Header */}
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <View style={[styles.statusDot, { backgroundColor: isNavigating ? COLORS.success : COLORS.textMuted }]} />
-            <Text style={styles.headerTitle}>ALIBI NAVIGATION</Text>
+      {/* Bottom overlay panel */}
+      <View style={styles.panel}>
+        <ScrollView
+          style={styles.panelScroll}
+          contentContainerStyle={styles.panelContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Status header */}
+          <View style={styles.panelHeader}>
+            <View style={styles.panelHeaderLeft}>
+              <View style={[styles.statusDot, { backgroundColor: isNavigating ? COLORS.success : COLORS.textMuted }]} />
+              <Text style={styles.panelTitle}>ALIBI NAVIGATION</Text>
+            </View>
+            <Text style={styles.panelMode}>
+              {isNavigating ? 'EARN MODE' : 'PASSIVE'}
+            </Text>
           </View>
-          <Text style={styles.headerSubtitle}>
-            {isNavigating ? 'Earning mode active' : 'Passive mode'}
-          </Text>
-        </View>
 
-        {/* Speed Indicator */}
-        <SpeedIndicator speedMph={speedMph} />
+          {/* Speed */}
+          <SpeedIndicator speedMph={speedMph} />
 
-        {/* Earnings Display */}
-        <View style={styles.earningsBox}>
-          <Text style={styles.label}>TOTAL EARNED</Text>
+          {/* Earnings */}
           <View style={styles.earningsRow}>
-            <Text style={styles.earningsValue}>{alibiEarned.toFixed(2)}</Text>
-            <Text style={styles.earningsCurrency}>$ALIBI</Text>
+            <View style={styles.earningsBox}>
+              <Text style={styles.microLabel}>TOTAL EARNED</Text>
+              <View style={styles.earningsValueRow}>
+                <Text style={styles.earningsValue}>{alibiEarned.toFixed(2)}</Text>
+                <Text style={styles.earningsCurrency}>$ALIBI</Text>
+              </View>
+              {earnError && <Text style={styles.errorSmall}>{earnError}</Text>}
+            </View>
+
+            {/* Nav toggle */}
+            <TouchableOpacity
+              style={[styles.navToggle, isNavigating && styles.navToggleActive]}
+              onPress={() => onNavigationChange(!isNavigating)}
+              activeOpacity={0.75}
+              testID="btn-toggle-navigation"
+              accessibilityRole="button"
+              accessibilityLabel={isNavigating ? 'Stop navigation' : 'Start navigation'}
+              accessibilityState={{ selected: isNavigating }}
+            >
+              <Ionicons
+                name={isNavigating ? 'checkmark-circle' : 'navigate'}
+                size={20}
+                color={isNavigating ? COLORS.textInverse : COLORS.primary}
+              />
+              <Text style={[styles.navToggleText, isNavigating && styles.navToggleTextActive]}>
+                {isNavigating ? 'STOP' : 'START'}
+              </Text>
+            </TouchableOpacity>
           </View>
-          {earnError && <Text style={styles.errorSmall}>{earnError}</Text>}
-        </View>
 
-        {/* Navigation Toggle */}
-        <TouchableOpacity
-          style={[
-            styles.button,
-            isNavigating && styles.buttonActive,
-          ]}
-          onPress={() => onNavigationChange(!isNavigating)}
-          activeOpacity={0.7}
-          testID="btn-toggle-navigation"
-          accessibilityRole="button"
-          accessibilityLabel={isNavigating ? 'Stop navigation' : 'Start navigation'}
-          accessibilityState={{ selected: isNavigating }}
-        >
-          <Ionicons
-            name={isNavigating ? 'checkmark-circle' : 'navigate'}
-            size={18}
-            color={isNavigating ? COLORS.background : COLORS.primary}
-            style={{ marginRight: SPACING.sm }}
-          />
-          <Text style={[styles.buttonText, isNavigating && styles.buttonTextActive]}>
-            {isNavigating ? 'NAVIGATING' : 'START NAVIGATION'}
-          </Text>
-        </TouchableOpacity>
+          {/* Reports */}
+          <Text style={styles.microLabel}>REPORTS</Text>
 
-        {/* Report Buttons */}
-        <View style={styles.reportSection}>
-          <Text style={[styles.label, { marginBottom: SPACING.md }]}>REPORTS</Text>
+          {[
+            {
+              type: 'police_encounter' as const,
+              label: 'Police Encounter',
+              icon: <MaterialCommunityIcons name="police-badge" size={18} color={COLORS.error} />,
+              borderColor: COLORS.errorBorder,
+              bgColor: COLORS.errorMuted,
+            },
+            {
+              type: 'traffic_crash' as const,
+              label: 'Traffic Crash',
+              icon: <MaterialCommunityIcons name="car-emergency" size={18} color={COLORS.warning} />,
+              borderColor: COLORS.warningBorder,
+              bgColor: COLORS.warningMuted,
+            },
+            {
+              type: 'road_hazard' as const,
+              label: 'Road Hazard',
+              icon: <Ionicons name="warning" size={18} color={COLORS.warning} />,
+              borderColor: COLORS.warningBorder,
+              bgColor: COLORS.warningMuted,
+            },
+          ].map(({ type, label, icon, borderColor, bgColor }) => (
+            <TouchableOpacity
+              key={type}
+              style={[styles.reportRow, { borderColor }, isSubmittingReport && styles.reportRowDisabled]}
+              onPress={() => handleReportSubmission(type)}
+              activeOpacity={0.7}
+              disabled={isSubmittingReport}
+              accessibilityRole="button"
+              accessibilityLabel={`Report ${label}`}
+            >
+              <View style={[styles.reportIconWrap, { backgroundColor: bgColor }]}>{icon}</View>
+              <Text style={styles.reportLabel}>{label}</Text>
+              <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+            </TouchableOpacity>
+          ))}
 
+          {/* Emergency */}
           <TouchableOpacity
-            style={[styles.reportButton, styles.reportPolice, isSubmittingReport && styles.reportButtonDisabled]}
-            activeOpacity={0.7}
-            onPress={() => handleReportSubmission('police_encounter')}
-            disabled={isSubmittingReport}
-            testID="btn-report-police"
+            style={styles.emergencyButton}
+            onPress={onEmergency}
+            activeOpacity={0.8}
+            testID="btn-emergency"
             accessibilityRole="button"
-            accessibilityLabel="Report police encounter"
-            accessibilityHint="Submit a police encounter report with your current location"
+            accessibilityLabel="Initiate legal shield"
           >
-            <View style={[styles.reportIconWrap, { backgroundColor: COLORS.errorMuted }]}>
-              <MaterialCommunityIcons name="police-badge" size={18} color={COLORS.error} />
-            </View>
-            <Text style={styles.reportLabel}>Police Encounter</Text>
-            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+            <MaterialCommunityIcons
+              name="shield-alert"
+              size={20}
+              color={COLORS.textInverse}
+              style={{ marginRight: SPACING.sm }}
+            />
+            <Text style={styles.emergencyText}>INITIATE LEGAL SHIELD</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.reportButton, styles.reportCrash, isSubmittingReport && styles.reportButtonDisabled]}
-            activeOpacity={0.7}
-            onPress={() => handleReportSubmission('traffic_crash')}
-            disabled={isSubmittingReport}
-            accessibilityRole="button"
-            accessibilityLabel="Report traffic crash"
-          >
-            <View style={[styles.reportIconWrap, { backgroundColor: COLORS.warningMuted }]}>
-              <MaterialCommunityIcons name="car-emergency" size={18} color={COLORS.warning} />
-            </View>
-            <Text style={styles.reportLabel}>Traffic Crash</Text>
-            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.reportButton, styles.reportHazard, isSubmittingReport && styles.reportButtonDisabled]}
-            activeOpacity={0.7}
-            onPress={() => handleReportSubmission('road_hazard')}
-            disabled={isSubmittingReport}
-            accessibilityRole="button"
-            accessibilityLabel="Report road hazard"
-          >
-            <View style={[styles.reportIconWrap, { backgroundColor: COLORS.warningMuted }]}>
-              <Ionicons name="warning" size={18} color={COLORS.warning} />
-            </View>
-            <Text style={styles.reportLabel}>Road Hazard</Text>
-            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Emergency Button */}
-        <TouchableOpacity
-          style={styles.emergencyButton}
-          onPress={onEmergency}
-          activeOpacity={0.8}
-          testID="btn-emergency"
-          accessibilityRole="button"
-          accessibilityLabel="Initiate legal shield"
-          accessibilityHint="Activate emergency recording mode with camera and legal guidance"
-        >
-          <MaterialCommunityIcons name="shield-alert" size={22} color={COLORS.background} style={{ marginRight: SPACING.sm }} />
-          <Text style={styles.emergencyText}>INITIATE LEGAL SHIELD</Text>
-        </TouchableOpacity>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -308,148 +294,163 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  loadingContainer: {
+  centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.background,
+    padding: SPACING.lg,
+    gap: SPACING.md,
   },
-  loadingText: {
-    marginTop: SPACING.md,
-    fontSize: FONTS.size.base,
-    color: COLORS.textSecondary,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
-  errorText: {
+  centeredTitle: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     color: COLORS.error,
-    marginBottom: SPACING.sm,
   },
-  errorMessage: {
+  centeredLabel: {
     fontSize: FONTS.size.base,
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  overlay: {
+
+  // Panel
+  panel: {
     position: 'absolute',
-    bottom: 80,
-    left: SPACING.md,
-    right: SPACING.md,
-    maxHeight: 420,
-    backgroundColor: COLORS.overlay,
-    borderRadius: BORDER_RADIUS.xl,
-    padding: SPACING.md,
-    borderWidth: 1,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxHeight: '55%',
+    backgroundColor: COLORS.overlayLight,
+    borderTopLeftRadius: BORDER_RADIUS.xl,
+    borderTopRightRadius: BORDER_RADIUS.xl,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
     borderColor: COLORS.borderStrong,
     ...SHADOW.lg,
   },
-  header: {
-    marginBottom: SPACING.lg,
+  panelScroll: {
+    flexGrow: 0,
+  },
+  panelContent: {
+    padding: SPACING.md,
+    paddingBottom: SPACING.lg,
+  },
+  panelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
     paddingBottom: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  headerRow: {
+  panelHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.xs,
+    gap: SPACING.sm,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: SPACING.sm,
+    width: 7,
+    height: 7,
+    borderRadius: BORDER_RADIUS.full,
   },
-  headerTitle: {
-    fontSize: FONTS.size.lg,
+  panelTitle: {
+    fontSize: FONTS.size.base,
     fontWeight: FONTS.weight.heavy,
     color: COLORS.text,
     letterSpacing: FONTS.tracking.wider,
   },
-  headerSubtitle: {
-    fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
-  },
-  label: {
+  panelMode: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.textSecondary,
-    letterSpacing: 1,
-    marginBottom: SPACING.sm,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
+  },
+
+  // Earnings + toggle row
+  earningsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
   },
   earningsBox: {
-    backgroundColor: COLORS.surfaceAlt,
+    flex: 1,
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
-    marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  earningsRow: {
+  earningsValueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    gap: SPACING.xs,
   },
   earningsValue: {
     fontSize: FONTS.size['2xl'],
-    fontWeight: FONTS.weight.bold,
+    fontWeight: FONTS.weight.heavy,
     color: COLORS.success,
+    letterSpacing: -1,
   },
   earningsCurrency: {
-    marginLeft: SPACING.sm,
-    fontSize: FONTS.size.sm,
+    fontSize: FONTS.size.xs,
     color: COLORS.textSecondary,
-    fontWeight: FONTS.weight.medium,
+    fontWeight: FONTS.weight.semibold,
+    letterSpacing: FONTS.tracking.wide,
+    marginBottom: 2,
   },
   errorSmall: {
     fontSize: FONTS.size.xs,
     color: COLORS.error,
     marginTop: SPACING.xs,
   },
-  button: {
-    flexDirection: 'row',
+  navToggle: {
+    width: 72,
+    paddingVertical: SPACING.md,
     backgroundColor: COLORS.primaryMuted,
     borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(0,229,255,0.35)',
+    borderColor: COLORS.primaryBorder,
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 4,
   },
-  buttonActive: {
+  navToggleActive: {
     backgroundColor: COLORS.success,
     borderColor: COLORS.success,
   },
-  buttonText: {
-    fontSize: FONTS.size.base,
+  navToggleText: {
+    fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
     color: COLORS.primary,
-    letterSpacing: FONTS.tracking.wide,
+    letterSpacing: FONTS.tracking.label,
   },
-  buttonTextActive: {
-    color: COLORS.background,
+  navToggleTextActive: {
+    color: COLORS.textInverse,
   },
-  reportSection: {
-    marginBottom: SPACING.lg,
+
+  // Reports
+  microLabel: {
+    fontSize: FONTS.size.xs,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
+    marginBottom: SPACING.sm,
+    textTransform: 'uppercase',
   },
-  reportButton: {
+  reportRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.sm + 2,
-    marginBottom: SPACING.sm,
-    borderWidth: 1,
     backgroundColor: COLORS.surface,
-    borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    padding: SPACING.sm,
+    marginBottom: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  reportRowDisabled: {
+    opacity: 0.45,
   },
   reportIconWrap: {
     width: 36,
@@ -457,7 +458,6 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.md,
   },
   reportLabel: {
     flex: 1,
@@ -465,31 +465,22 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.semibold,
     color: COLORS.text,
   },
-  reportPolice: {
-    borderColor: 'rgba(255,59,71,0.4)',
-  },
-  reportCrash: {
-    borderColor: 'rgba(255,176,32,0.4)',
-  },
-  reportHazard: {
-    borderColor: 'rgba(255,176,32,0.4)',
-  },
-  reportButtonDisabled: {
-    opacity: 0.5,
-  },
+
+  // Emergency
   emergencyButton: {
-    backgroundColor: COLORS.error,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    ...SHADOW.md,
+    backgroundColor: COLORS.error,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.md,
+    marginTop: SPACING.xs,
+    ...SHADOW.glowError,
   },
   emergencyText: {
     fontSize: FONTS.size.base,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.background,
-    letterSpacing: 1,
+    fontWeight: FONTS.weight.heavy,
+    color: COLORS.textInverse,
+    letterSpacing: FONTS.tracking.wider,
   },
 });

@@ -6,7 +6,7 @@ import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
 interface Tab {
   id: string;
   label: string;
-  /** Base Ionicons name; the outline variant is used when inactive. */
+  /** Base Ionicons name; the filled variant is used when active. */
   icon: keyof typeof Ionicons.glyphMap;
 }
 
@@ -19,31 +19,47 @@ interface TabBarProps {
 export const TabBar = React.memo(function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
   return (
     <View style={styles.container}>
+      {/* Separator line */}
+      <View style={styles.separator} />
+
       <View style={styles.inner}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
-          const iconName = (isActive ? tab.icon : (`${tab.icon}-outline` as keyof typeof Ionicons.glyphMap));
+          // Use filled icon for active, outline for inactive
+          const iconName = (isActive
+            ? tab.icon
+            : (`${tab.icon}-outline` as keyof typeof Ionicons.glyphMap));
+
           return (
             <TouchableOpacity
               key={tab.id}
               style={styles.tab}
               onPress={() => onTabChange(tab.id)}
-              activeOpacity={0.7}
+              activeOpacity={0.65}
               testID={`tab-${tab.id.toLowerCase()}`}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
               accessibilityLabel={tab.label}
             >
-              <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
+              {/* Icon container — pill highlight when active */}
+              <View style={[styles.iconContainer, isActive && styles.iconContainerActive]}>
                 <Ionicons
                   name={iconName}
-                  size={22}
-                  color={isActive ? COLORS.primary : COLORS.textSecondary}
+                  size={20}
+                  color={isActive ? COLORS.primary : COLORS.textMuted}
                 />
               </View>
-              <Text style={[styles.label, isActive && styles.activeLabel]} numberOfLines={1}>
-                {tab.label}
+
+              {/* Label */}
+              <Text
+                style={[styles.label, isActive && styles.labelActive]}
+                numberOfLines={1}
+              >
+                {tab.label.toUpperCase()}
               </Text>
+
+              {/* Active dot indicator */}
+              {isActive && <View style={styles.activeDot} />}
             </TouchableOpacity>
           );
         })}
@@ -54,9 +70,11 @@ export const TabBar = React.memo(function TabBar({ tabs, activeTab, onTabChange 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.backgroundAlt,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.background,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: COLORS.border,
   },
   inner: {
     flexDirection: 'row',
@@ -67,29 +85,36 @@ const styles = StyleSheet.create({
   tab: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
+    justifyContent: 'flex-start',
+    paddingTop: 2,
+    gap: 3,
   },
-  iconWrap: {
-    width: 52,
-    height: 30,
+  iconContainer: {
+    width: 44,
+    height: 28,
     borderRadius: BORDER_RADIUS.full,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
   },
-  iconWrapActive: {
+  iconContainerActive: {
     backgroundColor: COLORS.primaryMuted,
-    borderColor: 'rgba(0,229,255,0.35)',
+    borderWidth: 1,
+    borderColor: COLORS.primaryBorder,
   },
   label: {
-    fontSize: FONTS.size.xs,
-    color: COLORS.textSecondary,
-    fontWeight: FONTS.weight.semibold,
-    letterSpacing: FONTS.tracking.wide,
+    fontSize: 9,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
   },
-  activeLabel: {
+  labelActive: {
     color: COLORS.primary,
+  },
+  activeDot: {
+    width: 3,
+    height: 3,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.primary,
+    marginTop: 1,
   },
 });

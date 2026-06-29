@@ -7,62 +7,53 @@ interface SpeedIndicatorProps {
   maxSpeed?: number;
 }
 
-export const SpeedIndicator = React.memo(function SpeedIndicator({ speedMph, maxSpeed = 120 }: SpeedIndicatorProps) {
+export const SpeedIndicator = React.memo(function SpeedIndicator({
+  speedMph,
+  maxSpeed = 120,
+}: SpeedIndicatorProps) {
   const { color, status } = useMemo(() => {
-    if (speedMph < 5) {
-      return { color: COLORS.textSecondary, status: 'STATIONARY' };
-    }
-    if (speedMph < 55) {
-      return { color: COLORS.success, status: 'EARNING' };
-    }
-    if (speedMph < 75) {
-      return { color: COLORS.warning, status: 'CAUTION' };
-    }
-    if (speedMph < 110) {
-      return { color: COLORS.error, status: 'RISKY' };
-    }
-    return { color: COLORS.error, status: 'ANTI_EXPLOIT' };
+    if (speedMph < 5)   return { color: COLORS.textMuted,    status: 'STATIONARY' };
+    if (speedMph < 55)  return { color: COLORS.success,      status: 'EARNING'    };
+    if (speedMph < 75)  return { color: COLORS.warning,      status: 'CAUTION'    };
+    if (speedMph < 110) return { color: COLORS.error,        status: 'RISKY'      };
+                        return { color: COLORS.error,        status: 'CAPPED'     };
   }, [speedMph]);
 
-  const percentage = maxSpeed > 0 ? Math.min((speedMph / maxSpeed) * 100, 100) : 0;
+  const pct = maxSpeed > 0 ? Math.min((speedMph / maxSpeed) * 100, 100) : 0;
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      {/* Top row */}
+      <View style={styles.topRow}>
         <Text style={styles.label}>SPEED</Text>
-        <Text style={[styles.status, { color }]}>{status}</Text>
+        <View style={[styles.statusPill, { borderColor: color + '55', backgroundColor: color + '15' }]}>
+          <Text style={[styles.statusText, { color }]}>{status}</Text>
+        </View>
       </View>
 
-      <View style={styles.speedDisplay}>
-        <Text style={[styles.speedValue, { color }]}>{speedMph.toFixed(1)}</Text>
-        <Text style={styles.speedUnit}>MPH</Text>
+      {/* Speed value */}
+      <View style={styles.valueRow}>
+        <Text style={[styles.value, { color }]}>{speedMph.toFixed(1)}</Text>
+        <Text style={styles.unit}>MPH</Text>
       </View>
 
-      <View style={styles.progressBar}>
-        <View
-          style={[
-            styles.progressFill,
-            {
-              width: `${percentage}%`,
-              backgroundColor: color,
-            },
-          ]}
-        />
+      {/* Progress bar */}
+      <View style={styles.track}>
+        <View style={[styles.fill, { width: `${pct}%` as `${number}%`, backgroundColor: color }]} />
       </View>
 
+      {/* Legend */}
       <View style={styles.legend}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: COLORS.success }]} />
-          <Text style={styles.legendText}>5-55</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: COLORS.warning }]} />
-          <Text style={styles.legendText}>55-75</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: COLORS.error }]} />
-          <Text style={styles.legendText}>75+</Text>
-        </View>
+        {[
+          { color: COLORS.success, label: '5–55' },
+          { color: COLORS.warning, label: '55–75' },
+          { color: COLORS.error,   label: '75+' },
+        ].map(({ color: c, label }) => (
+          <View key={label} style={styles.legendItem}>
+            <View style={[styles.dot, { backgroundColor: c }]} />
+            <Text style={styles.legendText}>{label}</Text>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -70,14 +61,14 @@ export const SpeedIndicator = React.memo(function SpeedIndicator({ speedMph, max
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.surfaceAlt,
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  header: {
+  topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -86,39 +77,47 @@ const styles = StyleSheet.create({
   label: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.textSecondary,
-    letterSpacing: 1,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
   },
-  status: {
+  statusPill: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: BORDER_RADIUS.full,
+    borderWidth: 1,
+  },
+  statusText: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    letterSpacing: 1,
+    letterSpacing: FONTS.tracking.wide,
   },
-  speedDisplay: {
+  valueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     marginBottom: SPACING.md,
   },
-  speedValue: {
+  value: {
     fontSize: FONTS.size['2xl'],
-    fontWeight: FONTS.weight.bold,
+    fontWeight: FONTS.weight.heavy,
+    letterSpacing: -1,
   },
-  speedUnit: {
+  unit: {
     marginLeft: SPACING.xs,
     fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
     fontWeight: FONTS.weight.medium,
+    marginBottom: 2,
   },
-  progressBar: {
-    height: 6,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.sm,
+  track: {
+    height: 4,
+    backgroundColor: COLORS.surfaceAlt,
+    borderRadius: BORDER_RADIUS.full,
     overflow: 'hidden',
     marginBottom: SPACING.md,
   },
-  progressFill: {
+  fill: {
     height: '100%',
-    borderRadius: BORDER_RADIUS.sm,
+    borderRadius: BORDER_RADIUS.full,
   },
   legend: {
     flexDirection: 'row',
@@ -127,15 +126,16 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
-  legendColor: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: SPACING.xs,
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: BORDER_RADIUS.full,
   },
   legendText: {
     fontSize: FONTS.size.xs,
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
+    fontWeight: FONTS.weight.medium,
   },
 });

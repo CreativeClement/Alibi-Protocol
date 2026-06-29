@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOW } from '../constants/theme';
 
 interface Props {
   children: ReactNode;
@@ -26,9 +27,6 @@ export class ErrorBoundary extends Component<Props, State> {
     if (__DEV__) {
       console.error('ErrorBoundary caught:', error, errorInfo);
     }
-
-    // In production, send to crash reporting service
-    // e.g., Sentry.captureException(error, { extra: errorInfo });
   }
 
   handleReset = () => {
@@ -40,23 +38,36 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <View style={styles.container}>
           <View style={styles.card}>
-            <Text style={styles.icon}>⚠️</Text>
+            <View style={styles.iconWrap}>
+              <Ionicons name="warning" size={28} color={COLORS.error} />
+            </View>
+
             <Text style={styles.title}>SYSTEM ERROR</Text>
+
             <Text style={styles.message}>
-              {this.props.fallbackMessage || 'Something went wrong. Your evidence and data are safe.'}
+              {this.props.fallbackMessage ??
+                'Something went wrong. Your evidence and data are safe.'}
             </Text>
+
             {__DEV__ && this.state.error && (
               <View style={styles.debugBox}>
-                <Text style={styles.debugText}>
-                  {this.state.error.message}
-                </Text>
+                <Text style={styles.debugText}>{this.state.error.message}</Text>
               </View>
             )}
+
             <TouchableOpacity
               style={styles.button}
               onPress={this.handleReset}
-              activeOpacity={0.7}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Retry"
             >
+              <Ionicons
+                name="refresh"
+                size={16}
+                color={COLORS.textInverse}
+                style={{ marginRight: SPACING.sm }}
+              />
               <Text style={styles.buttonText}>RETRY</Text>
             </TouchableOpacity>
           </View>
@@ -78,23 +89,31 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.xl,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.error,
+    borderColor: COLORS.errorBorder,
     width: '100%',
     maxWidth: 400,
+    ...SHADOW.md,
   },
-  icon: {
-    fontSize: 48,
-    marginBottom: SPACING.md,
+  iconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.errorMuted,
+    borderWidth: 1,
+    borderColor: COLORS.errorBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
   },
   title: {
     fontSize: FONTS.size.lg,
-    fontWeight: FONTS.weight.bold,
+    fontWeight: FONTS.weight.heavy,
     color: COLORS.error,
-    letterSpacing: 2,
+    letterSpacing: FONTS.tracking.wider,
     marginBottom: SPACING.md,
   },
   message: {
@@ -116,9 +135,11 @@ const styles = StyleSheet.create({
   debugText: {
     fontSize: FONTS.size.xs,
     color: COLORS.warning,
-    fontFamily: FONTS.family.mono,
+    fontFamily: undefined, // uses system mono via FONTS.family.mono indirectly
   },
   button: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: COLORS.primary,
     borderRadius: BORDER_RADIUS.md,
     paddingHorizontal: SPACING.xl,
@@ -127,7 +148,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: FONTS.size.base,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.background,
-    letterSpacing: 1,
+    color: COLORS.textInverse,
+    letterSpacing: FONTS.tracking.wider,
   },
 });

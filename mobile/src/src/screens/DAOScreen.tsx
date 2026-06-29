@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
+import { ScreenHeader } from '../components/primitives';
 
 interface Proposal {
   id: string;
@@ -17,6 +19,12 @@ interface Proposal {
   votesAgainst: number;
   status: 'active' | 'passed' | 'rejected';
 }
+
+const STATUS_CONFIG = {
+  active:   { label: 'ACTIVE',   color: COLORS.success, border: COLORS.successBorder, bg: COLORS.successMuted },
+  passed:   { label: 'PASSED',   color: COLORS.primary, border: COLORS.primaryBorder, bg: COLORS.primaryMuted },
+  rejected: { label: 'REJECTED', color: COLORS.error,   border: COLORS.errorBorder,   bg: COLORS.errorMuted   },
+} as const;
 
 export function DAOScreen() {
   const [proposals, setProposals] = useState<Proposal[]>([
@@ -49,17 +57,15 @@ export function DAOScreen() {
   const handleVote = useCallback((proposalId: string, voteType: 'for' | 'against') => {
     Alert.alert(
       'Governance Coming Soon',
-      `On-chain voting will go live with mainnet $ALIBI staking.\n\nYour vote: ${voteType.toUpperCase()} on proposal #${proposalId}\n\nThis vote has been recorded locally and will be submitted when governance contracts are deployed.`,
+      `On-chain voting will go live with mainnet $ALIBI staking.\n\nYour vote: ${voteType.toUpperCase()} on proposal #${proposalId}\n\nThis vote has been recorded locally.`,
       [{ text: 'OK' }]
     );
-
-    // Optimistic UI update to show user interaction
     setProposals((prev) =>
       prev.map((p) => {
         if (p.id === proposalId && p.status === 'active') {
           return {
             ...p,
-            votesFor: voteType === 'for' ? p.votesFor + 1 : p.votesFor,
+            votesFor:     voteType === 'for'     ? p.votesFor + 1     : p.votesFor,
             votesAgainst: voteType === 'against' ? p.votesAgainst + 1 : p.votesAgainst,
           };
         }
@@ -68,97 +74,65 @@ export function DAOScreen() {
     );
   }, []);
 
-  const getTotalVotes = (proposal: Proposal) => proposal.votesFor + proposal.votesAgainst;
-
-  const getVotingPercentage = (votesFor: number, total: number) => {
-    return total === 0 ? 0 : (votesFor / total) * 100;
-  };
-
   const renderProposal = (proposal: Proposal) => {
-    const totalVotes = getTotalVotes(proposal);
-    const forPercentage = getVotingPercentage(proposal.votesFor, totalVotes);
+    const total   = proposal.votesFor + proposal.votesAgainst;
+    const forPct  = total === 0 ? 0 : (proposal.votesFor / total) * 100;
+    const sc      = STATUS_CONFIG[proposal.status];
 
     return (
       <View key={proposal.id} style={styles.proposalCard}>
         {/* Header */}
         <View style={styles.proposalHeader}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.proposalHeaderLeft}>
             <Text style={styles.proposalTitle}>{proposal.title}</Text>
-            <Text style={styles.proposalDescription} numberOfLines={2}>
-              {proposal.description}
-            </Text>
+            <Text style={styles.proposalDesc} numberOfLines={2}>{proposal.description}</Text>
           </View>
-          <View
-            style={[
-              styles.statusBadge,
-              proposal.status === 'active' && styles.statusActive,
-              proposal.status === 'passed' && styles.statusPassed,
-              proposal.status === 'rejected' && styles.statusRejected,
-            ]}
-          >
-            <Text style={styles.statusText}>{proposal.status.toUpperCase()}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: sc.bg, borderColor: sc.border }]}>
+            <Text style={[styles.statusBadgeText, { color: sc.color }]}>{sc.label}</Text>
           </View>
         </View>
 
-        {/* Voting Bar */}
-        <View style={styles.votingSection}>
-          <View style={styles.votingBar}>
-            <View
-              style={[
-                styles.votingBarFill,
-                {
-                  width: `${forPercentage}%`,
-                  backgroundColor: COLORS.success,
-                },
-              ]}
-            />
+        {/* Vote bar */}
+        <View style={styles.voteSection}>
+          <View style={styles.voteTrack}>
+            <View style={[styles.voteFill, { width: `${forPct}%` as `${number}%` }]} />
           </View>
-
-          <View style={styles.votingStats}>
-            <View style={styles.votingStatItem}>
-              <Text style={styles.votingLabel}>FOR</Text>
-              <Text style={[styles.votingValue, { color: COLORS.success }]}>
-                {proposal.votesFor.toLocaleString()}
-              </Text>
-              <Text style={styles.votingPercent}>{forPercentage.toFixed(1)}%</Text>
-            </View>
-
-            <View style={styles.votingStatItem}>
-              <Text style={styles.votingLabel}>AGAINST</Text>
-              <Text style={[styles.votingValue, { color: COLORS.error }]}>
-                {proposal.votesAgainst.toLocaleString()}
-              </Text>
-              <Text style={styles.votingPercent}>{(100 - forPercentage).toFixed(1)}%</Text>
-            </View>
-
-            <View style={styles.votingStatItem}>
-              <Text style={styles.votingLabel}>TOTAL</Text>
-              <Text style={styles.votingValue}>{totalVotes.toLocaleString()}</Text>
-              <Text style={styles.votingPercent}>100%</Text>
-            </View>
+          <View style={styles.voteStats}>
+            {[
+              { label: 'FOR',     value: proposal.votesFor,     color: COLORS.success },
+              { label: 'AGAINST', value: proposal.votesAgainst, color: COLORS.error   },
+              { label: 'TOTAL',   value: total,                 color: COLORS.text     },
+            ].map(({ label, value, color }) => (
+              <View key={label} style={styles.voteStat}>
+                <Text style={styles.voteStatLabel}>{label}</Text>
+                <Text style={[styles.voteStatValue, { color }]}>{value.toLocaleString()}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
-        {/* Action Buttons */}
+        {/* Actions */}
         {proposal.status === 'active' && (
-          <View style={styles.actionRow}>
+          <View style={styles.voteActions}>
             <TouchableOpacity
-              style={[styles.voteButton, styles.forButton]}
-              activeOpacity={0.7}
+              style={[styles.voteBtn, styles.voteBtnFor]}
               onPress={() => handleVote(proposal.id, 'for')}
+              activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel={`Vote for: ${proposal.title}`}
             >
-              <Text style={styles.voteButtonText}>👍 VOTE FOR</Text>
+              <Ionicons name="thumbs-up-outline" size={14} color={COLORS.success} />
+              <Text style={[styles.voteBtnText, { color: COLORS.success }]}>VOTE FOR</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.voteButton, styles.againstButton]}
-              activeOpacity={0.7}
+              style={[styles.voteBtn, styles.voteBtnAgainst]}
               onPress={() => handleVote(proposal.id, 'against')}
+              activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel={`Vote against: ${proposal.title}`}
             >
-              <Text style={styles.voteButtonText}>👎 VOTE AGAINST</Text>
+              <Ionicons name="thumbs-down-outline" size={14} color={COLORS.error} />
+              <Text style={[styles.voteBtnText, { color: COLORS.error }]}>VOTE AGAINST</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -168,48 +142,45 @@ export function DAOScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>DAO GOVERNANCE</Text>
-        <Text style={styles.headerSubtitle}>
-          Community governance for the Alibi network
-        </Text>
+      <ScreenHeader
+        title="DAO GOVERNANCE"
+        subtitle="Community governance for the Alibi network"
+      />
+
+      {/* Dev banner */}
+      <View style={styles.devBanner}>
+        <Ionicons name="construct-outline" size={14} color={COLORS.warning} style={{ marginRight: SPACING.sm }} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.devBannerTitle}>GOVERNANCE MODULE IN DEVELOPMENT</Text>
+          <Text style={styles.devBannerBody}>Preview of upcoming on-chain governance. Voting will go live with mainnet staking.</Text>
+        </View>
       </View>
 
-      {/* DAO Status Banner */}
-      <View style={styles.demoBanner}>
-        <Text style={styles.demoBannerText}>GOVERNANCE MODULE IN DEVELOPMENT</Text>
-        <Text style={styles.demoBannerSubtext}>
-          Preview of upcoming on-chain governance. Voting will go live with mainnet staking.
-        </Text>
-      </View>
-
-      {/* Proposals List */}
       <ScrollView
-        style={styles.proposalsContainer}
-        contentContainerStyle={styles.proposalsContent}
-        scrollEnabled={true}
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
         {proposals.map(renderProposal)}
 
-        {/* Info Box */}
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>HOW DAO VOTING WORKS</Text>
-          <Text style={styles.infoText}>
-            • Token holders vote on network upgrades and parameter changes
-          </Text>
-          <Text style={styles.infoText}>
-            • 1 $ALIBI = 1 vote (must be staked for voting rights)
-          </Text>
-          <Text style={styles.infoText}>
-            • Voting period: 7 days per proposal
-          </Text>
-          <Text style={styles.infoText}>
-            • Quorum required: 40% of total staked tokens
-          </Text>
-          <Text style={styles.infoText}>
-            • Passed if: More FOR votes than AGAINST votes
-          </Text>
+        {/* Info */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoHeader}>
+            <Ionicons name="information-circle-outline" size={16} color={COLORS.primary} />
+            <Text style={styles.infoTitle}>HOW DAO VOTING WORKS</Text>
+          </View>
+          {[
+            'Token holders vote on network upgrades and parameter changes',
+            '1 $ALIBI = 1 vote (must be staked for voting rights)',
+            'Voting period: 7 days per proposal',
+            'Quorum required: 40% of total staked tokens',
+            'Passed if: More FOR votes than AGAINST votes',
+          ].map((item) => (
+            <View key={item} style={styles.infoRow}>
+              <View style={styles.infoRowDot} />
+              <Text style={styles.infoText}>{item}</Text>
+            </View>
+          ))}
         </View>
       </ScrollView>
     </View>
@@ -221,194 +192,180 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    paddingBottom: SPACING.xl,
   },
-  headerTitle: {
-    fontSize: FONTS.size.xl,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.primary,
-    letterSpacing: 1,
-    marginBottom: SPACING.xs,
-  },
-  headerSubtitle: {
-    fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
-  },
-  demoBanner: {
-    marginHorizontal: SPACING.lg,
-    marginVertical: SPACING.md,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.warning,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-  },
-  demoBannerText: {
-    fontSize: FONTS.size.xs,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.warning,
-    letterSpacing: 2,
+
+  devBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginHorizontal: SPACING.md,
     marginBottom: SPACING.sm,
+    backgroundColor: COLORS.warningMuted,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.warningBorder,
   },
-  demoBannerSubtext: {
+  devBannerTitle: {
+    fontSize: FONTS.size.xs,
+    fontWeight: FONTS.weight.heavy,
+    color: COLORS.warning,
+    letterSpacing: FONTS.tracking.label,
+    marginBottom: 3,
+    textTransform: 'uppercase',
+  },
+  devBannerBody: {
     fontSize: FONTS.size.xs,
     color: COLORS.textSecondary,
-    textAlign: 'center',
     lineHeight: 16,
   },
-  proposalsContainer: {
-    flex: 1,
-  },
-  proposalsContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-  },
+
   proposalCard: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    padding: SPACING.md,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
+    overflow: 'hidden',
   },
   proposalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: SPACING.md,
-    paddingBottom: SPACING.md,
+    padding: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+    gap: SPACING.sm,
   },
+  proposalHeaderLeft: { flex: 1 },
   proposalTitle: {
     fontSize: FONTS.size.base,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    marginBottom: 4,
   },
-  proposalDescription: {
+  proposalDesc: {
     fontSize: FONTS.size.xs,
     color: COLORS.textSecondary,
     lineHeight: 16,
   },
   statusBadge: {
     paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.surfaceAlt,
+    paddingVertical: 4,
+    borderRadius: BORDER_RADIUS.xs,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    flexShrink: 0,
   },
-  statusActive: {
-    backgroundColor: 'rgba(50, 215, 75, 0.1)',
-    borderColor: COLORS.success,
-  },
-  statusPassed: {
-    backgroundColor: 'rgba(50, 215, 75, 0.1)',
-    borderColor: COLORS.success,
-  },
-  statusRejected: {
-    backgroundColor: 'rgba(255, 51, 51, 0.1)',
-    borderColor: COLORS.error,
-  },
-  statusText: {
-    fontSize: FONTS.size.xs,
+  statusBadgeText: {
+    fontSize: 9,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.text,
+    letterSpacing: FONTS.tracking.label,
   },
-  votingSection: {
-    marginBottom: SPACING.md,
+
+  voteSection: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
   },
-  votingBar: {
-    height: 12,
+  voteTrack: {
+    height: 6,
     backgroundColor: COLORS.surfaceAlt,
-    borderRadius: BORDER_RADIUS.sm,
+    borderRadius: BORDER_RADIUS.full,
     overflow: 'hidden',
     marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  votingBarFill: {
+  voteFill: {
     height: '100%',
+    backgroundColor: COLORS.success,
+    borderRadius: BORDER_RADIUS.full,
   },
-  votingStats: {
+  voteStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  votingStatItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  votingLabel: {
+  voteStat: { alignItems: 'center', flex: 1 },
+  voteStatLabel: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.textSecondary,
-    letterSpacing: 0.5,
-    marginBottom: SPACING.xs,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.wide,
+    marginBottom: 4,
+    textTransform: 'uppercase',
   },
-  votingValue: {
+  voteStatValue: {
     fontSize: FONTS.size.sm,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
+    fontWeight: FONTS.weight.heavy,
   },
-  votingPercent: {
-    fontSize: FONTS.size.xs,
-    color: COLORS.textSecondary,
-  },
-  actionRow: {
+
+  voteActions: {
     flexDirection: 'row',
-    paddingTop: SPACING.md,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
+    backgroundColor: COLORS.surfaceAlt,
   },
-  voteButton: {
+  voteBtn: {
     flex: 1,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: SPACING.xs,
-    borderWidth: 1,
+    justifyContent: 'center',
+    gap: SPACING.xs,
+    paddingVertical: SPACING.md,
+    borderWidth: 0,
   },
-  forButton: {
-    backgroundColor: 'rgba(50, 215, 75, 0.1)',
-    borderColor: COLORS.success,
+  voteBtnFor: {
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
   },
-  againstButton: {
-    backgroundColor: 'rgba(255, 51, 51, 0.1)',
-    borderColor: COLORS.error,
-  },
-  voteButtonText: {
+  voteBtnAgainst: {},
+  voteBtnText: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.text,
+    letterSpacing: FONTS.tracking.wide,
   },
-  infoBox: {
-    backgroundColor: COLORS.surfaceAlt,
+
+  infoCard: {
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.border,
     marginBottom: SPACING.lg,
   },
+  infoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
   infoTitle: {
     fontSize: FONTS.size.sm,
     fontWeight: FONTS.weight.bold,
     color: COLORS.primary,
-    marginBottom: SPACING.md,
-    letterSpacing: 0.5,
+    letterSpacing: FONTS.tracking.wide,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.sm,
+    marginBottom: SPACING.sm,
+  },
+  infoRowDot: {
+    width: 4,
+    height: 4,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.primary,
+    marginTop: 7,
+    flexShrink: 0,
   },
   infoText: {
+    flex: 1,
     fontSize: FONTS.size.xs,
     color: COLORS.text,
-    marginBottom: SPACING.xs,
-    lineHeight: 16,
+    lineHeight: 18,
   },
 });

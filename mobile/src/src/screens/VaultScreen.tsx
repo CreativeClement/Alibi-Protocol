@@ -3,23 +3,33 @@ import {
   StyleSheet,
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   FlatList,
   Share,
   Alert,
   Linking,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOW } from '../constants/theme';
 import { VaultIncident } from '../types';
 import { getIncidents, deleteIncident, updateIncidentTxSignature } from '../services/storage';
 import { getSolscanUrl, checkTransactionStatus } from '../services/solana';
+import { ScreenHeader } from '../components/primitives';
+
+const MONO = Platform.select({ ios: 'SF Mono', android: 'monospace', default: 'monospace' });
+
+// ─── Status config ─────────────────────────────────────────────────────────
+const STATUS_CONFIG = {
+  confirmed: { icon: 'checkmark-sharp' as const, color: COLORS.success, bg: COLORS.successMuted, border: COLORS.successBorder, label: 'CONFIRMED' },
+  pending:   { icon: 'time-outline'    as const, color: COLORS.warning, bg: COLORS.warningMuted, border: COLORS.warningBorder, label: 'PENDING'   },
+  failed:    { icon: 'close-sharp'     as const, color: COLORS.error,   bg: COLORS.errorMuted,   border: COLORS.errorBorder,   label: 'FAILED'    },
+} as const;
 
 export function VaultScreen() {
-  const [incidents, setIncidents] = useState<VaultIncident[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [incidents, setIncidents]   = useState<VaultIncident[]>([]);
+  const [isLoading, setIsLoading]   = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const loadIncidents = useCallback(async () => {
@@ -28,8 +38,6 @@ export function VaultScreen() {
       const data = await getIncidents();
       const sorted = data.sort((a, b) => b.timestamp - a.timestamp);
       setIncidents(sorted);
-
-      // Poll on-chain status for pending incidents with TX signatures
       pollPendingTransactions(sorted);
     } catch (error) {
       if (__DEV__) console.warn('Load incidents error:', error);
@@ -38,64 +46,47 @@ export function VaultScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    loadIncidents();
-  }, [loadIncidents]);
+  useEffect(() => { loadIncidents(); }, [loadIncidents]);
 
-  const pollPendingTransactions = async (incidentList: VaultIncident[]) => {
-    const pendingWithTx = incidentList.filter(
-      (i) => i.onChainStatus === 'pending' && i.txSignature
-    );
-
-    for (const incident of pendingWithTx) {
+  const pollPendingTransactions = async (list: VaultIncident[]) => {
+    const pending = list.filter((i) => i.onChainStatus === 'pending' && i.txSignature);
+    for (const incident of pending) {
       try {
         const status = await checkTransactionStatus(incident.txSignature!);
         if (status !== 'pending') {
-          await updateIncidentTxSignature(
-            incident.id,
-            incident.txSignature!,
-            status
-          );
+          await updateIncidentTxSignature(incident.id, incident.txSignature!, status);
           setIncidents((prev) =>
-            prev.map((i) =>
-              i.id === incident.id ? { ...i, onChainStatus: status } : i
-            )
+            prev.map((i) => (i.id === incident.id ? { ...i, onChainStatus: status } : i))
           );
         }
       } catch (error) {
-        if (__DEV__) console.warn(`Poll TX status error for ${incident.id}:`, error);
+        if (__DEV__) console.warn(`Poll TX error for ${incident.id}:`, error);
       }
     }
   };
 
   const handleDelete = useCallback((incidentId: string) => {
-    Alert.alert(
-      'Delete Incident',
-      'Are you sure? This action cannot be undone.',
-      [
-        { text: 'Cancel', onPress: () => {} },
-        {
-          text: 'Delete',
-          onPress: async () => {
-            try {
-              await deleteIncident(incidentId);
-              setIncidents((prev) => prev.filter((i) => i.id !== incidentId));
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete incident');
-            }
-          },
-          style: 'destructive',
+    Alert.alert('Delete Incident', 'Are you sure? This action cannot be undone.', [
+      { text: 'Cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteIncident(incidentId);
+            setIncidents((prev) => prev.filter((i) => i.id !== incidentId));
+          } catch {
+            Alert.alert('Error', 'Failed to delete incident');
+          }
         },
-      ]
-    );
+      },
+    ]);
   }, []);
 
   const handleShare = useCallback(async (incident: VaultIncident) => {
     try {
-      const shareText = `ALIBI Vault Incident\n\nDate: ${new Date(incident.timestamp).toLocaleString()}\nHash: ${incident.hash}\nDuration: ${incident.duration}s\nLocation: ${incident.latitude.toFixed(4)}, ${incident.longitude.toFixed(4)}\nSpeed: ${incident.speed.toFixed(1)} MPH\n${incident.txSignature ? `TX: ${incident.txSignature}` : 'Not on-chain'}`;
-
       await Share.share({
-        message: shareText,
+        message: `ALIBI Vault Incident\n\nDate: ${new Date(incident.timestamp).toLocaleString()}\nHash: ${incident.hash}\nDuration: ${incident.duration}s\nLocation: ${incident.latitude.toFixed(4)}, ${incident.longitude.toFixed(4)}\nSpeed: ${incident.speed.toFixed(1)} MPH\n${incident.txSignature ? `TX: ${incident.txSignature}` : 'Not on-chain'}`,
         title: 'Alibi Incident Report',
       });
     } catch (error) {
@@ -103,133 +94,92 @@ export function VaultScreen() {
     }
   }, []);
 
-  const renderIncident = ({ item }: { item: VaultIncident }) => {
+  const renderIncident = ({ item, index }: { item: VaultIncident; index: number }) => {
+    const sc = STATUS_CONFIG[item.onChainStatus] ?? STATUS_CONFIG.pending;
     const date = new Date(item.timestamp);
-    const dateString = date.toLocaleDateString();
-    const timeString = date.toLocaleTimeString();
 
     return (
-      <View style={styles.incidentCard}>
-        {/* Status Header */}
+      <View style={[styles.card, index === 0 && styles.cardFirst]}>
+        {/* Card header */}
         <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.incidentDate}>{dateString} {timeString}</Text>
-            <Text style={styles.incidentDescription} numberOfLines={1}>
-              {item.description}
+          <View style={styles.cardHeaderLeft}>
+            <Text style={styles.cardDate}>
+              {date.toLocaleDateString()} · {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </Text>
+            <Text style={styles.cardDesc} numberOfLines={1}>{item.description}</Text>
           </View>
-          <View
-            style={[
-              styles.statusBadge,
-              item.onChainStatus === 'confirmed' && styles.statusConfirmed,
-              item.onChainStatus === 'pending' && styles.statusPending,
-              item.onChainStatus === 'failed' && styles.statusFailed,
-            ]}
-          >
-            <Ionicons
-              name={
-                item.onChainStatus === 'confirmed'
-                  ? 'checkmark-sharp'
-                  : item.onChainStatus === 'pending'
-                  ? 'time-outline'
-                  : 'close-sharp'
-              }
-              size={16}
-              color={
-                item.onChainStatus === 'confirmed'
-                  ? COLORS.success
-                  : item.onChainStatus === 'pending'
-                  ? COLORS.warning
-                  : COLORS.error
-              }
-            />
+          <View style={[styles.statusBadge, { backgroundColor: sc.bg, borderColor: sc.border }]}>
+            <Ionicons name={sc.icon} size={12} color={sc.color} />
+            <Text style={[styles.statusBadgeText, { color: sc.color }]}>{sc.label}</Text>
           </View>
         </View>
 
-        {/* Incident Details */}
-        <View style={styles.cardDetails}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>HASH:</Text>
-            <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
-              {item.hash.slice(0, 20)}...
-            </Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>DURATION:</Text>
-            <Text style={styles.detailValue}>{item.duration}s</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>LOCATION:</Text>
-            <Text style={styles.detailValue}>
-              {item.latitude.toFixed(2)}°, {item.longitude.toFixed(2)}°
-            </Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>SPEED:</Text>
-            <Text style={styles.detailValue}>{item.speed.toFixed(1)} MPH</Text>
-          </View>
-
+        {/* Data rows */}
+        <View style={styles.dataSection}>
+          {[
+            { label: 'HASH',     value: `${item.hash.slice(0, 20)}...` },
+            { label: 'DURATION', value: `${item.duration}s`            },
+            { label: 'LOCATION', value: `${item.latitude.toFixed(2)}°, ${item.longitude.toFixed(2)}°` },
+            { label: 'SPEED',    value: `${item.speed.toFixed(1)} MPH` },
+          ].map(({ label, value }, i, arr) => (
+            <View key={label} style={[styles.dataRow, i === arr.length - 1 && !item.txSignature && styles.dataRowLast]}>
+              <Text style={styles.dataLabel}>{label}</Text>
+              <Text style={styles.dataValue} numberOfLines={1} ellipsizeMode="middle">{value}</Text>
+            </View>
+          ))}
           {item.txSignature && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>TX:</Text>
-              <Text style={styles.txLink} numberOfLines={1} ellipsizeMode="middle">
-                {item.txSignature.slice(0, 12)}...
+            <View style={[styles.dataRow, styles.dataRowLast]}>
+              <Text style={styles.dataLabel}>TX</Text>
+              <Text style={[styles.dataValue, styles.txValue]} numberOfLines={1} ellipsizeMode="middle">
+                {item.txSignature.slice(0, 16)}...
               </Text>
             </View>
           )}
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.cardActions}>
+        {/* Actions */}
+        <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={styles.actionBtn}
             onPress={() => handleShare(item)}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel="Share incident report"
+            accessibilityLabel="Share incident"
           >
-            <Ionicons name="share-outline" size={15} color={COLORS.text} style={styles.actionIcon} />
-            <Text style={styles.actionButtonText}>SHARE</Text>
+            <Ionicons name="share-outline" size={14} color={COLORS.textSecondary} />
+            <Text style={styles.actionBtnText}>SHARE</Text>
           </TouchableOpacity>
 
           {item.txSignature && (
             <TouchableOpacity
-              style={styles.actionButton}
+              style={styles.actionBtn}
               onPress={async () => {
                 try {
                   const url = getSolscanUrl(item.txSignature!);
-                  const canOpen = await Linking.canOpenURL(url);
-                  if (canOpen) {
-                    await Linking.openURL(url);
-                  } else {
-                    Alert.alert('Error', 'Unable to open Solscan link');
-                  }
-                } catch (err) {
+                  if (await Linking.canOpenURL(url)) await Linking.openURL(url);
+                  else Alert.alert('Error', 'Unable to open Solscan');
+                } catch {
                   Alert.alert('Error', 'Failed to open Solscan');
                 }
               }}
               activeOpacity={0.7}
               accessibilityRole="link"
-              accessibilityLabel="View transaction on Solscan"
+              accessibilityLabel="View on Solscan"
             >
-              <Ionicons name="link-outline" size={15} color={COLORS.text} style={styles.actionIcon} />
-              <Text style={styles.actionButtonText}>SOLSCAN</Text>
+              <Ionicons name="link-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.actionBtnText}>SOLSCAN</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
-            style={[styles.actionButton, styles.deleteButton]}
+            style={[styles.actionBtn, styles.actionBtnDelete]}
             onPress={() => handleDelete(item.id)}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Delete incident"
-            accessibilityHint="Permanently delete this incident from the vault"
           >
-            <Ionicons name="trash-outline" size={15} color={COLORS.error} style={styles.actionIcon} />
-            <Text style={styles.deleteButtonText}>DELETE</Text>
+            <Ionicons name="trash-outline" size={14} color={COLORS.error} />
+            <Text style={[styles.actionBtnText, { color: COLORS.error }]}>DELETE</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -238,35 +188,28 @@ export function VaultScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>EVIDENCE VAULT</Text>
-        <Text style={styles.headerSubtitle}>
-          {incidents.length} incident{incidents.length !== 1 ? 's' : ''} recorded
-        </Text>
-      </View>
+      <ScreenHeader
+        title="EVIDENCE VAULT"
+        subtitle={`${incidents.length} incident${incidents.length !== 1 ? 's' : ''} recorded`}
+      />
 
-      {/* Vault List */}
       {isLoading ? (
-        <View style={styles.emptyContainer}>
+        <View style={styles.empty}>
           <Text style={styles.emptyText}>Loading vault...</Text>
         </View>
       ) : incidents.length === 0 ? (
-        <View style={styles.emptyContainer}>
+        <View style={styles.empty}>
           <View style={styles.emptyIconWrap}>
-            <Ionicons name="lock-closed-outline" size={40} color={COLORS.primary} />
+            <Ionicons name="lock-closed-outline" size={36} color={COLORS.primary} />
           </View>
-          <Text style={styles.emptyText}>No incidents recorded yet</Text>
-          <Text style={styles.emptySubtext}>
-            Activate emergency mode to record evidence
-          </Text>
+          <Text style={styles.emptyTitle}>No incidents recorded</Text>
+          <Text style={styles.emptySubtitle}>Activate emergency mode to begin recording evidence</Text>
         </View>
       ) : (
         <FlatList
           data={incidents}
           renderItem={renderIncident}
           keyExtractor={(item) => item.id}
-          scrollEnabled={true}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
@@ -290,27 +233,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerTitle: {
-    fontSize: FONTS.size.xl,
-    fontWeight: FONTS.weight.heavy,
-    color: COLORS.text,
-    letterSpacing: FONTS.tracking.wider,
-    marginBottom: SPACING.xs,
-  },
-  headerSubtitle: {
-    fontSize: FONTS.size.sm,
-    color: COLORS.textSecondary,
-  },
+
+  // List
   listContent: {
-    padding: SPACING.lg,
+    padding: SPACING.md,
+    paddingBottom: SPACING.xl,
   },
-  incidentCard: {
+
+  // Card
+  card: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
@@ -319,6 +250,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...SHADOW.sm,
   },
+  cardFirst: {
+    borderColor: COLORS.primaryBorder,
+  },
+
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -328,141 +263,133 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.sm,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+    gap: SPACING.sm,
   },
-  incidentDate: {
+  cardHeaderLeft: { flex: 1 },
+  cardDate: {
     fontSize: FONTS.size.xs,
-    fontWeight: FONTS.weight.bold,
+    fontWeight: FONTS.weight.semibold,
     color: COLORS.primary,
-    letterSpacing: 0.5,
-    marginBottom: SPACING.xs,
+    letterSpacing: 0.4,
+    marginBottom: 3,
   },
-  incidentDescription: {
+  cardDesc: {
     fontSize: FONTS.size.sm,
+    fontWeight: FONTS.weight.semibold,
     color: COLORS.text,
-    fontWeight: FONTS.weight.medium,
   },
+
+  // Status badge
   statusBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.surfaceAlt,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: BORDER_RADIUS.xs,
     borderWidth: 1,
-    borderColor: COLORS.warning,
+    flexShrink: 0,
   },
-  statusConfirmed: {
-    backgroundColor: 'rgba(50, 215, 75, 0.1)',
-    borderColor: COLORS.success,
-  },
-  statusPending: {
-    backgroundColor: 'rgba(255, 149, 0, 0.1)',
-    borderColor: COLORS.warning,
-  },
-  statusFailed: {
-    backgroundColor: 'rgba(255, 51, 51, 0.1)',
-    borderColor: COLORS.error,
-  },
-  statusText: {
-    fontSize: FONTS.size.sm,
+  statusBadgeText: {
+    fontSize: 9,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.text,
+    letterSpacing: FONTS.tracking.label,
   },
-  cardDetails: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-  },
-  detailRow: {
+
+  // Data rows
+  dataSection: {},
+  dataRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm - 1,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
-  detailLabel: {
+  dataRowLast: { borderBottomWidth: 0 },
+  dataLabel: {
     fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.textSecondary,
-    letterSpacing: 0.5,
+    color: COLORS.textMuted,
+    letterSpacing: FONTS.tracking.label,
+    width: 72,
   },
-  detailValue: {
+  dataValue: {
+    flex: 1,
+    fontFamily: MONO,
     fontSize: FONTS.size.xs,
     color: COLORS.text,
-    flex: 1,
-    marginLeft: SPACING.md,
     textAlign: 'right',
   },
-  txLink: {
-    fontSize: FONTS.size.xs,
+  txValue: {
     color: COLORS.primary,
-    flex: 1,
-    marginLeft: SPACING.md,
-    textAlign: 'right',
   },
-  cardActions: {
+
+  // Actions
+  actions: {
     flexDirection: 'row',
     paddingHorizontal: SPACING.md,
-    paddingBottom: SPACING.md,
+    paddingVertical: SPACING.sm,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
-    paddingTop: SPACING.md,
+    gap: SPACING.xs,
+    backgroundColor: COLORS.surfaceAlt,
   },
-  actionButton: {
+  actionBtn: {
     flex: 1,
     flexDirection: 'row',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-    backgroundColor: COLORS.surfaceAlt,
-    borderRadius: BORDER_RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: SPACING.xs,
+    gap: 4,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  actionIcon: {
-    marginRight: SPACING.xs,
+  actionBtnDelete: {
+    borderColor: COLORS.errorBorder,
   },
-  actionButtonText: {
-    fontSize: FONTS.size.xs,
+  actionBtnText: {
+    fontSize: 10,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.text,
-    letterSpacing: FONTS.tracking.wide,
+    color: COLORS.textSecondary,
+    letterSpacing: FONTS.tracking.label,
   },
-  deleteButton: {
-    borderColor: 'rgba(255,59,71,0.4)',
-  },
-  deleteButtonText: {
-    fontSize: FONTS.size.xs,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.error,
-  },
-  emptyContainer: {
+
+  // Empty state
+  empty: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
+    padding: SPACING.lg,
+    gap: SPACING.md,
   },
   emptyIconWrap: {
-    width: 88,
-    height: 88,
+    width: 80,
+    height: 80,
     borderRadius: BORDER_RADIUS.full,
     backgroundColor: COLORS.primaryMuted,
     borderWidth: 1,
-    borderColor: 'rgba(0,229,255,0.3)',
+    borderColor: COLORS.primaryBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.lg,
   },
-  emptyText: {
+  emptyTitle: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text,
-    marginBottom: SPACING.sm,
     textAlign: 'center',
   },
-  emptySubtext: {
+  emptySubtitle: {
     fontSize: FONTS.size.base,
     color: COLORS.textSecondary,
     textAlign: 'center',
+    lineHeight: 22,
+  },
+  emptyText: {
+    fontSize: FONTS.size.base,
+    color: COLORS.textSecondary,
   },
 });
