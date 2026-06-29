@@ -1,6 +1,12 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/legal-guidance",
+      "destination": "https://alibi-api.timrclement.workers.dev/legal-guidance"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

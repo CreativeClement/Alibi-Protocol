@@ -5,13 +5,36 @@
  * API keys and secrets must come from environment variables — never hardcode them.
  */
 
+// Alibi Protocol — Official Site / Domain
+// The app is connected to the alibiprotocol.com domain. All first-party API
+// calls route through the domain (which proxies to the underlying Cloudflare
+// Worker via a Vercel rewrite), so the workers.dev URL never appears client-side.
+// Override the base URL for local/dev via EXPO_PUBLIC_SITE_URL.
+export const SITE_CONFIG = {
+  domain: 'alibiprotocol.com',
+  baseUrl: process.env.EXPO_PUBLIC_SITE_URL || 'https://alibiprotocol.com',
+  get apiBaseUrl() {
+    return `${this.baseUrl}/api`;
+  },
+  links: {
+    home: 'https://alibiprotocol.com',
+    whitepaper: 'https://alibiprotocol.com/whitepaper',
+    tokenomics: 'https://alibiprotocol.com/tokenomics',
+    privacy: 'https://alibiprotocol.com/privacy',
+    terms: 'https://alibiprotocol.com/terms',
+    contact: 'https://alibiprotocol.com/contact',
+  },
+} as const;
+
 // Claude AI — Legal Guidance Engine
-// NOTE: Calls go through Cloudflare Worker proxy (alibi-api.timrclement.workers.dev)
-// The Anthropic API key is stored as a Worker secret — NEVER in the client bundle.
-// DO NOT set EXPO_PUBLIC_CLAUDE_API_KEY in production. The proxy handles auth.
+// Routed through the alibiprotocol.com domain (Vercel rewrite -> Cloudflare
+// Worker). The Anthropic API key is stored as a Worker secret — NEVER in the
+// client bundle. DO NOT set EXPO_PUBLIC_CLAUDE_API_KEY in production.
 export const CLAUDE_CONFIG = {
-  // Proxy endpoint — API key lives server-side in Worker secrets
-  proxyUrl: 'https://alibi-api.timrclement.workers.dev/legal-guidance',
+  // First-party endpoint on the official domain (proxied to the Worker).
+  proxyUrl:
+    process.env.EXPO_PUBLIC_LEGAL_GUIDANCE_URL ||
+    `${SITE_CONFIG.baseUrl}/api/legal-guidance`,
   // Direct endpoint — only used if proxy is explicitly overridden for dev
   directApiUrl: 'https://api.anthropic.com/v1/messages',
   model: 'claude-haiku-4-5-20251001',

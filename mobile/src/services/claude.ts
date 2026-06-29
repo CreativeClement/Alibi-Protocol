@@ -1,9 +1,10 @@
 /**
  * Legal Guidance Service
  *
- * Calls the Alibi Cloudflare Worker proxy at alibi-api.timrclement.workers.dev.
- * The Anthropic API key is stored as a Worker secret — it is NEVER bundled
- * into the client app. Do not use EXPO_PUBLIC_CLAUDE_API_KEY in production.
+ * Calls the official domain endpoint at alibiprotocol.com/api/legal-guidance,
+ * which Vercel rewrites to the Alibi Cloudflare Worker. The Anthropic API key
+ * is stored as a Worker secret — it is NEVER bundled into the client app.
+ * Do not use EXPO_PUBLIC_CLAUDE_API_KEY in production.
  */
 import { LegalGuidance } from '../types';
 import { CLAUDE_CONFIG } from '../constants/api';

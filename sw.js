@@ -4,7 +4,7 @@
  * Cache-first strategy for static assets, network-first for HTML pages.
  */
 
-const CACHE_NAME = 'alibi-v20';
+const CACHE_NAME = 'alibi-v21';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -21,16 +21,10 @@ const STATIC_ASSETS = [
   '/terms.html',
   '/disclaimer',
   '/disclaimer.html',
-  '/Alibi_Protocol_Investor_Document',
-  '/Alibi_Protocol_Investor_Document.html',
-  '/Alibi_Investor_Landing',
-  '/Alibi_Investor_Landing.html',
-  '/alibi_viral_twitter',
-  '/alibi_viral_twitter.html',
-  '/alibi_data_marketplace_video',
-  '/alibi_data_marketplace_video.html',
-  '/alibi_media_showcase',
-  '/alibi_media_showcase.html',
+  '/transparency',
+  '/transparency.html',
+  '/contact',
+  '/contact.html',
   '/favicon.svg',
   '/icon-192.png',
   '/icon-512.png',
