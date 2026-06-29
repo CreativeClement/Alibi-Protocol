@@ -20,14 +20,17 @@
   ],
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
+    "@react-native-async-storage/async-storage": "^3.1.1",
     "@solana/web3.js": "^1.98.4",
     "expo-camera": "^56.0.8",
     "expo-crypto": "^56.0.4",
+    "expo-speech": "^56.0.3",
     "expo-status-bar": "^56.0.4",
     "react": "^19.2.7",
     "react-native": "^0.86.0",
     "react-native-get-random-values": "^2.0.0",
     "react-native-maps": "^1.29.0",
-    "react-native-safe-area-context": "^5.8.0"
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-svg": "^15.15.5"
   }
 }

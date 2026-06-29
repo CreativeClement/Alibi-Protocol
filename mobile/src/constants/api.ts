@@ -47,6 +47,55 @@ export const NAVIGATION_CONFIG = {
   earnCheckIntervalMs: 5_000,
 } as const;
 
+// Turn-by-turn Navigation (Waze-style)
+//
+// Provider-agnostic: defaults to free OpenStreetMap services (OSRM routing +
+// Nominatim search) which require no API key. To upgrade to higher-quality
+// traffic-aware routing later, set EXPO_PUBLIC_MAPBOX_TOKEN (or a Google key)
+// and add a provider in services/navigation.
+export const NAV_CONFIG = {
+  // Active provider. Auto-selects mapbox if a token is present, else osm.
+  provider: (process.env.EXPO_PUBLIC_NAV_PROVIDER || 'auto') as
+    | 'auto'
+    | 'osm'
+    | 'mapbox',
+  mapboxToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN || '',
+  // Free OSM public endpoints.
+  osrmBaseUrl: 'https://router.project-osrm.org',
+  nominatimBaseUrl: 'https://nominatim.openstreetmap.org',
+  // Distance (meters) within which the next maneuver triggers a voice cue.
+  voiceCueDistanceMeters: 250,
+  // Distance (meters) within which a step is considered "completed".
+  stepArrivalDistanceMeters: 30,
+  // Distance (meters) off the route line that triggers a recalculation.
+  offRouteThresholdMeters: 50,
+  // Distance (meters) within which the user is considered "arrived".
+  arrivalDistanceMeters: 35,
+  // Proximity (meters) at which a map alert announces itself.
+  alertProximityMeters: 400,
+  // Camera pitch (degrees) used in 3D mode.
+  pitch3d: 60,
+  // Zoom levels for follow camera.
+  navZoom: 17,
+  overviewPadding: 80,
+} as const;
+
+import type { NavPreferences } from '../types';
+
+export const DEFAULT_NAV_PREFERENCES: NavPreferences = {
+  viewMode: '3d',
+  mapType: 'standard',
+  themeMode: 'auto',
+  units: 'imperial',
+  voiceEnabled: true,
+  headingUp: true,
+  alertsEnabled: true,
+  avoidHighways: false,
+  avoidTolls: false,
+};
+
+export const NAV_PREFS_STORAGE_KEY = '@alibi/nav_preferences';
+
 // Emergency Mode
 export const EMERGENCY_CONFIG = {
   cameraInitDelayMs: 500,
