@@ -26,6 +26,7 @@
     "expo-crypto": "^56.0.4",
     "expo-speech": "^56.0.3",
     "expo-status-bar": "^56.0.4",
+    "maplibre-gl": "^5.24.0",
     "react": "^19.2.7",
     "react-native": "^0.86.0",
     "react-native-get-random-values": "^2.0.0",
