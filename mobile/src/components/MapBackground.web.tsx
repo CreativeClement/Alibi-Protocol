@@ -1,18 +1,9 @@
-import React, { useMemo, useState } from 'react';
-import { StyleSheet, View, Text, LayoutChangeEvent } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import Svg, { Polyline as SvgPolyline } from 'react-native-svg';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
+import maplibregl from 'maplibre-gl';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants/theme';
-import type {
-  LatLng,
-  LocationCoords,
-  MapAlert,
-  MapType,
-  MapViewMode,
-  Place,
-  Route,
-} from '../types';
-import { alertIcon } from './nav/maneuverIcon';
+import { NAV_CONFIG } from '../constants/api';
+import type { MapAlert, MapType, MapViewMode, Place, Route, LocationCoords } from '../types';
 
 export interface MapBackgroundProps {
   location: LocationCoords;
@@ -28,243 +19,269 @@ export interface MapBackgroundProps {
   nightMode?: boolean;
 }
 
-const GRID_LINES = Array.from({ length: 9 });
+const STYLE_DARK = 'https://tiles.openfreemap.org/styles/dark';
+const STYLE_DAY = 'https://tiles.openfreemap.org/styles/liberty';
 
-const ALERT_TONE: Record<'error' | 'warning' | 'primary', string> = {
-  error: COLORS.error,
-  warning: COLORS.warning,
-  primary: COLORS.primary,
+const ALERT_HEX: Record<string, string> = {
+  police: COLORS.error,
+  crash: COLORS.error,
+  hazard: COLORS.warning,
+  camera: COLORS.warning,
+  incident: COLORS.primary,
 };
 
+// Inject the minimal MapLibre GL stylesheet + marker animations once. We avoid
+// a CSS import so the Metro web bundler stays happy.
+function ensureStyles() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('alibi-maplibre-css')) return;
+  const el = document.createElement('style');
+  el.id = 'alibi-maplibre-css';
+  el.textContent = `
+.maplibregl-map{overflow:hidden;-webkit-tap-highlight-color:transparent;}
+.maplibregl-canvas-container,.maplibregl-canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+.maplibregl-canvas-container.maplibregl-interactive{cursor:grab;}
+.maplibregl-ctrl-attrib{display:none!important;}
+.alibi-user-marker{width:26px;height:26px;border-radius:50%;background:${COLORS.primary};border:3px solid ${COLORS.background};box-shadow:0 0 0 6px ${COLORS.primaryMuted};display:flex;align-items:center;justify-content:center;}
+.alibi-user-marker::after{content:'';position:absolute;width:26px;height:26px;border-radius:50%;border:2px solid ${COLORS.primary};animation:alibi-pulse 1.8s ease-out infinite;}
+@keyframes alibi-pulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(3.2);opacity:0}}
+.alibi-dest-marker{width:18px;height:18px;border-radius:50% 50% 50% 0;background:${COLORS.success};border:2px solid ${COLORS.background};transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,.5);}
+.alibi-alert-marker{width:26px;height:26px;border-radius:50%;background:${COLORS.background};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+`;
+  document.head.appendChild(el);
+}
+
+const BUILDINGS_LAYER = '3d-buildings';
+const ROUTE_SRC = 'alibi-route';
+
 /**
- * Web fallback for the native map. react-native-maps is native-only, so on
- * web we render a tactical grid that projects the live route, destination,
- * and alert markers into the viewport. The full Google map renders on device.
+ * Web map background. Renders a real MapLibre GL vector map (OpenFreeMap dark
+ * style) with 3D building extrusions, the live route polyline drawn on the
+ * actual streets, and a Waze-style follow camera. Native uses
+ * MapBackground.tsx (react-native-maps + Google).
  */
 export function MapBackground({
   location,
   route,
   destination,
   alerts = [],
+  viewMode = '3d',
+  headingUp = true,
   navigating = false,
+  recenterSignal = 0,
+  nightMode = true,
 }: MapBackgroundProps) {
-  const [size, setSize] = useState({ width: 0, height: 0 });
+  const containerRef = useRef<any>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const readyRef = useRef(false);
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const destMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const alertMarkersRef = useRef<maplibregl.Marker[]>([]);
 
-  const onLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setSize({ width, height });
+  // Add the 3D buildings + route source/layers to the current style.
+  const setupLayers = (map: maplibregl.Map) => {
+    if (!map.getLayer(BUILDINGS_LAYER)) {
+      try {
+        map.addLayer({
+          id: BUILDINGS_LAYER,
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          type: 'fill-extrusion',
+          minzoom: 14,
+          paint: {
+            'fill-extrusion-color': nightMode ? '#16202b' : '#c8cdd6',
+            'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 8],
+            'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+            'fill-extrusion-opacity': 0.85,
+          },
+        });
+      } catch {
+        // Some styles may name the source differently; ignore if unavailable.
+      }
+    }
+
+    if (!map.getSource(ROUTE_SRC)) {
+      map.addSource(ROUTE_SRC, {
+        type: 'geojson',
+        data: routeGeoJson(route),
+      });
+      map.addLayer({
+        id: 'alibi-route-casing',
+        type: 'line',
+        source: ROUTE_SRC,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': COLORS.primaryDark, 'line-width': 11 },
+      });
+      map.addLayer({
+        id: 'alibi-route-line',
+        type: 'line',
+        source: ROUTE_SRC,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': COLORS.primary, 'line-width': 6 },
+      });
+    }
   };
 
-  // Compute a bounding box across all visible geometry, then project to pixels.
-  const projection = useMemo(() => {
-    const pts: LatLng[] = [];
-    pts.push({ latitude: location.latitude, longitude: location.longitude });
-    if (route?.coordinates?.length) pts.push(...route.coordinates);
-    if (destination) {
-      pts.push({ latitude: destination.latitude, longitude: destination.longitude });
-    }
-    alerts.forEach((a) => pts.push(a.location));
+  // Initialize the map once.
+  useEffect(() => {
+    ensureStyles();
+    if (!containerRef.current || mapRef.current) return;
 
-    let minLat = Infinity;
-    let maxLat = -Infinity;
-    let minLng = Infinity;
-    let maxLng = -Infinity;
-    for (const p of pts) {
-      minLat = Math.min(minLat, p.latitude);
-      maxLat = Math.max(maxLat, p.latitude);
-      minLng = Math.min(minLng, p.longitude);
-      maxLng = Math.max(maxLng, p.longitude);
-    }
-    // Pad so a single point doesn't collapse the box.
-    const latPad = Math.max((maxLat - minLat) * 0.15, 0.004);
-    const lngPad = Math.max((maxLng - minLng) * 0.15, 0.004);
-    minLat -= latPad;
-    maxLat += latPad;
-    minLng -= lngPad;
-    maxLng += lngPad;
+    const map = new maplibregl.Map({
+      container: containerRef.current as HTMLElement,
+      style: nightMode ? STYLE_DARK : STYLE_DAY,
+      center: [location.longitude, location.latitude],
+      zoom: 15,
+      pitch: viewMode === '3d' ? NAV_CONFIG.pitch3d : 0,
+      attributionControl: false,
+      dragRotate: true,
+    });
+    mapRef.current = map;
 
-    const pad = 48;
-    const w = Math.max(size.width - pad * 2, 1);
-    const h = Math.max(size.height - pad * 2, 1);
+    map.on('load', () => {
+      readyRef.current = true;
+      setupLayers(map);
 
-    const project = (p: LatLng) => {
-      const x = pad + ((p.longitude - minLng) / (maxLng - minLng || 1)) * w;
-      const y = pad + ((maxLat - p.latitude) / (maxLat - minLat || 1)) * h;
-      return { x, y };
+      // User marker
+      const userEl = document.createElement('div');
+      userEl.className = 'alibi-user-marker';
+      userMarkerRef.current = new maplibregl.Marker({ element: userEl })
+        .setLngLat([location.longitude, location.latitude])
+        .addTo(map);
+    });
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      readyRef.current = false;
     };
-    return { project };
-  }, [location, route, destination, alerts, size]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const routePoints = useMemo(() => {
-    if (!route?.coordinates?.length || size.width === 0) return '';
-    return route.coordinates
-      .map((c) => {
-        const { x, y } = projection.project(c);
-        return `${x.toFixed(1)},${y.toFixed(1)}`;
-      })
-      .join(' ');
-  }, [route, projection, size]);
+  // Swap base style for day/night, then re-add custom layers.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !readyRef.current) return;
+    map.setStyle(nightMode ? STYLE_DARK : STYLE_DAY);
+    map.once('styledata', () => setupLayers(map));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nightMode]);
 
-  const userPx = size.width ? projection.project(location) : { x: 0, y: 0 };
-  const destPx =
-    destination && size.width
-      ? projection.project({
-          latitude: destination.latitude,
-          longitude: destination.longitude,
-        })
-      : null;
+  // Update the route geometry whenever it changes.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !readyRef.current) return;
+    const src = map.getSource(ROUTE_SRC) as maplibregl.GeoJSONSource | undefined;
+    if (src) src.setData(routeGeoJson(route));
+
+    // Fit the whole route when previewing (not actively navigating).
+    if (route && route.coordinates.length > 1 && !navigating) {
+      const bounds = new maplibregl.LngLatBounds();
+      route.coordinates.forEach((c) => bounds.extend([c.longitude, c.latitude]));
+      map.fitBounds(bounds, {
+        padding: { top: 90, right: 60, bottom: 240, left: 60 },
+        duration: 700,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route, navigating]);
+
+  // Follow camera while navigating + keep user marker in sync.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !readyRef.current) return;
+    userMarkerRef.current?.setLngLat([location.longitude, location.latitude]);
+
+    if (navigating) {
+      const heading =
+        headingUp && location.heading != null && location.heading >= 0
+          ? location.heading
+          : map.getBearing();
+      map.easeTo({
+        center: [location.longitude, location.latitude],
+        bearing: headingUp ? heading : 0,
+        pitch: viewMode === '3d' ? NAV_CONFIG.pitch3d : 0,
+        zoom: NAV_CONFIG.navZoom,
+        duration: 800,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location, navigating, viewMode, headingUp]);
+
+  // Recenter when requested.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !readyRef.current || recenterSignal === 0) return;
+    map.easeTo({
+      center: [location.longitude, location.latitude],
+      pitch: viewMode === '3d' ? NAV_CONFIG.pitch3d : 0,
+      zoom: NAV_CONFIG.navZoom,
+      duration: 600,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recenterSignal]);
+
+  // Destination marker.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !readyRef.current) return;
+    destMarkerRef.current?.remove();
+    destMarkerRef.current = null;
+    if (destination) {
+      const el = document.createElement('div');
+      el.className = 'alibi-dest-marker';
+      destMarkerRef.current = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+        .setLngLat([destination.longitude, destination.latitude])
+        .addTo(map);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destination]);
+
+  // Alert markers.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !readyRef.current) return;
+    alertMarkersRef.current.forEach((m) => m.remove());
+    alertMarkersRef.current = alerts.map((a) => {
+      const el = document.createElement('div');
+      el.className = 'alibi-alert-marker';
+      el.style.border = `2px solid ${ALERT_HEX[a.type] ?? COLORS.primary}`;
+      el.style.color = ALERT_HEX[a.type] ?? COLORS.primary;
+      el.textContent = a.type === 'police' ? '!' : a.type === 'crash' ? 'X' : '•';
+      return new maplibregl.Marker({ element: el })
+        .setLngLat([a.location.longitude, a.location.latitude])
+        .addTo(map);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alerts]);
 
   return (
-    <View style={[StyleSheet.absoluteFill, styles.container]} onLayout={onLayout}>
-      {/* Grid */}
-      <View style={styles.grid} pointerEvents="none">
-        {GRID_LINES.map((_, i) => (
-          <View key={`h-${i}`} style={[styles.gridLineH, { top: `${((i + 1) / 10) * 100}%` }]} />
-        ))}
-        {GRID_LINES.map((_, i) => (
-          <View key={`v-${i}`} style={[styles.gridLineV, { left: `${((i + 1) / 10) * 100}%` }]} />
-        ))}
-      </View>
-
-      {/* Route polyline */}
-      {routePoints && size.width > 0 ? (
-        <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
-          <SvgPolyline
-            points={routePoints}
-            fill="none"
-            stroke={COLORS.primaryDark}
-            strokeWidth={10}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          <SvgPolyline
-            points={routePoints}
-            fill="none"
-            stroke={COLORS.primary}
-            strokeWidth={5}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-        </Svg>
-      ) : null}
-
-      {/* Alert markers */}
-      {size.width > 0
-        ? alerts.map((a) => {
-            const { x, y } = projection.project(a.location);
-            const { icon, tone } = alertIcon(a.type);
-            const color = ALERT_TONE[tone];
-            return (
-              <View
-                key={a.id}
-                pointerEvents="none"
-                style={[styles.alertMarker, { left: x - 14, top: y - 14, borderColor: color }]}
-              >
-                <MaterialCommunityIcons name={icon as any} size={16} color={color} />
-              </View>
-            );
-          })
-        : null}
-
-      {/* Destination marker */}
-      {destPx ? (
-        <View
-          pointerEvents="none"
-          style={[styles.destMarker, { left: destPx.x - 16, top: destPx.y - 32 }]}
-        >
-          <Ionicons name="location" size={32} color={COLORS.success} />
-        </View>
-      ) : null}
-
-      {/* User marker */}
-      <View
-        pointerEvents="none"
-        style={[styles.markerWrap, { left: userPx.x - 32, top: userPx.y - 32 }]}
-      >
-        <View style={styles.markerPulse} />
-        <View style={styles.markerDot}>
-          <Ionicons name="navigate" size={18} color={COLORS.textInverse} />
-        </View>
-      </View>
-
-      {/* Coordinates chip */}
-      <View style={styles.coordChip} pointerEvents="none">
-        <Ionicons name="location" size={13} color={COLORS.primary} />
-        <Text style={styles.coordText}>
-          {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+    <View style={StyleSheet.absoluteFill}>
+      <View ref={containerRef} style={StyleSheet.absoluteFill} />
+      <View style={styles.badge} pointerEvents="none">
+        <Text style={styles.badgeText}>
+          {navigating ? 'LIVE NAVIGATION' : route ? 'ROUTE PREVIEW' : 'LIVE MAP'}
         </Text>
       </View>
-
-      <Text style={styles.webNote} pointerEvents="none">
-        {navigating ? 'NAVIGATING · MAP PREVIEW' : 'MAP PREVIEW · LIVE ON DEVICE'}
-      </Text>
     </View>
   );
 }
 
+function routeGeoJson(route?: Route | null): GeoJSON.Feature<GeoJSON.LineString> {
+  const coords =
+    route?.coordinates?.map((c) => [c.longitude, c.latitude] as [number, number]) ?? [];
+  return {
+    type: 'Feature',
+    properties: {},
+    geometry: { type: 'LineString', coordinates: coords },
+  };
+}
+
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: COLORS.surfaceAlt ?? COLORS.surface,
-  },
-  grid: { ...StyleSheet.absoluteFillObject },
-  gridLineH: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: COLORS.border,
-    opacity: 0.5,
-  },
-  gridLineV: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 1,
-    backgroundColor: COLORS.border,
-    opacity: 0.5,
-  },
-  markerWrap: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 64,
-    height: 64,
-  },
-  markerPulse: {
-    position: 'absolute',
-    width: 64,
-    height: 64,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.primaryMuted,
-    borderWidth: 1,
-    borderColor: COLORS.primaryBorder,
-  },
-  markerDot: {
-    width: 36,
-    height: 36,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  destMarker: { position: 'absolute' },
-  alertMarker: {
-    position: 'absolute',
-    width: 28,
-    height: 28,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.overlayLight,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  coordChip: {
+  badge: {
     position: 'absolute',
     top: SPACING.lg,
     alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
     backgroundColor: COLORS.overlayLight,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -272,18 +289,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
   },
-  coordText: {
+  badgeText: {
     fontSize: FONTS.size.xs,
     color: COLORS.textSecondary,
-    fontWeight: FONTS.weight.semibold,
-    letterSpacing: FONTS.tracking.wide,
-  },
-  webNote: {
-    position: 'absolute',
-    bottom: SPACING.lg,
-    alignSelf: 'center',
-    fontSize: FONTS.size.xs,
-    color: COLORS.textMuted,
     fontWeight: FONTS.weight.bold,
     letterSpacing: FONTS.tracking.label,
   },
