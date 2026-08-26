@@ -436,6 +436,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .rec-badge.waiting{border-color:#555;background:rgba(255,255,255,.03);animation:none}
 .rec-badge.waiting .rec-dot{background:#555}
 .rec-badge.waiting .rec-text{color:#555}
+.cab-preview-wrap{position:relative;width:100%;height:148px;border-radius:14px;overflow:hidden;background:#000;border:1px solid rgba(0,229,255,.28);margin-bottom:12px}
+.cab-preview-wrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:#050505}
+.cab-preview-label{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:1.2px;color:#00E5FF;background:rgba(0,0,0,.72);padding:4px 8px;border-radius:6px}
+.cab-preview-label.off{color:#8B949E}
 .state-law-bar{background:rgba(255,159,10,.08);border:1px solid rgba(255,159,10,.3);border-radius:12px;padding:10px 14px;margin-bottom:14px;display:none}
 .state-law-txt{color:var(--orange);font-size:11px;font-weight:700;line-height:1.5}
 .defense-card{background:rgba(10,10,15,.9);border:1px solid var(--cyan-b);padding:20px;border-radius:22px;margin-bottom:14px}
@@ -1624,16 +1628,6 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
 </head>
 <body>
 
-<!-- HACKATHON DEMO BANNER -->
-<div id="hackathon-banner" style="position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(90deg,rgba(0,229,255,.12),rgba(0,255,136,.08),rgba(0,229,255,.12));border-bottom:1px solid rgba(0,229,255,.25);padding:7px 16px;display:flex;align-items:center;justify-content:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(0,229,255,.9);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)">
-  <span style="color:#00FF88">&#9889;</span>
-  <span>COLOSSEUM FRONTIER HACKATHON 2026 &mdash; LIVE DEMO</span>
-  <span style="color:rgba(255,255,255,.2)">|</span>
-  <a href="https://alibiprotocol.com" target="_blank" rel="noopener noreferrer" style="color:rgba(0,229,255,.7);text-decoration:none;border-bottom:1px solid rgba(0,229,255,.3)">alibiprotocol.com &#8599;</a>
-  <button onclick="document.getElementById('hackathon-banner').style.display='none'" style="position:absolute;right:12px;background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:14px;padding:0;line-height:1" aria-label="Dismiss banner">&#10005;</button>
-</div>
-<style>body { padding-top: 36px; } .legal-gate, .consent-overlay { top: 36px; }</style>
-
 <!-- LEGAL GATE — First Launch -->
 <div class="legal-gate" id="legal-gate">
   <div class="legal-gate-card">
@@ -1749,7 +1743,12 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
     <!-- Recording status badge -->
     <div class="rec-badge waiting" id="rec-badge">
       <div class="rec-dot" id="rec-dot"></div>
-      <span class="rec-text" id="rec-text">REQUESTING MICROPHONE...</span>
+      <span class="rec-text" id="rec-text">STARTING ROAD + CABIN + AUDIO...</span>
+    </div>
+
+    <div class="cab-preview-wrap" id="cab-preview-wrap">
+      <video id="cab-preview" playsinline muted autoplay></video>
+      <div class="cab-preview-label off" id="cab-preview-label">IN-CAB CAMERA</div>
     </div>
 
     <!-- State recording law warning (shown when two-party state detected) -->
@@ -2838,8 +2837,9 @@ const hazardMarkers = [];
 let aiSelectedChip = 'traffic stop';
 let aiRequestInFlight = false;
 let wakeLock = null;
-const LEGAL_PROXY = 'https://alibi-api.timrclement.workers.dev/legal-guidance';
-const FOUNDING_API = 'https://alibi-api.timrclement.workers.dev/founding-shield';
+const API_ORIGIN = (typeof location !== 'undefined' && location.origin && location.origin !== 'null') ? location.origin : 'https://alibiprotocol.com';
+const LEGAL_PROXY = API_ORIGIN + '/api/legal-guidance';
+const FOUNDING_API = API_ORIGIN + '/api/founding-shield';
 const FOUNDING_CAP = 10000;
 
 // ── DASHCAM / ROLLING BUFFER ──────────────────────────────
@@ -2856,6 +2856,11 @@ let preBufferGPS = [];            // GPS track snapshot at encounter start
 let preBufferVideoChunks = [];    // video snapshot at encounter start
 let encounterVideoChunks = [];    // video recorded during encounter
 let dcBufInterval = null;         // UI update interval for buffer counter
+let cabStream = null;             // user-facing in-cab camera (officer / cabin)
+let cabRecorder = null;
+let cabChunks = [];
+let cabMimeType = '';
+let cabActive = false;
 
 // ── MOTION / TELEMETRY TRACKING ───────────────────────────
 let motionTrack = [];             // [{ax,ay,az,gForce,ts}] — rolling 5 min accelerometer log
@@ -3444,6 +3449,66 @@ function stopDashcam(){
   releaseWakeLock();
 }
 
+// ── IN-CAB CAMERA (user-facing) — starts when pulled over ──
+async function startInCabCamera(){
+  if(cabActive) return;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+  try{
+    cabChunks = [];
+    cabStream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:'user', width:{ideal:640}, height:{ideal:480}, frameRate:{ideal:15} },
+      audio:false
+    });
+    const preview = document.getElementById('cab-preview');
+    const label = document.getElementById('cab-preview-label');
+    if(preview){
+      preview.srcObject = cabStream;
+      preview.play().catch(()=>{});
+    }
+    if(label){ label.textContent='IN-CAB LIVE'; label.classList.remove('off'); }
+    const types = ['video/webm;codecs=vp8','video/webm','video/mp4'];
+    cabMimeType = types.find(t=>MediaRecorder.isTypeSupported(t)) || '';
+    try{ cabRecorder = new MediaRecorder(cabStream, cabMimeType ? {mimeType:cabMimeType} : {}); }
+    catch(e){ cabRecorder = new MediaRecorder(cabStream); }
+    cabRecorder.ondataavailable = e=>{ if(e.data && e.data.size) cabChunks.push(e.data); };
+    cabRecorder.start(1000);
+    cabActive = true;
+    const recText = document.getElementById('rec-text');
+    if(recText && !recText.textContent.includes('MIC DENIED')){
+      recText.textContent = 'RECORDING · ROAD + IN-CAB + OFFICER AUDIO';
+    }
+  }catch(e){
+    const label = document.getElementById('cab-preview-label');
+    if(label){ label.textContent='IN-CAB UNAVAILABLE'; label.classList.add('off'); }
+    toast('In-cab camera unavailable — officer audio and road dashcam still recording','warn',4000);
+  }
+}
+
+function stopInCabCamera(){
+  try{ if(cabRecorder && cabRecorder.state!=='inactive') cabRecorder.stop(); }catch(_){}
+  if(cabStream) cabStream.getTracks().forEach(t=>t.stop());
+  const preview = document.getElementById('cab-preview');
+  if(preview) preview.srcObject = null;
+  const label = document.getElementById('cab-preview-label');
+  if(label){ label.textContent='IN-CAB CAMERA'; label.classList.add('off'); }
+  cabStream=null; cabRecorder=null; cabActive=false;
+}
+
+function downloadCabFootage(){
+  if(!cabChunks.length) return;
+  try{
+    const ext = (cabMimeType||'').includes('mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(cabChunks, {type:cabMimeType||'video/webm'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'alibi-incab-'+Date.now()+'.'+ext;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 60000);
+    toast('🎥 In-cab footage saved to Downloads','success',5000);
+  }catch(_){}
+}
+
 // ── MOTION / TELEMETRY ────────────────────────────────────
 function startMotionTracking(){
   if(motionListenerAttached) return;
@@ -3799,6 +3864,9 @@ async function startEmergency(){
   preBufferBrakeEvents = [...brakeEvents];
   dashcamChunks = []; // clear rolling buffer — encounter now recording
   encounterActive = true;
+  startInCabCamera().finally(()=>{
+    if(!dashcamActive) startDashcam();
+  });
 
   // Show pre-buffer info in overlay
   if(preBufferGPS.length > 0 || preBufferVideoChunks.length > 0){
@@ -3839,7 +3907,7 @@ async function startEmergency(){
         ? 'audio/webm;codecs=opus'
         : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
         ? 'audio/ogg;codecs=opus' : 'audio/webm';
-      document.getElementById('rec-text').textContent='RECORDING · VIDEO + AUDIO CAPTURING';
+      document.getElementById('rec-text').textContent='RECORDING · ROAD DASHCAM + OFFICER AUDIO';
     } else {
       // Fallback: audio-only
       recStream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
@@ -3947,12 +4015,14 @@ function endEmergency(){
   }
   // ── Reset encounter state, resume dashcam rolling buffer ──
   encounterActive = false;
+  downloadCabFootage();
+  stopInCabCamera();
   document.getElementById('prebuffer-bar').style.display='none';
   document.getElementById('em-overlay').classList.remove('active');
   document.getElementById('stealth-overlay').classList.remove('active');
   const badge = document.getElementById('rec-badge');
   badge.classList.add('waiting');
-  document.getElementById('rec-text').textContent='REQUESTING MICROPHONE...';
+  document.getElementById('rec-text').textContent='STARTING ROAD + CABIN + AUDIO...';
   // Resume dashcam buffer if it was active
   if(dashcamStream && dashcamRecorder && dashcamRecorder.state==='inactive'){
     dashcamChunks=[];

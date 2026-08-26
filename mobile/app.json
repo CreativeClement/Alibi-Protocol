@@ -6,11 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0A0A0C"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.alibiprotocol.ios",
@@ -26,9 +21,7 @@
       "package": "com.alibiprotocol.android",
       "adaptiveIcon": {
         "backgroundColor": "#0A0A0C",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/adaptive-icon.png"
       },
       "permissions": [
         "CAMERA",
@@ -60,7 +53,21 @@
       ],
       "expo-secure-store",
       "expo-file-system",
-      "expo-asset"
+      "expo-asset",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0A0C",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#0A0A0C",
+            "image": "./assets/splash-icon.png"
+          }
+        }
+      ]
     ]
   }
 }

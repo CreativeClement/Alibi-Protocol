@@ -6,7 +6,6 @@ import {
   StyleSheet,
   View,
   StatusBar,
-  Dimensions,
   Animated,
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
@@ -22,8 +21,7 @@ import { EmergencyScreen } from './src/screens/EmergencyScreen';
 import { StealthScreen } from './src/screens/StealthScreen';
 import { TabBar } from './src/components/TabBar';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
-
-const { height } = Dimensions.get('window');
+import { SplashScreen } from './src/components/SplashScreen';
 
 type AppTab = 'NAVIGATION' | 'VAULT' | 'AFTER' | 'WALLET' | 'STEALTH';
 
@@ -31,6 +29,7 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<AppTab>('NAVIGATION');
   const [emergencyActive, setEmergencyActive] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [booting, setBooting] = useState(true);
 
   const { location, error: locationError, loading: locationLoading } = useLocation({
     enabled: true,
@@ -63,12 +62,23 @@ export default function App() {
   }, [currentTab, fadeAnim]);
 
   const tabs = [
-    { id: 'NAVIGATION', label: 'Navigate', icon: '🧭' },
-    { id: 'VAULT', label: 'Vault', icon: '🔐' },
-    { id: 'AFTER', label: 'After', icon: '⚖️' },
-    { id: 'WALLET', label: 'Wallet', icon: '💎' },
-    { id: 'STEALTH', label: 'Stealth', icon: '🕵️' },
+    { id: 'NAVIGATION', label: 'Navigate', icon: 'navigate' as const },
+    { id: 'VAULT', label: 'Vault', icon: 'lock-closed' as const },
+    { id: 'AFTER', label: 'After', icon: 'shield-checkmark' as const },
+    { id: 'WALLET', label: 'Wallet', icon: 'wallet' as const },
+    { id: 'STEALTH', label: 'Stealth', icon: 'eye-off' as const },
   ];
+
+  if (booting) {
+    return (
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <ExpoStatusBar style="light" />
+          <SplashScreen onFinish={() => setBooting(false)} />
+        </View>
+      </SafeAreaProvider>
+    );
+  }
 
   if (emergencyActive) {
     return (
