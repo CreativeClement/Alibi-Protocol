@@ -339,6 +339,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 
 /* ── MAP ── */
 #map{flex:1;z-index:0}
+.leaflet-container{background:#080810!important}
+.leaflet-tile-pane{filter:brightness(.42) contrast(1.25) saturate(.3) hue-rotate(190deg)!important}
 .leaflet-control-attribution,.leaflet-control-zoom{display:none!important}
 
 /* ── SEARCH ── */
@@ -3168,17 +3170,11 @@ function _tickEarnDisplay(target){
 // MAP INIT
 // ════════════════════════════════════════════════════════
 const map_ = L.map('map',{zoomControl:false,attributionControl:false}).setView([42.7886,-71.2011],15);
-const _tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(map_);
-let _tileErrCount = 0, _tileFallbackActive = false;
-_tileLayer.on('tileerror', ()=>{
-  if(_tileFallbackActive) return;
-  _tileErrCount++;
-  if(_tileErrCount >= 3){
-    _tileFallbackActive = true;
-    map_.eachLayer(l=>{ if(l instanceof L.TileLayer) map_.removeLayer(l); });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(map_);
-  }
-});
+const _tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19,
+  subdomains:'abc',
+  attribution:'© OpenStreetMap'
+}).addTo(map_);
 map = map_;
 // userIcon is now dynamic — see makeUserIcon()
 
