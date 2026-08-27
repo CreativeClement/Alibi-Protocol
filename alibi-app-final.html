@@ -609,6 +609,8 @@ html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:v
   padding: 8px 8px calc(12px + var(--safe-b));
   border-top: 1px solid rgba(255,255,255,.06);
   gap: 4px;
+  flex: 0 0 auto;
+  z-index: 800;
 }
 .tab-btn {
   flex: 1;
@@ -3078,6 +3080,7 @@ function switchTab(id, e){
   if(tab) tab.classList.add('active');
   if(id==='nav') setTimeout(()=>{ if(map) map.invalidateSize(); },50);
   if(id==='vault') renderVault();
+  if(id==='after') buildRightsReference();
   if(id==='wallet'){
     const wd = document.getElementById('wallet-display');
     if(wd) wd.textContent = earned.toFixed(2);
