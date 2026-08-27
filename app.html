@@ -1341,7 +1341,7 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
 @keyframes rec-pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 .dc-hero-row{display:flex;gap:8px;align-items:stretch;}
 .dc-hero-main{flex:1;}
-.dc-shield-pill{background:rgba(255,51,51,.1);border:1.5px solid rgba(255,51,51,.3);border-radius:18px;padding:0 18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:900;letter-spacing:1px;color:rgba(255,100,100,.9);white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+.dc-shield-pill{background:rgba(255,51,51,.16);border:1.5px solid rgba(255,80,80,.55);border-radius:18px;padding:0 16px;min-width:92px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:900;letter-spacing:1px;color:#FF6B6B;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
 .dc-shield-pill:active{transform:scale(.96);}
 .nav-bottom-row{display:flex;gap:8px;margin-bottom:8px;}
 .cancel-nav-btn{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.6);cursor:pointer;}
@@ -3063,13 +3063,6 @@ function dismissMountGuide(){
   document.getElementById('mount-overlay').classList.remove('show');
   startDashcam().then(()=>{ if(dashcamActive) toast('Dashcam buffering — last 5 min recorded','success',3000); });
 }
-
-// Auto-show mount guide on first launch (after GPS ready)
-setTimeout(()=>{
-  const seen = localStorage.getItem('alibi_mount_guide_seen');
-  if(!seen){ showMountGuide(); }
-  else if(!dashcamActive){ startDashcam(); }
-}, 3000);
 
 // ════════════════════════════════════════════════════════
 // TAB SWITCHING
