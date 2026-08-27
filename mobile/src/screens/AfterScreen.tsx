@@ -342,38 +342,6 @@ export function AfterScreen({ location }: AfterScreenProps) {
         ))}
       </View>
 
-      {/* Mugshot Monitor */}
-      <View style={[styles.card, styles.cardComingSoon]}>
-        <View style={styles.cardHeaderRow}>
-          <View style={[styles.cardIconWrap, { backgroundColor: COLORS.surfaceAlt }]}>
-            <Ionicons name="eye-off-outline" size={16} color={COLORS.textSecondary} />
-          </View>
-          <Text style={[styles.cardTitle, { color: COLORS.textSecondary }]}>Mugshot Monitor</Text>
-          <View style={[styles.badge, { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: COLORS.border }]}>
-            <Text style={[styles.badgeText, { color: COLORS.textMuted }]}>COMING SOON</Text>
-          </View>
-        </View>
-        <Text style={styles.comingSoonBody}>
-          Automated scanning and removal requests for your image on mugshot aggregator sites. If charges are dropped or you are acquitted, your image gets removed.
-        </Text>
-      </View>
-
-      {/* Reputation Defense */}
-      <View style={[styles.card, styles.cardComingSoon]}>
-        <View style={styles.cardHeaderRow}>
-          <View style={[styles.cardIconWrap, { backgroundColor: COLORS.surfaceAlt }]}>
-            <Ionicons name="shield-outline" size={16} color={COLORS.textSecondary} />
-          </View>
-          <Text style={[styles.cardTitle, { color: COLORS.textSecondary }]}>Reputation Defense</Text>
-          <View style={[styles.badge, { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: COLORS.border }]}>
-            <Text style={[styles.badgeText, { color: COLORS.textMuted }]}>COMING SOON</Text>
-          </View>
-        </View>
-        <Text style={styles.comingSoonBody}>
-          Evidence-backed reputation restoration. Connect your incident hash to attorney filings, track case outcomes, and build a documented record that protects your employment and housing rights.
-        </Text>
-      </View>
-
       {/* Disclaimer */}
       <Text style={styles.disclaimer}>
         Recording laws vary by state. This app provides general information, not legal advice. In two-party consent states, obtain all-party consent before recording private conversations. Recording police in public is generally protected by the First Amendment. Consult an attorney for your specific situation.

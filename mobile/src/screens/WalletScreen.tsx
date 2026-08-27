@@ -129,20 +129,6 @@ export function WalletScreen({ wallet, onConnect, onDisconnect }: WalletScreenPr
             <Text style={styles.earningsNote}>Earn rewards by driving with navigation active</Text>
           </View>
 
-          {/* Staking */}
-          <Text style={styles.sectionLabel}>STAKING</Text>
-          <View style={[styles.card, styles.cardDashed]}>
-            <View style={styles.comingSoonBadgeRow}>
-              <View style={styles.comingSoonBadge}>
-                <Text style={styles.comingSoonBadgeText}>COMING SOON</Text>
-              </View>
-            </View>
-            <Text style={styles.comingSoonTitle}>$ALIBI STAKING</Text>
-            <Text style={styles.comingSoonBody}>
-              Stake your $ALIBI tokens to earn yield and unlock DAO voting power. Staking contracts are currently under development.
-            </Text>
-          </View>
-
           {/* Security */}
           <View style={[styles.card, styles.cardSecurity]}>
             <View style={styles.securityHeaderRow}>

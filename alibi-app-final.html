@@ -116,7 +116,7 @@ function shareInsuranceScore(){
   const a=document.createElement('a');
   a.href=url; a.download='alibi-drivesafe-score.json'; a.click();
   setTimeout(()=>URL.revokeObjectURL(url),5000);
-  toast('DriveSafe™ score exported — share with your insurer','success',4000);
+  toast('DriveSafe score exported','success',3000);
 }
 
 // Start DriveSafe monitoring when GPS starts
@@ -166,7 +166,7 @@ function initNodeIdentity(){
 
   // Set referral link
   const refEl = document.getElementById('referral-link-txt');
-  if(refEl) refEl.textContent = 'alibiprotocol.com/drive?ref=' + nodeId;
+  if(refEl) refEl.textContent = 'alibiprotocol.com/app?ref=' + nodeId;
 
   // Track session
   nodeSessions++;
@@ -182,7 +182,7 @@ function initNodeIdentity(){
   }, 60000);
 
   updateNodeStats();
-  simulateNetworkStats();
+  restoreWalletAddress();
 }
 
 function updateNodeTier(){
@@ -215,60 +215,18 @@ function updateNodeStats(){
   updateNodeTier();
 }
 
-// Simulate live network stats (replace with real API call when backend ready)
-function simulateNetworkStats(){
-  // Seed with node ID for consistency
-  const seed = parseInt(nodeId||'100');
-  const baseNodes = 847 + (seed % 200);
-  const baseMiles = 142000 + (seed * 47);
-  const baseHazards = 8312 + (seed % 500);
-  const baseIncidents = 2847 + (seed % 300);
-
-  function update(){
-    const now = Date.now();
-    const jitter = Math.sin(now/8000)*12;
-    const nodesOnline = Math.round(baseNodes * 0.08 + Math.abs(jitter));
-    const totalNodes = baseNodes + Math.floor(now/1800000); // grows ~1 per 30 min
-
-    const nd = document.getElementById('net-nodes-live');
-    const tn = document.getElementById('net-total-nodes');
-    const nm = document.getElementById('net-miles');
-    const nh = document.getElementById('net-hazards');
-    const ni = document.getElementById('net-incidents');
-    const pf = document.getElementById('net-progress-fill');
-    const ml = document.getElementById('net-milestone-lbl');
-
-    if(nd) nd.textContent = nodesOnline + ' ACTIVE';
-    if(tn) tn.textContent = totalNodes.toLocaleString();
-    if(nm) nm.textContent = (baseMiles + Math.floor(now/60000)).toLocaleString();
-    if(nh) nh.textContent = (baseHazards + Math.floor(now/120000)).toLocaleString();
-    if(ni) ni.textContent = (baseIncidents + Math.floor(now/300000)).toLocaleString();
-
-    // Progress to next milestone
-    const milestones = [1000,5000,10000,50000,100000,500000];
-    const nextMs = milestones.find(m=>m>totalNodes) || 1000000;
-    const prevMs = milestones[milestones.indexOf(nextMs)-1] || 0;
-    const pct = Math.round(((totalNodes-prevMs)/(nextMs-prevMs))*100);
-    if(pf) pf.style.width = Math.min(pct,100)+'%';
-    if(ml) ml.textContent = 'NEXT: '+nextMs.toLocaleString()+' NODES';
-  }
-
-  update();
-  setInterval(update, 7000);
-}
-
 function copyReferralLink(){
   const nodeRef = nodeId||'000000';
-  const link = 'https://alibiprotocol.com/drive?ref='+nodeRef;
+  const link = 'https://alibiprotocol.com/app?ref='+nodeRef;
   navigator.clipboard.writeText(link).then(()=>{
     const btn = document.getElementById('ref-copy-lbl');
     if(btn){ btn.textContent='COPIED!'; btn.style.color='var(--green)'; setTimeout(()=>{ btn.textContent='COPY'; btn.style.color=''; },2000); }
-  }).catch(()=>{ toast('Copy: alibiprotocol.com/drive?ref='+nodeRef,'',4000); });
+  }).catch(()=>{ toast('Copy: alibiprotocol.com/app?ref='+nodeRef,'',4000); });
 }
 
 function shareReferralLink(){
   const nodeRef = nodeId||'000000';
-  const link = 'https://alibiprotocol.com/drive?ref='+nodeRef;
+  const link = 'https://alibiprotocol.com/app?ref='+nodeRef;
   const text = 'I\'m Node #'+nodeRef+' on Alibi Protocol — the nav app that pays you to drive AND protects your rights. Join the network: ';
   if(navigator.share){
     navigator.share({title:'Alibi Protocol',text,url:link}).catch(()=>{});
@@ -277,26 +235,64 @@ function shareReferralLink(){
   }
 }
 
-// Hook into report() to count node reports
-const _origReport = typeof report==='function' ? report : null;
-window._reportHook = function(type){
-  nodeReports++;
-  updateNodeStats();
-  if(_origReport) _origReport(type);
-};
+function showWalletConnected(addr){
+  const disc = document.getElementById('wallet-disconnected');
+  const conn = document.getElementById('wallet-connected');
+  const addrEl = document.getElementById('wallet-addr');
+  if(disc) disc.style.display='none';
+  if(conn) conn.style.display='block';
+  if(addrEl) addrEl.textContent = addr;
+}
+
+function restoreWalletAddress(){
+  const addr = localStorage.getItem('alibi_wallet');
+  if(addr) showWalletConnected(addr);
+}
+
+function connectPhantom(){
+  const provider = window.solana || (window.phantom && window.phantom.solana);
+  if(provider && provider.connect){
+    provider.connect({onlyIfTrusted:false}).then(res=>{
+      const key = res && res.publicKey ? res.publicKey.toString() : '';
+      if(key) saveWalletAddress(key);
+      else showManualWallet();
+    }).catch(()=>showManualWallet());
+    return;
+  }
+  showManualWallet();
+}
+
+function showManualWallet(){
+  const el = document.getElementById('wallet-manual-entry');
+  if(el) el.style.display='block';
+  toast('Paste your Solana address to save it on this device','',3000);
+}
+
+function confirmWalletAddress(){
+  const input = document.getElementById('wallet-manual-input');
+  const v = (input && input.value || '').trim();
+  if(v.length < 32){ toast('Enter a valid Solana address','warn',2500); return; }
+  saveWalletAddress(v);
+}
+
+function saveWalletAddress(addr){
+  localStorage.setItem('alibi_wallet', addr);
+  showWalletConnected(addr);
+  toast('Wallet saved on this device','success',2500);
+}
+
+function disconnectWallet(){
+  localStorage.removeItem('alibi_wallet');
+  const disc = document.getElementById('wallet-disconnected');
+  const conn = document.getElementById('wallet-connected');
+  const manual = document.getElementById('wallet-manual-entry');
+  if(disc) disc.style.display='block';
+  if(conn) conn.style.display='none';
+  if(manual) manual.style.display='none';
+}
 
 // Init on load
 setTimeout(initNodeIdentity, 500);
-
-// Update DriveSafe miles in node stats when wallet tab opens
-const _origSwitchTab = switchTab;
-switchTab = function(id, e){
-  _origSwitchTab(id, e);
-  if(id==='wallet'){
-    updateNodeStats();
-    updateDriveSafeUI();
-  }
-};
 
 </script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -438,7 +434,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .rec-badge.waiting{border-color:#555;background:rgba(255,255,255,.03);animation:none}
 .rec-badge.waiting .rec-dot{background:#555}
 .rec-badge.waiting .rec-text{color:#555}
-.cab-preview-wrap{position:relative;width:100%;height:148px;border-radius:14px;overflow:hidden;background:#000;border:1px solid rgba(0,229,255,.28);margin-bottom:12px}
+.cab-preview-wrap{display:none;position:relative;width:100%;height:148px;border-radius:14px;overflow:hidden;background:#000;border:1px solid rgba(0,229,255,.28);margin-bottom:12px}
+.cab-preview-wrap.live{display:block}
 .cab-preview-wrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:#050505}
 .cab-preview-label{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:1.2px;color:#00E5FF;background:rgba(0,0,0,.72);padding:4px 8px;border-radius:6px}
 .cab-preview-label.off{color:#8B949E}
@@ -522,56 +519,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .token-info-val a{color:var(--cyan);text-decoration:none}
 .claim-card{background:rgba(50,215,75,.04);border:1px solid rgba(50,215,75,.2);border-radius:18px;padding:20px;margin-bottom:14px}
 
-/* ── RIDESHARE SCREEN ── */
-.ride-mode-bar{display:flex;gap:0;background:rgba(255,255,255,.05);border:1px solid var(--b);border-radius:14px;padding:4px;margin-bottom:18px}
-.ride-mode-btn{flex:1;padding:10px 4px;border:none;border-radius:10px;font-size:10px;font-weight:900;letter-spacing:.8px;font-family:var(--mono);cursor:pointer;color:var(--t3);background:none;transition:all .2s}
-.ride-mode-btn.active{background:var(--cyan);color:#000}
-.ride-mode-btn.active.red{background:var(--red);color:#fff}
-.ride-cam-preview{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:4/3;margin-bottom:14px;border:2px solid rgba(0,229,255,.2)}
-.ride-cam-preview video{width:100%;height:100%;object-fit:cover}
-.ride-cam-overlay{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
-.ride-cam-badge{background:rgba(255,51,51,.85);border-radius:8px;padding:4px 10px;font-size:9px;font-weight:900;font-family:var(--mono);color:#fff;letter-spacing:1px;display:flex;align-items:center;gap:5px}
-.ride-cam-badge::before{content:'';width:6px;height:6px;background:#fff;border-radius:50%;animation:pulse-badge 1s ease-in-out infinite}
-.trip-log-card{background:rgba(255,255,255,.03);border:1px solid var(--b);border-radius:16px;padding:16px;margin-bottom:14px}
-.trip-log-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.trip-row{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center}
-.trip-row:last-child{border-bottom:none}
-.panic-phrase-card{background:rgba(255,51,51,.06);border:1px solid rgba(255,51,51,.25);border-radius:18px;padding:18px;margin-bottom:14px}
-.panic-phrase-status{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.panic-listening-dot{width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse-badge 1s ease-in-out infinite}
-
-/* ── GUARDIAN NODE / DRIVING SCORE ── */
-.score-ring-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:18px}
-.score-circle{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--green) var(--score-pct,0%),rgba(255,255,255,.06) 0%);display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:10px}
-.score-circle-inner{width:92px;height:92px;border-radius:50%;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center}
-.score-grade{font-size:36px;font-weight:900;font-family:var(--mono);color:#fff;line-height:1}
-.score-label{font-size:9px;color:var(--t3);font-weight:800;letter-spacing:1px;font-family:var(--mono)}
-.node-tier-card{border-radius:18px;padding:18px;margin-bottom:14px;border:1px solid}
-.node-tier-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:10px;font-weight:900;font-family:var(--mono);letter-spacing:1px}
-.tier-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
-.tier-row:last-child{border-bottom:none}
-
-/* ── STAKING / TOKEN ECONOMY ── */
-.stake-card{background:linear-gradient(135deg,rgba(153,69,255,.08),rgba(20,241,149,.05));border:1px solid rgba(153,69,255,.3);border-radius:20px;padding:20px;margin-bottom:14px}
-.stake-option{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s}
-.stake-option.selected{border-color:rgba(153,69,255,.6);background:rgba(153,69,255,.08)}
-.stake-option-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.stake-apy{font-size:18px;font-weight:900;font-family:var(--mono);color:#9945FF}
-.burn-counter{display:flex;align-items:center;gap:8px;background:rgba(255,51,51,.06);border:1px solid rgba(255,51,51,.2);border-radius:12px;padding:12px 16px;margin-bottom:14px}
-.burn-flame{font-size:20px}
-.attorney-card{background:rgba(0,229,255,.04);border:1px solid var(--cyan-b);border-radius:18px;padding:18px;margin-bottom:14px}
-.attorney-row{display:flex;gap:12px;align-items:center;padding:12px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(255,255,255,.06);margin-bottom:8px;cursor:pointer;transition:background .15s}
-.attorney-row:hover{background:rgba(0,229,255,.04)}
-.attorney-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid var(--cyan-b);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.attorney-verified{color:var(--green);font-size:9px;font-weight:900;font-family:var(--mono);letter-spacing:.5px}
-
 /* ── ANIMATIONS ── */
 @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 @keyframes pulse-badge{0%,100%{opacity:.7}50%{opacity:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-@keyframes glowPulse{0%,100%{box-shadow:0 0 20px rgba(0,229,255,.15)}50%{box-shadow:0 0 40px rgba(0,229,255,.4)}}
-@keyframes burnFlicker{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.1) rotate(2deg)}}
 
 /* ── AI LEGAL GUIDANCE PANEL ── */
 .ai-panel{background:rgba(5,8,14,.96);border:1px solid rgba(0,229,255,.45);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 0 20px rgba(0,229,255,.06)}
@@ -646,17 +598,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
   --transition-med: all .28s cubic-bezier(.4,0,.2,1);
 }
 
-/* ── SCREEN TRANSITIONS ── */
-.screen {
-  animation: none;
-}
-.screen.active {
-  animation: screenReveal .22s cubic-bezier(.4,0,.2,1) forwards;
-}
-@keyframes screenReveal {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* Screens switch instantly — no fade/blur that leaves a blank frame */
 
 /* ── PREMIUM TAB BAR ── */
 .tab-bar {
@@ -1347,9 +1289,8 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
 /* ── SPLASH SCREEN ── */
 .splash-screen{position:fixed;inset:0;z-index:99999;background:#08090C;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:opacity .5s ease;}
 .splash-screen.fade-out{opacity:0;pointer-events:none;}
-.splash-logo-ring{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,rgba(0,229,255,.15),rgba(0,229,255,.04));border:1.5px solid rgba(0,229,255,.3);display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 0 40px rgba(0,229,255,.15),inset 0 0 20px rgba(0,229,255,.05);animation:splash-pulse 2s ease-in-out infinite;}
+.splash-logo-ring{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,rgba(0,229,255,.15),rgba(0,229,255,.04));border:1.5px solid rgba(0,229,255,.3);display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 0 40px rgba(0,229,255,.15),inset 0 0 20px rgba(0,229,255,.05);}
 .splash-logo-ring svg{width:52px;height:52px;}
-@keyframes splash-pulse{0%,100%{box-shadow:0 0 40px rgba(0,229,255,.15),inset 0 0 20px rgba(0,229,255,.05);}50%{box-shadow:0 0 60px rgba(0,229,255,.3),inset 0 0 30px rgba(0,229,255,.1);}}
 .splash-name{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:900;letter-spacing:6px;color:#fff;margin-bottom:6px;}
 .splash-tag{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:4px;color:rgba(0,229,255,.6);margin-bottom:36px;}
 .splash-bar-wrap{width:140px;height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
@@ -1357,143 +1298,14 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
 @keyframes splash-load{0%{width:0%;}100%{width:100%;}}
 .splash-version{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,.18);letter-spacing:2px;margin-top:20px;}
 
-/* ════════════════════════════════════════════════════
-   ALIBI PROTOCOL — BRAND ANIMATIONS
-   ════════════════════════════════════════════════════ */
-
-/* ── Ambient CRT scan lines ── */
-.alibi-scanlines{position:fixed;inset:0;z-index:9990;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(0,0,0,.045) 3px,rgba(0,0,0,.045) 4px);animation:scan-drift 12s linear infinite;}
-@keyframes scan-drift{from{background-position:0 0}to{background-position:0 48px}}
-
-/* ── Splash boot rings ── */
-.splash-ring-outer,.splash-ring-mid{position:absolute;border-radius:50%;border:1px solid rgba(0,229,255,.15);pointer-events:none;}
-.splash-ring-outer{width:180px;height:180px;animation:ring-expand 2.8s ease-out infinite;}
-.splash-ring-mid{width:128px;height:128px;animation:ring-expand 2.8s ease-out .7s infinite;}
-@keyframes ring-expand{0%{transform:scale(.55);opacity:.9}100%{transform:scale(1.5);opacity:0}}
-
-/* ── Map radar sweep ── */
-.radar-sweep{position:absolute;inset:0;z-index:2;pointer-events:none;background:conic-gradient(from 0deg,transparent 0deg,rgba(0,229,255,.03) 20deg,rgba(0,229,255,.08) 38deg,transparent 52deg);animation:radar-spin 7s linear infinite;transform-origin:center;}
-@keyframes radar-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-
-/* ── Map shield glow badge ── */
-.map-shield-badge{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:5px;background:rgba(8,9,12,.8);border:1px solid rgba(0,229,255,.22);border-radius:100px;padding:4px 10px 4px 6px;backdrop-filter:blur(16px);pointer-events:none;animation:badge-drop .5s cubic-bezier(.34,1.56,.64,1) forwards;}
+.map-shield-badge{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:5px;background:rgba(8,9,12,.8);border:1px solid rgba(0,229,255,.22);border-radius:100px;padding:4px 10px 4px 6px;backdrop-filter:blur(16px);pointer-events:none;}
 .map-shield-badge svg{width:16px;height:16px;flex-shrink:0}
 .map-shield-badge-txt{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:900;letter-spacing:2.5px;color:rgba(0,229,255,.75);}
-@keyframes badge-drop{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-
-/* ── Tab bar active dot ── */
-.tab-btn.active::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:18px;height:2px;background:var(--cyan);border-radius:2px;box-shadow:0 0 8px var(--cyan),0 0 3px var(--cyan);animation:tab-glow-in .2s ease forwards;}
-@keyframes tab-glow-in{from{width:0;opacity:0}to{width:18px;opacity:1}}
-
-/* ── Floating earn reward ── */
-.earn-float{position:fixed;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:900;color:var(--cyan);pointer-events:none;z-index:9999;text-shadow:0 0 10px var(--cyan),0 0 20px rgba(0,229,255,.4);letter-spacing:1px;animation:earn-float-up .95s cubic-bezier(.2,.8,.4,1) forwards;}
-@keyframes earn-float-up{0%{opacity:1;transform:translateY(0) scale(1)}35%{opacity:1;transform:translateY(-30px) scale(1.12)}100%{opacity:0;transform:translateY(-72px) scale(.85)}}
-
-/* ── Emergency mode flash ── */
-.alibi-em-flash{position:fixed;inset:0;z-index:99998;pointer-events:none;background:rgba(220,38,38,.22);animation:em-flash-out .7s ease-out forwards;}
-@keyframes em-flash-out{0%{opacity:1}100%{opacity:0}}
-
-/* ── Shield button idle pulse rings ── */
-.shield-ring-1,.shield-ring-2{position:absolute;inset:0;border-radius:inherit;border:1.5px solid rgba(255,51,51,.4);pointer-events:none;animation:shield-ring 2.4s ease-out infinite;}
-.shield-ring-2{inset:-10px;border-radius:22px;border-color:rgba(255,51,51,.18);animation-delay:.55s;}
-@keyframes shield-ring{0%{opacity:.8;transform:scale(.96)}70%{opacity:0;transform:scale(1.06)}100%{opacity:0;transform:scale(1.06)}}
-
-/* ── Vault hash type-reveal ── */
-.hash-type{display:inline-block;overflow:hidden;white-space:nowrap;animation:hash-reveal .6s steps(44,end) forwards;max-width:0;}
-@keyframes hash-reveal{from{max-width:0}to{max-width:100%}}
-
-/* ── Glitch flicker on ALIBI wordmark ── */
-.alibi-glitch{position:relative;}
-.alibi-glitch::before,.alibi-glitch::after{content:attr(data-text);position:absolute;inset:0;opacity:0;}
-.alibi-glitch::before{color:var(--cyan);clip-path:polygon(0 20%,100% 20%,100% 35%,0 35%);animation:glitch-a 8s infinite;}
-.alibi-glitch::after{color:var(--red);clip-path:polygon(0 65%,100% 65%,100% 78%,0 78%);animation:glitch-b 8s 1s infinite;}
-@keyframes glitch-a{0%,94%,100%{opacity:0;transform:translateX(0)}95%{opacity:.6;transform:translateX(-3px)}97%{opacity:.6;transform:translateX(3px)}}
-@keyframes glitch-b{0%,94%,100%{opacity:0;transform:translateX(0)}95%{opacity:.5;transform:translateX(2px)}97%{opacity:.5;transform:translateX(-2px)}}
-
-/* ── AMBIENT PARTICLE FIELD ── */
-.particle-field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
-.ambient-particle{position:absolute;border-radius:50%;opacity:0;animation:particle-drift var(--dur,18s) var(--delay,0s) linear infinite;}
-.ambient-particle.cyan{background:radial-gradient(circle,rgba(0,229,255,.7) 0%,transparent 70%);width:2px;height:2px;box-shadow:0 0 4px rgba(0,229,255,.5);}
-.ambient-particle.green{background:radial-gradient(circle,rgba(0,255,136,.6) 0%,transparent 70%);width:1.5px;height:1.5px;box-shadow:0 0 3px rgba(0,255,136,.4);}
-.ambient-particle.white{background:rgba(255,255,255,.8);width:1px;height:1px;}
-@keyframes particle-drift{
-  0%{opacity:0;transform:translateY(100vh) translateX(0);}
-  5%{opacity:var(--peak,.6);}
-  90%{opacity:var(--peak,.6);}
-  100%{opacity:0;transform:translateY(-20px) translateX(var(--drift,20px));}
-}
-
-/* ── TAP RIPPLE ── */
-.tap-ripple{position:fixed;pointer-events:none;z-index:99999;border-radius:50%;transform:translate(-50%,-50%) scale(0);background:transparent;border:1.5px solid rgba(0,229,255,.5);animation:tap-ripple-out .55s cubic-bezier(.2,.8,.4,1) forwards;}
-@keyframes tap-ripple-out{
-  0%{width:0px;height:0px;opacity:.9;transform:translate(-50%,-50%) scale(1);}
-  100%{width:80px;height:80px;opacity:0;transform:translate(-50%,-50%) scale(1);}
-}
-
-/* ── CARD SHIMMER ── */
-.card{position:relative;overflow:hidden;}
-.card::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.04) 50%,transparent 70%);transform:translateX(-120%);pointer-events:none;border-radius:inherit;}
-.card:hover::after{animation:card-shimmer .65s ease forwards;}
-@keyframes card-shimmer{to{transform:translateX(120%);}}
-
-/* ── 3D PRESS DEPTH ── */
-.report-card,.btn,.action-btn,.tab-btn{transform-style:preserve-3d;transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;}
-.report-card:active{transform:scale(.96) translateY(2px);box-shadow:0 2px 8px rgba(0,0,0,.6)!important;filter:brightness(.92);}
-.btn:active,.action-btn:active{transform:scale(.95) translateY(1px);filter:brightness(.88);}
-.tab-btn:active{transform:scale(.92);}
-
-/* ── EARN BURST PARTICLES ── */
-.earn-burst-particle{position:fixed;pointer-events:none;z-index:99997;width:4px;height:4px;border-radius:50%;background:var(--color,#00FF88);box-shadow:0 0 6px var(--color,#00FF88);animation:burst-fly var(--dur,.7s) cubic-bezier(.2,.8,.3,1) forwards;}
-@keyframes burst-fly{
-  0%{opacity:1;transform:translate(-50%,-50%) translate(0,0) scale(1);}
-  100%{opacity:0;transform:translate(-50%,-50%) translate(var(--bx,0px),var(--by,-40px)) scale(0);}
-}
-
-/* ── SPEED REACTIVE GLOW ── */
-.speed-big{transition:text-shadow .4s ease,color .4s ease;}
-.speed-big.green-speed{text-shadow:0 0 20px rgba(0,255,136,.6),0 0 40px rgba(0,255,136,.2);}
-.speed-big.warning{text-shadow:0 0 20px rgba(255,159,10,.6),0 0 40px rgba(255,159,10,.2);}
-.speed-big.overspeed{text-shadow:0 0 20px rgba(255,59,48,.8),0 0 50px rgba(255,59,48,.3);}
-
-/* ── AMBIENT COLOR MESH ── */
-#app::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:
-    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0,229,255,.03) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 35% at 80% 20%, rgba(0,255,136,.025) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 60% at 50% 50%, rgba(100,0,255,.015) 0%, transparent 70%);
-  animation:mesh-breathe 14s ease-in-out infinite alternate;}
-@keyframes mesh-breathe{
-  0%{opacity:.6;}
-  50%{opacity:1;}
-  100%{opacity:.7;}
-}
-
-/* ── VAULT STAGGER ENTRY ── */
-.vault-entry{opacity:0;transform:translateY(12px);animation:vault-entry-in .35s ease forwards;}
-.vault-entry:nth-child(1){animation-delay:.04s;}
-.vault-entry:nth-child(2){animation-delay:.09s;}
-.vault-entry:nth-child(3){animation-delay:.14s;}
-.vault-entry:nth-child(4){animation-delay:.19s;}
-.vault-entry:nth-child(5){animation-delay:.24s;}
-.vault-entry:nth-child(6){animation-delay:.29s;}
-.vault-entry:nth-child(7){animation-delay:.34s;}
-.vault-entry:nth-child(8){animation-delay:.39s;}
-@keyframes vault-entry-in{to{opacity:1;transform:translateY(0);}}
-
-/* ── ENHANCED SCREEN REVEAL ── */
-@keyframes screenRevealPremium{
-  from{opacity:0;transform:translateY(8px);filter:blur(3px);}
-  to{opacity:1;transform:translateY(0);filter:blur(0);}
-}
-.screen.active{animation:screenRevealPremium .22s cubic-bezier(.25,.46,.45,.94) forwards;}
-
-/* ── SMOOTH EARN COUNTER ── */
-@keyframes earn-tick-pop{
-  0%{transform:scale(1);}
-  40%{transform:scale(1.18);}
-  100%{transform:scale(1);}
-}
-.earn-tick{animation:earn-tick-pop .25s ease;}
+.tab-btn.active::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:18px;height:2px;background:var(--cyan);border-radius:2px;}
+.report-card:active,.btn:active,.action-btn:active{transform:scale(.96);filter:brightness(.92);}
+.speed-big.green-speed{color:#32D74B}
+.speed-big.warning{color:var(--orange)}
+.speed-big.overspeed{color:var(--red)}
 
 /* ── PREMIUM SPEED HUD ── */
 .speed-hud{position:absolute;bottom:180px;right:14px;z-index:500;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
@@ -1688,35 +1500,21 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
   </div>
 </div>
 
-<!-- PASSENGER NOTICE — Full-screen notice to show passengers -->
-<div class="passenger-notice" id="passenger-notice">
-  <div class="pn-icon">📹</div>
-  <div class="pn-title">RECORDING NOTICE</div>
-  <div class="pn-body">This vehicle is equipped with audio and video recording equipment for the safety of both driver and passengers. By remaining in this vehicle, you consent to being recorded.</div>
-  <button class="pn-dismiss" onclick="document.getElementById('passenger-notice').classList.remove('show')">DISMISS</button>
-</div>
-
-
 <!-- ══ SPLASH SCREEN ══ -->
 <div class="splash-screen" id="splash-screen">
-  <div class="splash-ring-outer" aria-hidden="true"></div>
-  <div class="splash-ring-mid" aria-hidden="true"></div>
   <div class="splash-logo-ring">
     <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M26 4L8 11V27C8 37.5 16 46.5 26 49C36 46.5 44 37.5 44 27V11L26 4Z" fill="rgba(0,229,255,0.12)" stroke="rgba(0,229,255,0.7)" stroke-width="1.5" stroke-linejoin="round"/>
       <path d="M18 26L23 31L34 20" stroke="#00E5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </div>
-  <div class="splash-name alibi-glitch" data-text="ALIBI PROTOCOL">ALIBI PROTOCOL</div>
+  <div class="splash-name">ALIBI PROTOCOL</div>
   <div class="splash-tag">NAVIGATE · RECORD · PROTECT</div>
   <div class="splash-bar-wrap"><div class="splash-bar-fill"></div></div>
   <div class="splash-version">v2.0 · BETA</div>
 </div>
 
 <div id="app">
-
-<!-- ── ALIBI BRAND OVERLAYS ── -->
-<div class="alibi-scanlines" aria-hidden="true"></div>
 
 <!-- ══════════════════════════════════════════════════════ -->
 <!-- TOAST CONTAINER -->
@@ -1921,7 +1719,6 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
 <!-- ══════════════════════════════════════════════════════ -->
 <div class="screen active" id="screen-nav">
   <div id="map"></div>
-<div class="radar-sweep" id="radar-sweep" aria-hidden="true"></div>
 <div class="map-shield-badge" id="map-shield-badge" aria-hidden="true">
   <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M26 4L8 11V27C8 37.5 16 46.5 26 49C36 46.5 44 37.5 44 27V11L26 4Z" fill="rgba(0,229,255,0.15)" stroke="rgba(0,229,255,0.8)" stroke-width="2" stroke-linejoin="round"/>
@@ -2027,7 +1824,7 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
             <span id="dc-hero-txt">START DASHCAM</span>
           </button>
         </div>
-        <div class="dc-shield-pill" onclick="startEmergency()" style="position:relative;overflow:visible"><div class="shield-ring-1" aria-hidden="true"></div><div class="shield-ring-2" aria-hidden="true"></div>⚖️ SHIELD</div>
+        <div class="dc-shield-pill" onclick="startEmergency()">⚖️ SHIELD</div>
       </div>
     </div>
   </div>
@@ -2103,25 +1900,9 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
       </div>
     </div>
 
-    <!-- Mugshot Monitor -->
-    <div class="coming-card">
-      <div class="coming-header">
-        <div class="coming-title">🔭 Mugshot Monitor</div>
-        <span class="pill pill-gray">COMING SOON</span>
-      </div>
-      <div style="color:var(--t3);font-size:12px;line-height:1.6">Automated scanning and removal requests for your image on mugshot aggregator sites. If charges are dropped or you're acquitted, your image gets removed. Built in partnership with legal removal services.</div>
     </div>
 
-    <!-- Reputation Defense -->
-    <div class="coming-card">
-      <div class="coming-header">
-        <div class="coming-title">🛡️ Reputation Defense</div>
-        <span class="pill pill-gray">COMING SOON</span>
-      </div>
-      <div style="color:var(--t3);font-size:12px;line-height:1.6">Evidence-backed reputation restoration. Connect your incident hash to attorney filings, track case outcomes, and build a documented record that protects your employment and housing rights.</div>
-    </div>
-
-    <!-- Privacy & Data Transparency -->
+    <!-- Legal disclaimer -->
     <div class="card" style="border-color:rgba(0,229,255,.2)">
       <div class="section-label" style="margin-bottom:12px">🔒 YOUR DATA — WHAT HAPPENS TO IT</div>
       <div style="display:flex;flex-direction:column;gap:10px">
@@ -2192,14 +1973,14 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
     <div class="drivesafe-section">
       <div class="drivesafe-header">
         <div class="drivesafe-title">DRIVESAFE™ SCORE</div>
-        <div class="drivesafe-badge">LIVE MONITORING</div>
+        <div class="drivesafe-badge">ON DEVICE</div>
       </div>
       <div class="drivesafe-card">
         <div class="score-ring-wrap">
           <svg class="score-ring-svg" viewBox="0 0 80 80">
             <circle class="score-ring-track" cx="40" cy="40" r="30"/>
             <circle class="score-ring-fill" id="score-ring-fill" cx="40" cy="40" r="30" stroke="#00E5FF" stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
-            <text class="score-ring-val" id="score-ring-val" x="40" y="37">—</text>
+            <text class="score-ring-val" id="score-ring-val" x="40" y="37">100</text>
             <text class="score-ring-lbl" x="40" y="51">/100</text>
           </svg>
         </div>
@@ -2239,7 +2020,7 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
       </div>
       <div class="node-status-row">
         <div class="node-status-dot"></div>
-        <div class="node-status-txt">ACTIVE NODE — CONTRIBUTING TO NETWORK</div>
+        <div class="node-status-txt">LOCAL NODE — SESSION STATS ON THIS DEVICE</div>
       </div>
       <div class="node-stats-grid">
         <div class="node-stat">
@@ -2256,130 +2037,21 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
         </div>
         <div class="node-stat">
           <div class="node-stat-val" id="node-uptime">0h</div>
-          <div class="node-stat-lbl">Network Uptime</div>
+          <div class="node-stat-lbl">App Uptime</div>
         </div>
       </div>
     </div>
 
-    <!-- ── LIVE NETWORK ── -->
-    <div class="network-section">
-      <div class="network-section-title">⚡ Live Network Activity</div>
-      <div class="network-card">
-        <div class="network-live-row">
-          <div class="network-live-dot"></div>
-          <div class="network-live-txt">NODES ONLINE</div>
-          <div class="network-ticker-val" id="net-nodes-live">—</div>
-        </div>
-        <div class="network-big-stat">
-          <div class="network-big-val" id="net-total-nodes">—</div>
-          <div class="network-big-lbl">TOTAL REGISTERED NODES</div>
-        </div>
-        <div class="network-sub-grid">
-          <div class="network-sub-stat">
-            <div class="network-sub-val" id="net-miles">—</div>
-            <div class="network-sub-lbl">MILES LOGGED</div>
-          </div>
-          <div class="network-sub-stat">
-            <div class="network-sub-val" id="net-hazards">—</div>
-            <div class="network-sub-lbl">HAZARDS MAPPED</div>
-          </div>
-          <div class="network-sub-stat">
-            <div class="network-sub-val" id="net-incidents">—</div>
-            <div class="network-sub-lbl">INCIDENTS VAULTED</div>
-          </div>
-        </div>
-        <div class="network-progress-wrap">
-          <div class="network-progress-fill" id="net-progress-fill" style="width:3%"></div>
-        </div>
-        <div class="network-progress-label">
-          <span id="net-progress-lbl">BETA · GROWING NETWORK</span>
-          <span id="net-milestone-lbl">NEXT: 1,000 NODES</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── REFERRAL ── -->
+    <!-- ── SHARE ── -->
     <div class="referral-card">
-      <div class="referral-title">🔗 GROW THE NETWORK · EARN MORE</div>
-      <div class="referral-desc">Every driver you refer becomes a node. More nodes = more network value = higher $ALIBI price. You earn every time your node referrals drive.</div>
-      <div class="referral-earn-badge">
-        <div class="referral-earn-num">+50</div>
-        <div class="referral-earn-lbl">$ALIBI per active node you refer</div>
-      </div>
+      <div class="referral-title">🔗 SHARE ALIBI</div>
+      <div class="referral-desc">Send your personal link so others can open the app.</div>
       <div class="referral-link-box" onclick="copyReferralLink()">
-        <div class="referral-link-txt" id="referral-link-txt">alibiprotocol.com/drive?ref=——</div>
+        <div class="referral-link-txt" id="referral-link-txt">alibiprotocol.com/app?ref=——</div>
         <div class="referral-copy-btn" id="ref-copy-lbl">COPY</div>
       </div>
-      <button class="referral-share-btn" onclick="shareReferralLink()">📡 SHARE YOUR NODE REFERRAL LINK</button>
-      <div class="referral-tiers" style="margin-top:16px">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2px;margin-bottom:4px">REFERRAL TIERS</div>
-        <div class="referral-tier">
-          <div class="referral-tier-name">1–5 nodes referred</div>
-          <div class="referral-tier-reward">+50 $ALIBI each</div>
-        </div>
-        <div class="referral-tier">
-          <div class="referral-tier-name">6–20 nodes referred</div>
-          <div class="referral-tier-reward">+75 $ALIBI each</div>
-        </div>
-        <div class="referral-tier">
-          <div class="referral-tier-name">21–100 nodes referred</div>
-          <div class="referral-tier-reward">+100 $ALIBI each</div>
-        </div>
-        <div class="referral-tier" style="border-color:rgba(0,229,255,.15);">
-          <div class="referral-tier-name" style="color:var(--cyan)">100+ nodes referred</div>
-          <div class="referral-tier-reward" style="color:var(--cyan)">+150 $ALIBI each 🔱</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── INSURANCE PARTNERS ── -->
-    <div class="insurance-card">
-      <div class="insurance-title">💰 EARN INSURANCE DISCOUNTS</div>
-      <div class="insurance-desc">Share your anonymized DriveSafe™ score with partner insurers and earn discounts on your premium. Your data, your choice — never sold without your consent.</div>
-      <div class="insurance-partners">
-        <div class="ins-partner">PROGRESSIVE</div>
-        <div class="ins-partner">ALLSTATE</div>
-        <div class="ins-partner">STATE FARM</div>
-        <div class="ins-partner">GEICO</div>
-        <div class="ins-partner" style="color:rgba(0,229,255,.4);border-color:rgba(0,229,255,.15)">+ MORE COMING</div>
-      </div>
-      <button class="ins-share-btn" onclick="shareInsuranceScore()">📊 SHARE MY DRIVESAFE™ SCORE</button>
-    </div>
-
-
-
-    <!-- Driving Score Ring -->
-    <div class="score-ring-wrap">
-      <div class="score-circle" id="score-circle" style="--score-pct:0%">
-        <div class="score-circle-inner">
-          <div class="score-grade" id="score-grade">—</div>
-          <div class="score-label">DRIVE SCORE</div>
-        </div>
-      </div>
-      <div style="color:var(--t3);font-size:11px;font-family:var(--mono);letter-spacing:1px;text-align:center">Based on speed compliance, smooth braking &amp; hazard reports</div>
-    </div>
-
-    <!-- Guardian Node Tier -->
-    <div class="node-tier-card" id="node-tier-card" style="background:rgba(0,229,255,.04);border-color:var(--cyan-b)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div style="font-size:15px;font-weight:800">⚡ Guardian Node Status</div>
-        <div class="node-tier-badge" id="node-tier-badge" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--t3)">RECRUIT</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-        <div class="tier-row"><div><div style="color:#fff;font-size:12px;font-weight:700">🔘 RECRUIT</div><div style="color:var(--t3);font-size:10px">0–9 reports</div></div><div style="color:var(--t3);font-size:11px;font-family:var(--mono)">1× multiplier</div></div>
-        <div class="tier-row"><div><div style="color:var(--cyan);font-size:12px;font-weight:700">🔵 SCOUT</div><div style="color:var(--t3);font-size:10px">10–49 reports</div></div><div style="color:var(--cyan);font-size:11px;font-family:var(--mono)">1.5× multiplier</div></div>
-        <div class="tier-row"><div><div style="color:#9945FF;font-size:12px;font-weight:700">🟣 GUARDIAN</div><div style="color:var(--t3);font-size:10px">50–199 reports</div></div><div style="color:#9945FF;font-size:11px;font-family:var(--mono)">2× multiplier</div></div>
-        <div class="tier-row"><div><div style="color:var(--amber);font-size:12px;font-weight:700">🟡 SENTINEL</div><div style="color:var(--t3);font-size:10px">200+ reports</div></div><div style="color:var(--amber);font-size:11px;font-family:var(--mono)">3× multiplier</div></div>
-      </div>
-      <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:10px 14px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-          <span style="color:var(--t3);font-size:9px;font-weight:800;font-family:var(--mono)">REPORTS THIS SESSION</span>
-          <span style="color:#fff;font-size:9px;font-weight:900;font-family:var(--mono)"><span id="node-report-count">0</span> / next tier</span>
-        </div>
-        <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden">
-          <div id="node-progress-bar" style="height:100%;background:var(--cyan);border-radius:4px;width:0%;transition:width .5s ease"></div>
-        </div>
-      </div>
+      <button type="button" class="referral-share-btn" onclick="shareReferralLink()">SHARE LINK</button>
+      <button type="button" class="ins-share-btn" onclick="shareInsuranceScore()" style="margin-top:10px">EXPORT DRIVESAFE SCORE</button>
     </div>
 
     <!-- Earned balance -->
@@ -2403,8 +2075,8 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
     <div class="section-label">HOW YOU EARN</div>
     <div class="how-row">
       <div class="how-item">
-        <div class="how-val">0.05</div>
-        <div class="how-lbl">PER 5 SEC<br>DRIVING</div>
+        <div class="how-val">1×</div>
+        <div class="how-lbl">PER MILE<br>DRIVING</div>
       </div>
       <div class="how-item">
         <div class="how-val">0.50</div>
@@ -2420,47 +2092,17 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
       </div>
     </div>
 
-    <!-- Burn counter -->
-    <div class="burn-counter">
-      <div class="burn-flame" style="animation:burnFlicker 1.5s ease-in-out infinite">🔥</div>
-      <div style="flex:1">
-        <div style="color:var(--red);font-size:10px;font-weight:900;font-family:var(--mono);letter-spacing:1px;margin-bottom:2px">SUPPLY BURNED TO DATE</div>
-        <div style="color:#fff;font-size:16px;font-weight:900;font-family:var(--mono)">0 <span style="color:var(--t3);font-size:11px">$ALIBI</span></div>
-      </div>
-      <div style="color:var(--t3);font-size:9px;font-family:var(--mono);text-align:right">10% BASE<br>UP TO 20%</div>
     </div>
 
-    <!-- Staking preview -->
-    <div class="stake-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div style="font-size:15px;font-weight:800">🔒 Staking Vaults</div>
-        <span class="pill" style="background:rgba(153,69,255,.1);border:1px solid rgba(153,69,255,.3);color:#9945FF">AT TGE</span>
-      </div>
-      <div style="color:var(--t3);font-size:12px;line-height:1.6;margin-bottom:14px">Lock $ALIBI to earn yield from protocol fees — evidence vaulting, premium subscriptions, attorney network transactions. Your stake earns while you protect rights.</div>
-      <div class="stake-option">
-        <div class="stake-option-header"><span style="color:#fff;font-size:13px;font-weight:800">30-Day Lock</span><span class="stake-apy">12% APY</span></div>
-        <div style="color:var(--t3);font-size:11px">Flexible entry. Minimum 1,000 $ALIBI. Fees from evidence vaulting distributed weekly.</div>
-      </div>
-      <div class="stake-option selected">
-        <div class="stake-option-header"><span style="color:#fff;font-size:13px;font-weight:800">90-Day Lock</span><span class="stake-apy" style="color:#14F195">22% APY</span></div>
-        <div style="color:var(--t3);font-size:11px">Most popular. Minimum 5,000 $ALIBI. Guardian Node tier upgrade included. Attorney network fee share.</div>
-      </div>
-      <div class="stake-option">
-        <div class="stake-option-header"><span style="color:#fff;font-size:13px;font-weight:800">180-Day Lock</span><span class="stake-apy" style="color:var(--amber)">38% APY</span></div>
-        <div style="color:var(--t3);font-size:11px">Sentinel tier guaranteed. DAO governance rights. Revenue from premium subscriptions + attorney referrals.</div>
-      </div>
-    </div>
-
-    <!-- Wallet Connect -->
+    <!-- Wallet address -->
     <div class="claim-card" id="wallet-connect-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="font-size:14px;font-weight:800">💸 Claim $ALIBI</div>
-        <span class="pill" style="background:rgba(50,215,75,.08);border:1px solid rgba(50,215,75,.25);color:var(--green)">LIVE</span>
+        <div style="font-size:14px;font-weight:800">💾 Save wallet address</div>
       </div>
       <div id="wallet-disconnected">
-        <div style="color:var(--t2);font-size:13px;line-height:1.6;margin-bottom:14px">Connect your Solana wallet to lock in your earnings. Tokens airdrop to your wallet at TGE. Your Guardian Node tier is preserved.</div>
-        <button type="button" onclick="connectPhantom()" style="width:100%;background:linear-gradient(135deg,#9945FF,#14F195);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:900;padding:16px;cursor:pointer;font-family:var(--mono);letter-spacing:1px">CONNECT WALLET</button>
-        <div style="color:var(--t3);font-size:10px;text-align:center;margin-top:10px">Works with Phantom, Solflare, or any Solana wallet</div>
+        <div style="color:var(--t2);font-size:13px;line-height:1.6;margin-bottom:14px">Save a Solana address on this device so session earnings stay attached to it.</div>
+        <button type="button" onclick="connectPhantom()" style="width:100%;background:linear-gradient(135deg,#9945FF,#14F195);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:900;padding:16px;cursor:pointer;font-family:var(--mono);letter-spacing:1px">CONNECT OR PASTE ADDRESS</button>
+        <div style="color:var(--t3);font-size:10px;text-align:center;margin-top:10px">Uses Phantom if installed; otherwise paste your address</div>
         <div id="wallet-manual-entry" style="display:none;margin-top:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px">
           <div style="color:var(--t3);font-size:9px;font-weight:900;letter-spacing:1px;font-family:var(--mono);margin-bottom:8px">PASTE YOUR WALLET ADDRESS:</div>
           <div style="display:flex;gap:8px">
@@ -2472,10 +2114,10 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
       </div>
       <div id="wallet-connected" style="display:none">
         <div style="background:rgba(20,241,149,.06);border:1px solid rgba(20,241,149,.25);border-radius:12px;padding:14px;margin-bottom:12px">
-          <div style="color:rgba(20,241,149,.7);font-size:9px;font-weight:900;letter-spacing:1.5px;font-family:var(--mono);margin-bottom:4px">WALLET CONNECTED</div>
+          <div style="color:rgba(20,241,149,.7);font-size:9px;font-weight:900;letter-spacing:1.5px;font-family:var(--mono);margin-bottom:4px">SAVED ON THIS DEVICE</div>
           <div id="wallet-addr" style="color:#fff;font-family:var(--mono);font-size:11px;word-break:break-all"></div>
         </div>
-        <div style="color:var(--t2);font-size:13px;line-height:1.6;margin-bottom:14px">Earnings reserved. Guardian Node tier locked in. Airdrop processed at TGE launch.</div>
+        <div style="color:var(--t2);font-size:13px;line-height:1.6;margin-bottom:14px">This address is stored locally in your browser. It is not a live on-chain claim.</div>
         <button type="button" onclick="disconnectWallet()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:var(--t3);font-size:12px;font-weight:800;padding:12px;cursor:pointer;font-family:var(--mono)">DISCONNECT WALLET</button>
       </div>
     </div>
@@ -2485,130 +2127,12 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
     <div class="token-info-card">
       <div class="token-info-row"><span class="token-info-label">TOKEN</span><span class="token-info-val">$ALIBI</span></div>
       <div class="token-info-row"><span class="token-info-label">NETWORK</span><span class="token-info-val">Solana Mainnet</span></div>
-      <div class="token-info-row"><span class="token-info-label">TOTAL SUPPLY</span><span class="token-info-val">1,000,000,000</span></div>
-      <div class="token-info-row"><span class="token-info-label">MINT AUTH</span><span class="token-info-val" style="color:var(--green)">✓ REVOKED</span></div>
-      <div class="token-info-row"><span class="token-info-label">FREEZE AUTH</span><span class="token-info-val" style="color:var(--green)">✓ NONE</span></div>
-      <div class="token-info-row"><span class="token-info-label">BASE BURN</span><span class="token-info-val" style="color:var(--red)">10% → 20%</span></div>
-      <div class="token-info-row"><span class="token-info-label">STAKING APY</span><span class="token-info-val" style="color:#9945FF">12–38% at TGE</span></div>
       <div class="token-info-row"><span class="token-info-label">CONTRACT</span><span class="token-info-val"><a href="https://solscan.io/token/396ypp7wKqVry36RhHcC8dLAxTWTg9juatoRFwnyzzRq" target="_blank" rel="noopener noreferrer" style="color:var(--cyan)">396ypp7...zRq ↗</a></span></div>
     </div>
 
-    <!-- Token utility breakdown -->
-    <div class="section-label">TOKEN UTILITY</div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-      <div style="display:flex;gap:12px;padding:12px;background:var(--s2);border-radius:12px;border:1px solid var(--b)"><div style="font-size:18px;flex-shrink:0">🏎️</div><div><div style="color:#fff;font-size:12px;font-weight:700;margin-bottom:2px">Drive-to-Earn</div><div style="color:var(--t3);font-size:11px;line-height:1.4">Earn $ALIBI just for navigating. The app runs before you need it — that's the point.</div></div></div>
-      <div style="display:flex;gap:12px;padding:12px;background:var(--s2);border-radius:12px;border:1px solid var(--b)"><div style="font-size:18px;flex-shrink:0">⛓️</div><div><div style="color:#fff;font-size:12px;font-weight:700;margin-bottom:2px">Evidence Vaulting</div><div style="color:var(--t3);font-size:11px;line-height:1.4">On-chain evidence anchoring costs $ALIBI. Each vault transaction burns tokens from supply.</div></div></div>
-      <div style="display:flex;gap:12px;padding:12px;background:var(--s2);border-radius:12px;border:1px solid var(--b)"><div style="font-size:18px;flex-shrink:0">👨‍⚖️</div><div><div style="color:#fff;font-size:12px;font-weight:700;margin-bottom:2px">Attorney Network</div><div style="color:var(--t3);font-size:11px;line-height:1.4">Connect to verified civil rights attorneys using $ALIBI. Attorneys stake to join the network.</div></div></div>
-      <div style="display:flex;gap:12px;padding:12px;background:var(--s2);border-radius:12px;border:1px solid var(--b)"><div style="font-size:18px;flex-shrink:0">🔒</div><div><div style="color:#fff;font-size:12px;font-weight:700;margin-bottom:2px">Premium Features</div><div style="color:var(--t3);font-size:11px;line-height:1.4">Mugshot removal, reputation defense, extended vault storage — unlocked with $ALIBI or subscription.</div></div></div>
-      <div style="display:flex;gap:12px;padding:12px;background:var(--s2);border-radius:12px;border:1px solid var(--b)"><div style="font-size:18px;flex-shrink:0">🗳️</div><div><div style="color:#fff;font-size:12px;font-weight:700;margin-bottom:2px">DAO Governance</div><div style="color:var(--t3);font-size:11px;line-height:1.4">180-day stakers vote on burn rates, reward multipliers, feature prioritization, and treasury allocation.</div></div></div>
-    </div>
-
     <div style="color:var(--t3);font-size:10px;line-height:1.7;text-align:center;padding:8px 0 8px;border-top:1px solid var(--b)">
-      $ALIBI is a utility token. Not a security. Not an investment. Earn it by protecting your rights and the rights of your community.
+      Session earnings are tracked on this device. $ALIBI is a utility token, not an investment.
     </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════ -->
-<!-- TAB: RIDESHARE -->
-<!-- ══════════════════════════════════════════════════════ -->
-<div class="screen" id="screen-ride">
-  <div class="scroll-page">
-    <div class="page-title">🚗 RIDESHARE SHIELD</div>
-
-    <!-- Mode selector -->
-    <div class="ride-mode-bar">
-      <button type="button" class="ride-mode-btn active" id="ride-mode-off" onclick="setRideMode('off')">OFF</button>
-      <button type="button" class="ride-mode-btn" id="ride-mode-driver" onclick="setRideMode('driver')">🛡 DRIVER</button>
-      <button type="button" class="ride-mode-btn" id="ride-mode-passenger" onclick="setRideMode('passenger')">🚌 PASSENGER</button>
-    </div>
-
-    <!-- Status bar -->
-    <div id="ride-status-bar" style="display:none;background:rgba(255,51,51,.08);border:1px solid rgba(255,51,51,.3);border-radius:14px;padding:12px 16px;margin-bottom:14px;display:none;align-items:center;gap:10px">
-      <div style="width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse-badge 1s infinite;flex-shrink:0"></div>
-      <div id="ride-status-text" style="color:#fff;font-size:12px;font-weight:800;font-family:var(--mono)">PROTECTION ACTIVE</div>
-    </div>
-
-    <!-- Camera preview -->
-    <div class="ride-cam-preview" id="ride-cam-wrap" style="display:none">
-      <video id="ride-cam-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video>
-      <div class="ride-cam-overlay">
-        <div class="ride-cam-badge">● REC</div>
-        <div id="ride-trip-timer" style="background:rgba(0,0,0,.7);border-radius:8px;padding:4px 10px;font-size:10px;font-weight:900;font-family:var(--mono);color:#fff">00:00</div>
-      </div>
-    </div>
-
-    <!-- Panic phrase -->
-    <div class="panic-phrase-card">
-      <div class="panic-phrase-status">
-        <div id="panic-dot" class="panic-listening-dot" style="animation:none;background:var(--t3)"></div>
-        <div style="font-size:13px;font-weight:800">Silent Panic Phrase</div>
-        <span id="panic-status-pill" class="pill pill-gray" style="margin-left:auto">INACTIVE</span>
-      </div>
-      <div style="color:var(--t3);font-size:12px;line-height:1.6;margin-bottom:14px">Set a 3-word phrase. When you say it naturally during a ride, Alibi silently starts recording and sends your GPS to emergency contacts — no visible action on screen.</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input id="panic-word-1" placeholder="WORD 1" maxlength="15" style="flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(255,51,51,.3);border-radius:8px;color:#fff;font-family:var(--mono);font-size:11px;padding:10px;outline:none;text-transform:uppercase;text-align:center" />
-        <input id="panic-word-2" placeholder="WORD 2" maxlength="15" style="flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(255,51,51,.3);border-radius:8px;color:#fff;font-family:var(--mono);font-size:11px;padding:10px;outline:none;text-transform:uppercase;text-align:center" />
-        <input id="panic-word-3" placeholder="WORD 3" maxlength="15" style="flex:1;background:rgba(0,0,0,.4);border:1px solid rgba(255,51,51,.3);border-radius:8px;color:#fff;font-family:var(--mono);font-size:11px;padding:10px;outline:none;text-transform:uppercase;text-align:center" />
-      </div>
-      <button type="button" onclick="savePanicPhrase()" style="width:100%;background:rgba(255,51,51,.15);border:1px solid rgba(255,51,51,.4);border-radius:10px;color:var(--red);font-size:12px;font-weight:900;padding:12px;cursor:pointer;font-family:var(--mono);letter-spacing:1px">SET PANIC PHRASE</button>
-      <div id="panic-phrase-display" style="display:none;margin-top:10px;background:rgba(0,0,0,.3);border-radius:8px;padding:10px;font-family:var(--mono);font-size:11px;color:var(--green);text-align:center;letter-spacing:2px"></div>
-    </div>
-
-    <!-- Emergency contact -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="section-label" style="margin-bottom:12px">🆘 Emergency Contact</div>
-      <div style="color:var(--t3);font-size:12px;line-height:1.6;margin-bottom:10px">When panic phrase triggers: Alibi auto-dials 911 and sends a text with your GPS coordinates to your emergency contact.</div>
-      <input id="emergency-contact-number" placeholder="+1 (555) 000-0000" type="tel" style="width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-size:14px;padding:12px;outline:none;box-sizing:border-box;margin-bottom:8px" />
-      <button type="button" onclick="saveEmergencyContact()" style="width:100%;background:rgba(0,229,255,.08);border:1px solid var(--cyan-b);border-radius:10px;color:var(--cyan);font-size:12px;font-weight:900;padding:12px;cursor:pointer;font-family:var(--mono)">SAVE CONTACT</button>
-    </div>
-
-    <!-- Trip log -->
-    <div class="trip-log-card" id="trip-log-card">
-      <div class="trip-log-header">
-        <div style="font-size:14px;font-weight:800">📋 Trip Log</div>
-        <span id="trip-count-badge" class="pill pill-cyan">0 TRIPS</span>
-      </div>
-      <div id="trip-log-list">
-        <div style="color:var(--t3);font-size:12px;text-align:center;padding:16px 0">Start a protected trip to begin logging.</div>
-      </div>
-    </div>
-
-    <!-- Driver protect features -->
-    <div style="margin-bottom:14px">
-      <div class="section-label" style="margin-bottom:12px">🔐 DRIVER PROTECT FEATURES</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;background:rgba(0,229,255,.04);border:1px solid var(--cyan-b);border-radius:12px">
-          <div style="font-size:20px;flex-shrink:0">📹</div>
-          <div><div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:3px">Dual Camera Buffer</div><div style="color:var(--t3);font-size:11px;line-height:1.5">Back cam records the road. Front cam records the cabin. Both run simultaneously in rideshare mode. Pre-buffer saves the last 5 minutes before activation.</div></div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;background:rgba(0,229,255,.04);border:1px solid var(--cyan-b);border-radius:12px">
-          <div style="font-size:20px;flex-shrink:0">🔇</div>
-          <div><div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:3px">Silent Activation</div><div style="color:var(--t3);font-size:11px;line-height:1.5">Panic phrase triggers recording with zero visual indication. Screen stays normal. Passenger never knows protection is active.</div></div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;background:rgba(0,229,255,.04);border:1px solid var(--cyan-b);border-radius:12px">
-          <div style="font-size:20px;flex-shrink:0">⛓️</div>
-          <div><div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:3px">Trip Hash on Vault</div><div style="color:var(--t3);font-size:11px;line-height:1.5">Every trip generates a unique SHA-256 hash anchored to the Solana blockchain. Timestamp, route, and duration are immutably sealed on-chain.</div></div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;background:rgba(255,159,10,.04);border:1px solid rgba(255,159,10,.2);border-radius:12px">
-          <div style="font-size:20px;flex-shrink:0">⭐</div>
-          <div><div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:3px">False Claim Defense</div><div style="color:var(--t3);font-size:11px;line-height:1.5">If a passenger makes a false claim, your trip recording is your alibi. GPS speed, route, and cabin footage prove exactly what happened and when.</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Passenger Notice -->
-    <div style="margin-bottom:14px;background:rgba(255,159,10,.06);border:1px solid rgba(255,159,10,.25);border-radius:14px;padding:14px 16px">
-      <div style="font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:2px;color:var(--amber);margin-bottom:8px">⚠️ ALL-PARTY CONSENT COMPLIANCE</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:12px">In states requiring all-party consent, you must inform passengers they may be recorded. Use this notice.</div>
-      <button type="button" onclick="document.getElementById('passenger-notice').classList.add('show')" style="width:100%;background:rgba(255,159,10,.12);border:1px solid rgba(255,159,10,.35);border-radius:10px;color:var(--amber);font-size:12px;font-weight:900;padding:12px;cursor:pointer;font-family:var(--mono);letter-spacing:1.5px">📋 SHOW PASSENGER NOTICE</button>
-    </div>
-
-    <!-- Rideshare Legal Disclaimer -->
-    <div style="padding:12px 14px;background:rgba(0,0,0,.25);border-radius:10px;margin-bottom:10px">
-      <div style="font-size:10px;color:rgba(255,255,255,.25);line-height:1.6;font-family:var(--mono)">LEGAL NOTICE: You are solely responsible for complying with applicable recording laws. In two-party consent states, you must obtain consent from all parties before recording. Alibi Protocol provides this tool for lawful use only and assumes no liability for unlawful recording. Consult a licensed attorney if you are uncertain about the laws in your jurisdiction.</div>
-    </div>
-
   </div>
 </div>
 
@@ -2617,7 +2141,6 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
 <!-- ══════════════════════════════════════════════════════ -->
 <div class="tab-bar">
   <button type="button" class="tab-btn active" id="tab-nav" onclick="switchTab('nav',event)"><span class="tab-icon">🧭</span><span class="tab-label">DRIVE</span></button>
-  <button type="button" class="tab-btn" id="tab-ride" onclick="switchTab('ride',event)"><span class="tab-icon">🚗</span><span class="tab-label">RIDESHARE</span></button>
   <button type="button" class="tab-btn" id="tab-vault" onclick="switchTab('vault',event)"><span class="tab-icon">🔐</span><span class="tab-label">VAULT</span></button>
   <button type="button" class="tab-btn" id="tab-after" onclick="switchTab('after',event)"><span class="tab-icon">⚖️</span><span class="tab-label">AFTER</span></button>
   <button type="button" class="tab-btn" id="tab-wallet" onclick="switchTab('wallet',event)"><span class="tab-icon">💎</span><span class="tab-label">WALLET</span></button>
@@ -3067,85 +2590,6 @@ function toast(msg, type='', duration=3000){
   setTimeout(()=>el.remove(), duration);
 }
 
-// ════════════════════════════════════════════════════════
-// ALIBI BRAND ANIMATIONS
-// ════════════════════════════════════════════════════════
-function spawnEarnFloat(amount, sourceEl){
-  const el = document.createElement('div');
-  el.className = 'earn-float';
-  el.textContent = '+' + (amount||0).toFixed(2) + ' $ALIBI';
-  // Position above the earn HUD element if found, else top-right
-  const ref = sourceEl || document.getElementById('earn-amt') || document.getElementById('earn-hud');
-  if(ref){
-    const r = ref.getBoundingClientRect();
-    el.style.left = (r.left + r.width/2 - 50) + 'px';
-    el.style.top  = (r.top - 10) + 'px';
-  } else {
-    el.style.right = '24px';
-    el.style.top   = '120px';
-  }
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(), 1000);
-}
-
-function triggerEmergencyFlash(){
-  const el = document.createElement('div');
-  el.className = 'alibi-em-flash';
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(), 750);
-}
-
-/* ══ AMBIENT PARTICLE FIELD ══ */
-(function initParticleField(){
-  const field = document.createElement('div');
-  field.className = 'particle-field';
-  document.body.appendChild(field);
-  const types = ['cyan','cyan','green','white','cyan'];
-  for(let i=0;i<28;i++){
-    const p = document.createElement('div');
-    const t = types[i % types.length];
-    p.className = `ambient-particle ${t}`;
-    const xPct = Math.random()*100;
-    const dur  = 14 + Math.random()*18;
-    const delay= -(Math.random()*dur);
-    const drift= (Math.random()-0.5)*80;
-    const peak = (.3+Math.random()*.5).toFixed(2);
-    p.style.cssText = `left:${xPct}%;bottom:0;--dur:${dur}s;--delay:${delay}s;--drift:${drift}px;--peak:${peak};`;
-    field.appendChild(p);
-  }
-})();
-
-/* ══ TAP RIPPLE ══ */
-document.addEventListener('pointerdown', function(e){
-  if(e.target.closest('.map-wrap')||e.target.closest('.particle-field')) return;
-  const r = document.createElement('div');
-  r.className = 'tap-ripple';
-  r.style.cssText = `left:${e.clientX}px;top:${e.clientY}px;`;
-  document.body.appendChild(r);
-  r.addEventListener('animationend',()=>r.remove(),{once:true});
-}, {passive:true});
-
-/* ══ EARN BURST ══ */
-function spawnEarnBurst(x, y, count){
-  count = count || 8;
-  const colors = ['#00FF88','#00E5FF','#00FF88','#ffffff'];
-  for(let i=0;i<count;i++){
-    const p  = document.createElement('div');
-    p.className = 'earn-burst-particle';
-    const angle = (i/count)*Math.PI*2;
-    const dist  = 30 + Math.random()*30;
-    const bx = Math.cos(angle)*dist;
-    const by = Math.sin(angle)*dist - 20;
-    const dur = (.5+Math.random()*.35).toFixed(2);
-    const color = colors[i%colors.length];
-    p.style.cssText = `left:${x}px;top:${y}px;--bx:${bx}px;--by:${by}px;--dur:${dur}s;--color:${color};`;
-    document.body.appendChild(p);
-    p.addEventListener('animationend',()=>p.remove(),{once:true});
-  }
-}
-
-/* ══ SPEED REACTIVE GLOW ══ */
-const _origUpdateSpeedHUD = typeof updateSpeedHUD === 'function' ? updateSpeedHUD : null;
 function _applySpeedGlow(mph){
   const el = document.querySelector('.speed-big');
   if(!el) return;
@@ -3159,11 +2603,7 @@ function _applySpeedGlow(mph){
 function _tickEarnDisplay(target){
   const el = document.getElementById('earn-amt');
   if(!el) return;
-  el.classList.remove('earn-tick');
-  void el.offsetWidth; // reflow
-  el.classList.add('earn-tick');
-  el.textContent = target.toFixed(2);
-  el.addEventListener('animationend',()=>el.classList.remove('earn-tick'),{once:true});
+  el.textContent = Number(target).toFixed(2) + ' $ALIBI';
 }
 
 // ════════════════════════════════════════════════════════
@@ -3266,9 +2706,6 @@ if(navigator.geolocation){
           earnIntervalCount++;
           _tickEarnDisplay(earned);
           updateDailyEarnBar();
-          spawnEarnFloat(reward);
-          const _earnEl = document.getElementById('earn-amt');
-          if(_earnEl){ const _r=_earnEl.getBoundingClientRect(); spawnEarnBurst(_r.left+_r.width/2,_r.top+_r.height/2,6); }
           toast('+'+reward.toFixed(2)+' $ALIBI — 1 mile ✓','success',2000);
         }
       }
@@ -3462,6 +2899,8 @@ async function startInCabCamera(){
       preview.play().catch(()=>{});
     }
     if(label){ label.textContent='IN-CAB LIVE'; label.classList.remove('off'); }
+    const wrap = document.getElementById('cab-preview-wrap');
+    if(wrap) wrap.classList.add('live');
     const types = ['video/webm;codecs=vp8','video/webm','video/mp4'];
     cabMimeType = types.find(t=>MediaRecorder.isTypeSupported(t)) || '';
     try{ cabRecorder = new MediaRecorder(cabStream, cabMimeType ? {mimeType:cabMimeType} : {}); }
@@ -3474,8 +2913,8 @@ async function startInCabCamera(){
       recText.textContent = 'RECORDING · ROAD + IN-CAB + OFFICER AUDIO';
     }
   }catch(e){
-    const label = document.getElementById('cab-preview-label');
-    if(label){ label.textContent='IN-CAB UNAVAILABLE'; label.classList.add('off'); }
+    const wrap = document.getElementById('cab-preview-wrap');
+    if(wrap) wrap.classList.remove('live');
     toast('In-cab camera unavailable — officer audio and road dashcam still recording','warn',4000);
   }
 }
@@ -3485,6 +2924,8 @@ function stopInCabCamera(){
   if(cabStream) cabStream.getTracks().forEach(t=>t.stop());
   const preview = document.getElementById('cab-preview');
   if(preview) preview.srcObject = null;
+  const wrap = document.getElementById('cab-preview-wrap');
+  if(wrap) wrap.classList.remove('live');
   const label = document.getElementById('cab-preview-label');
   if(label){ label.textContent='IN-CAB CAMERA'; label.classList.add('off'); }
   cabStream=null; cabRecorder=null; cabActive=false;
@@ -3635,22 +3076,22 @@ setTimeout(()=>{
 // ════════════════════════════════════════════════════════
 function switchTab(id, e){
   if(e) e.stopPropagation();
-  // Blur-out outgoing screen
-  document.querySelectorAll('.screen.active').forEach(s=>{
-    s.style.transition='opacity .12s ease,filter .12s ease,transform .12s ease';
-    s.style.opacity='0';s.style.filter='blur(2px)';s.style.transform='translateY(4px)';
-    setTimeout(()=>{s.classList.remove('active');s.style.cssText='';},120);
-  });
+  if(id==='ride') id='nav';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  // Reveal incoming screen after outgoing fades
-  setTimeout(()=>{
-    const incoming = document.getElementById('screen-'+id);
-    if(incoming){ incoming.classList.add('active'); }
-    document.getElementById('tab-'+id)?.classList.add('active');
-    if(id==='nav') setTimeout(()=>map&&map.invalidateSize(),100);
-    if(id==='vault') renderVault();
-    if(id==='wallet'){ document.getElementById('wallet-display').textContent=earned.toFixed(2); updateDailyEarnBar(); }
-  },110);
+  const incoming = document.getElementById('screen-'+id);
+  if(incoming) incoming.classList.add('active');
+  const tab = document.getElementById('tab-'+id);
+  if(tab) tab.classList.add('active');
+  if(id==='nav') setTimeout(()=>{ if(map) map.invalidateSize(); },50);
+  if(id==='vault') renderVault();
+  if(id==='wallet'){
+    const wd = document.getElementById('wallet-display');
+    if(wd) wd.textContent = earned.toFixed(2);
+    updateDailyEarnBar();
+    updateNodeStats();
+    updateDriveSafeUI();
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -3725,7 +3166,7 @@ async function calcRoute(dlat,dlon){
     document.getElementById('turn-header').style.display='flex';
     document.getElementById('hud').classList.add('nav-active');
     updateTurn();
-    document.getElementById('nav-action').innerHTML='<div class="nav-actions"><div class="cancel-btn" onclick="cancelNav()">✕ END ROUTE</div><div class="shield-btn" onclick="startEmergency()" style="position:relative;overflow:visible"><div class="shield-ring-1" aria-hidden="true"></div><div class="shield-ring-2" aria-hidden="true"></div>⚖️ SHIELD</div></div>';
+    document.getElementById('nav-action').innerHTML='<div class="nav-actions"><div class="cancel-btn" onclick="cancelNav()">✕ END ROUTE</div><div class="shield-btn" onclick="startEmergency()">⚖️ SHIELD</div></div>';
   }catch{toast('Network error — could not route','error')}
   finally{document.getElementById('route-loading').style.display='none'}
 }
@@ -3742,7 +3183,7 @@ function cancelNav(){
   if(document.getElementById('next-turn-preview')) document.getElementById('next-turn-preview').style.display='none';
   if(document.getElementById('reroute-pill')) document.getElementById('reroute-pill').style.display='none';
   document.getElementById('hud').classList.remove('nav-active');
-  document.getElementById('nav-action').innerHTML='<div class="dc-hero-row"><div class="dc-hero-main"><button type="button" class="dc-hero-btn '+(dashcamActive?'dc-on':'dc-off')+'" id="dc-hero-btn" onclick="toggleDashcam()"><span>'+(dashcamActive?'🔴':'📹')+'</span><span id="dc-hero-txt">'+(dashcamActive?'RECORDING · '+_dcBufLabel():'START DASHCAM')+'</span></button></div><div class="dc-shield-pill" onclick="startEmergency()" style="position:relative;overflow:visible"><div class="shield-ring-1" aria-hidden="true"></div><div class="shield-ring-2" aria-hidden="true"></div>⚖️ SHIELD</div></div>';
+  document.getElementById('nav-action').innerHTML='<div class="dc-hero-row"><div class="dc-hero-main"><button type="button" class="dc-hero-btn '+(dashcamActive?'dc-on':'dc-off')+'" id="dc-hero-btn" onclick="toggleDashcam()"><span>'+(dashcamActive?'🔴':'📹')+'</span><span id="dc-hero-txt">'+(dashcamActive?'RECORDING · '+_dcBufLabel():'START DASHCAM')+'</span></button></div><div class="dc-shield-pill" onclick="startEmergency()">⚖️ SHIELD</div></div>';
   if(loc) map.setView([loc.lat,loc.lng],16);
 }
 
@@ -3792,9 +3233,11 @@ function report(type){
   const reward = 0.5;
   earned+=reward;
   dailyEarnTotal+=reward;
+  nodeReports++;
   dailyReportCount++;
-  document.getElementById('earn-amt').textContent='+'+earned.toFixed(2)+' $ALIBI';
+  document.getElementById('earn-amt').textContent=earned.toFixed(2)+' $ALIBI';
   updateDailyEarnBar();
+  updateNodeStats();
   const emojis={Police:'🚓',Crash:'💥',Hazard:'🚧',Trap:'📡'};
   const m = L.marker([loc.lat,loc.lng],{icon:L.divIcon({
     className:'',
@@ -3802,12 +3245,10 @@ function report(type){
     iconSize:[28,28],iconAnchor:[14,14]
   })}).addTo(map);
   hazardMarkers.push(m);
-  const tier = getGuardianTier ? getGuardianTier(totalReports) : {mult:1};
+  const tier = getGuardianTier ? getGuardianTier(nodeReports) : {mult:1};
   const bonus = reward * (tier.mult - 1);
   if(bonus > 0){ earned += bonus; dailyEarnTotal += bonus; }
-  spawnEarnFloat(reward + bonus);
-  const _hEl = document.getElementById('earn-amt');
-  if(_hEl){ const _hr=_hEl.getBoundingClientRect(); spawnEarnBurst(_hr.left+_hr.width/2,_hr.top+_hr.height/2,10); _tickEarnDisplay(earned); }
+  _tickEarnDisplay(earned);
   toast(`+${(reward+bonus).toFixed(2)} $ALIBI · ${type} reported${bonus>0?' · '+tier.name+' bonus':''}`,'success');
   if(typeof trackHazardReport === 'function') trackHazardReport();
 }
@@ -3841,7 +3282,6 @@ function updateDailyEarnBar(){
 // EMERGENCY MODE — REAL RECORDING
 // ════════════════════════════════════════════════════════
 async function startEmergency(){
-  triggerEmergencyFlash();
   document.getElementById('em-overlay').classList.add('active');
   document.getElementById('em-hash').textContent='RECORDING IN PROGRESS...';
   document.getElementById('em-timer').textContent='00:00';
@@ -3923,7 +3363,7 @@ async function startEmergency(){
         activeAudioBlob = new Blob(audioChunks, {type:mimeType});
         activeAudioURL = URL.createObjectURL(activeAudioBlob);
         const hash = await sha256(activeAudioBlob);
-        document.getElementById('em-hash').innerHTML = `<span class="hash-type">${hash}</span>`;
+        document.getElementById('em-hash').textContent = hash;
         await saveToVault(hash, mimeType);
         // ── AUTO-DOWNLOAD AUDIO EVIDENCE ──────────────────────
         const audioExt = mimeType.includes('ogg') ? 'ogg' : 'webm';
@@ -4136,7 +3576,7 @@ function renderVault(){
       +' · '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     const shortHash = e.hash.length > 16 ? e.hash.slice(0,8)+'...'+e.hash.slice(-8) : e.hash;
     return `
-      <div class="incident-card" style="animation:fadeIn .3s ease ${i*0.05}s both">
+      <div class="incident-card">
         <div class="incident-header">
           <div class="incident-date">${dateStr}</div>
           <span class="incident-state-badge">${e.state}</span>
