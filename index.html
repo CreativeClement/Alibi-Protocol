@@ -994,9 +994,9 @@ footer .logo-text{font-size:20px;-webkit-text-fill-color:transparent}
       <div class="sec-tag fu" style="display:inline-flex;margin-bottom:24px">Join the Movement</div>
       <h2 class="fu">Start earning.<br><span class="g">Drive protected.</span></h2>
       <p class="wl-sub fu">Get early access to wallet launch, token claim, and every feature as it ships. The people here first earn the most.</p>
-      <form class="wform fu" id="wl-form" onsubmit="return false;">
+      <form class="wform fu" id="wl-form">
         <input type="email" id="wl-email" placeholder="your@email.com" autocomplete="email" required>
-        <button type="button" id="wl-btn">Claim My Spot →</button>
+        <button type="submit" id="wl-btn">Claim My Spot →</button>
       </form>
       <div class="wnote fu" id="wl-note" style="font-family:var(--mono);font-size:11px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-top:14px">No spam. Only ship updates. Unsubscribe anytime.</div>
       <div class="social-row fu" style="display:flex;gap:24px;justify-content:center;margin-top:36px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase">
@@ -1052,9 +1052,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var mob = document.getElementById('mobMenu');
   var menuBtn = document.getElementById('menuBtn');
   var mobClose = document.getElementById('mobClose');
-  if(menuBtn) menuBtn.onclick = function(){ mob.classList.add('on'); };
-  if(mobClose) mobClose.onclick = function(){ mob.classList.remove('on'); };
-  if(mob) mob.querySelectorAll('a').forEach(function(a){ a.onclick = function(){ mob.classList.remove('on'); }; });
+  function closeMob(){ if(mob) mob.classList.remove('on'); }
+  if(menuBtn) menuBtn.onclick = function(){ if(mob) mob.classList.add('on'); };
+  if(mobClose) mobClose.onclick = closeMob;
+  if(mob) mob.querySelectorAll('a').forEach(function(a){ a.onclick = closeMob; });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMob(); });
 
   // ─── FADE-UP OBSERVER ───
   var obs = new IntersectionObserver(function(es){
@@ -1063,12 +1065,14 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.fu').forEach(function(el){ obs.observe(el); });
 
   // ─── WAITLIST → FORMSPREE ───
-  var wlBtn = document.getElementById('wl-btn');
-  if(wlBtn){
-    wlBtn.onclick = function(){
+  var wlForm = document.getElementById('wl-form');
+  if(wlForm){
+    wlForm.addEventListener('submit', function(e){
+      e.preventDefault();
       var em = document.getElementById('wl-email');
       var n = document.getElementById('wl-note');
       var btn = document.getElementById('wl-btn');
+      if(!n || !btn) return;
       if(!em || !em.value || !em.value.includes('@') || !em.value.includes('.')){
         n.textContent = 'Enter a valid email address.';
         n.style.color = 'var(--red)';
@@ -1082,7 +1086,9 @@ document.addEventListener('DOMContentLoaded', function() {
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ email: email, source: 'waitlist-section', referrer: document.referrer || 'direct', page: location.pathname })
       })
-      .then(function(res){ return res.json().then(function(data){ return {ok: res.ok, data: data}; }); })
+      .then(function(res){
+        return res.json().then(function(data){ return {ok: res.ok, data: data}; }).catch(function(){ return {ok: res.ok, data: {}}; });
+      })
       .then(function(result){
         if(result.ok){
           n.textContent = "✓ You're on the list. First to know when wallet launch drops.";
@@ -1103,7 +1109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.disabled = false;
         btn.textContent = 'Claim My Spot →';
       });
-    };
+    });
   }
 
   function showToast(msg){
@@ -1117,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ─── GSAP REVEAL ───
   if(window.gsap){
-    gsap.registerPlugin(ScrollTrigger);
+    if(window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
     gsap.from('.gs-reveal', {y:50, opacity:0, duration:1.6, ease:'power3.out', stagger:.18});
   }
 
