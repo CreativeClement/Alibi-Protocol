@@ -329,8 +329,8 @@ html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:v
 .tab-label{font-size:9px;font-weight:800;letter-spacing:.8px;font-family:var(--mono)}
 
 /* ── SCREENS ── */
-.screen{flex:1 1 0;min-height:0;display:none;flex-direction:column;position:relative;overflow:hidden}
-.screen.active{display:flex}
+.screen{flex:1 1 0;min-height:0;display:none !important;flex-direction:column;position:relative;overflow:hidden;visibility:hidden;pointer-events:none}
+.screen.active{display:flex !important;visibility:visible;pointer-events:auto;z-index:1}
 .scroll-page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(16px + var(--safe-b))}
 
 /* ── MAP ── */
@@ -3070,14 +3070,22 @@ function dismissMountGuide(){
 // TAB SWITCHING
 // ════════════════════════════════════════════════════════
 function switchTab(id, e){
-  if(e) e.stopPropagation();
+  if(e){ e.preventDefault(); e.stopPropagation(); }
   if(id==='ride') id='nav';
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('#app > .screen').forEach(s=>{
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   const incoming = document.getElementById('screen-'+id);
-  if(incoming) incoming.classList.add('active');
+  if(incoming){
+    incoming.classList.add('active');
+    incoming.style.display = 'flex';
+  }
   const tab = document.getElementById('tab-'+id);
   if(tab) tab.classList.add('active');
+  const mapBox = document.getElementById('map');
+  if(mapBox) mapBox.style.visibility = id==='nav' ? 'visible' : 'hidden';
   if(id==='nav') setTimeout(()=>{ if(map) map.invalidateSize(); },50);
   if(id==='vault') renderVault();
   if(id==='after') buildRightsReference();
