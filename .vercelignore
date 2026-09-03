@@ -1,0 +1,10 @@
+# Vercel cleanUrls maps app.html → /app, which 404s as a reserved path.
+# The live app is served from alibi.html via /app rewrite.
+app.html
+app_fixed.html
+alibi-app-final.html
+api
+mobile
+Mobile_App
+worker
+node_modules

@@ -5,11 +5,19 @@
   "rewrites": [
     {
       "source": "/app",
-      "destination": "/app.html"
+      "destination": "/alibi"
     },
     {
       "source": "/alibi-protocol-app",
-      "destination": "/app.html"
+      "destination": "/alibi"
+    },
+    {
+      "source": "/api/total-supply",
+      "destination": "/total-supply.json"
+    },
+    {
+      "source": "/api/circulating-supply",
+      "destination": "/circulating-supply.json"
     },
     {
       "source": "/api/legal-guidance",
