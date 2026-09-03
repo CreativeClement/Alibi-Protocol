@@ -1,0 +1,11 @@
+{
+  "name": "Alibi Protocol",
+  "install": "npm install",
+  "terminals": [
+    {
+      "name": "web",
+      "command": "npm run dev"
+    }
+  ],
+  "ports": [3000]
+}

@@ -10,6 +10,9 @@
   },
   "author": "Tim Clement <tim@alibiprotocol.com>",
   "license": "UNLICENSED",
+  "scripts": {
+    "dev": "serve -l 3000"
+  },
   "keywords": [
     "civil-rights",
     "solana",
@@ -17,5 +20,8 @@
     "dashcam",
     "evidence",
     "pwa"
-  ]
+  ],
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
 }
