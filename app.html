@@ -331,7 +331,7 @@ html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:v
 /* ── SCREENS ── */
 .screen{flex:1 1 0;min-height:0;display:none !important;flex-direction:column;position:relative;overflow:hidden;visibility:hidden;pointer-events:none}
 .screen.active{display:flex !important;visibility:visible;pointer-events:auto;z-index:1}
-.scroll-page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(16px + var(--safe-b))}
+.scroll-page{flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(16px + var(--safe-b))}
 
 /* ── MAP ── */
 #map{flex:1 1 0;min-height:0;z-index:0}
@@ -1902,8 +1902,6 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
       </div>
     </div>
 
-    </div>
-
     <!-- Legal disclaimer -->
     <div class="card" style="border-color:rgba(0,229,255,.2)">
       <div class="section-label" style="margin-bottom:12px">🔒 YOUR DATA — WHAT HAPPENS TO IT</div>
@@ -2092,8 +2090,6 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
         <div class="how-val" style="font-size:14px">50</div>
         <div class="how-lbl">DAILY<br>CAP</div>
       </div>
-    </div>
-
     </div>
 
     <!-- Wallet address -->
