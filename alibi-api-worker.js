@@ -26,8 +26,7 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 };
 
-// Admin key — change this in Cloudflare Worker env vars as ADMIN_KEY secret
-const ADMIN_KEY_DEFAULT = 'ALIBI911ADMIN';
+// Admin key must be set as the ADMIN_KEY Worker secret. No fallback.
 
 // Points per activity type
 const POINTS = {
@@ -392,8 +391,8 @@ export default {
     // ── AIRDROP: ADMIN VIEW (protected) ───────────────────────────
     if (request.method === 'GET' && url.pathname === '/airdrop/admin') {
       const adminKey = url.searchParams.get('key');
-      const validKey = env.ADMIN_KEY || ADMIN_KEY_DEFAULT;
-      if (adminKey !== validKey) {
+      const validKey = env.ADMIN_KEY;
+      if (!validKey || adminKey !== validKey) {
         return jsonResponse({ error: 'Unauthorized' }, 401, corsOrigin);
       }
 

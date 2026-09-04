@@ -1,12 +1,12 @@
 {
   "name": "alibi-protocol",
   "version": "1.0.0",
-  "description": "Alibi Protocol — civil rights protection app. Drive-to-earn navigation, Legal Shield recording, evidence vault. Landing page hosted on Vercel. App deployed as a Cloudflare Worker.",
+  "description": "Alibi Protocol — civil rights protection app. Drive-to-earn navigation, Legal Shield recording, on-device evidence vault. Landing and /app hosted on Vercel.",
   "private": true,
   "homepage": "https://alibiprotocol.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Str8-Profits/Alibi-Protocol.git"
+    "url": "git+https://github.com/CreativeClement/Alibi-Protocol.git"
   },
   "author": "Tim Clement <tim@alibiprotocol.com>",
   "license": "UNLICENSED",

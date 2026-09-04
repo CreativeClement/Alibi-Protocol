@@ -2,12 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="description" content="Alibi Protocol — the navigation app that records before the cop says a word. Drive-to-earn $ALIBI tokens, activate Legal Shield with one tap, and vault SHA-256 evidence to Solana.">
+<meta name="description" content="Alibi Protocol — the navigation app that records before the cop says a word. Drive-to-earn $ALIBI, activate Legal Shield with one tap, and keep SHA-256 evidence on this device.">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0A0A0C">
 <title>Alibi Protocol</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>window.L||document.write('<scr'+'ipt src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/scr'+'ipt>')
@@ -108,7 +112,7 @@ function shareInsuranceScore(){
     speedCompliance:dsTotalSeconds>0?Math.round((1-(dsSpeedingSeconds/dsTotalSeconds))*100):100,
     milesTracked:Math.round(dsMiles*10)/10,
     generatedAt:new Date().toISOString(),
-    appVersion:'Alibi Protocol v2.0',
+    appVersion:'Alibi Protocol v1.0',
     note:'Anonymized score only. No location, audio, or video data included.'
   };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -1513,7 +1517,7 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
   <div class="splash-name">ALIBI PROTOCOL</div>
   <div class="splash-tag">NAVIGATE · RECORD · PROTECT</div>
   <div class="splash-bar-wrap"><div class="splash-bar-fill"></div></div>
-  <div class="splash-version">v2.0 · BETA</div>
+  <div class="splash-version">v1.0</div>
 </div>
 
 <div id="app">
@@ -1927,15 +1931,15 @@ button, .tab-btn, .report-btn, .quick-btn, .stake-option, .ai-chip, .sc-tab {
           <div style="color:var(--green);font-size:16px;flex-shrink:0;margin-top:1px">✓</div>
           <div>
             <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:2px">GPS stays local</div>
-            <div style="color:var(--t3);font-size:11px;line-height:1.5">Location is used only for state detection, speed display, and evidence packaging. Your GPS track is stored in memory only — cleared when you close the app.</div>
+            <div style="color:var(--t3);font-size:11px;line-height:1.5">Location is used for state detection, speed display, and evidence packaging. A GPS track is saved in your vault only when you store an incident. Closing the tab clears unsaved session location.</div>
           </div>
         </div>
 
         <div style="display:flex;gap:12px;align-items:flex-start">
           <div style="color:rgba(255,159,10,.9);font-size:16px;flex-shrink:0;margin-top:1px">ℹ</div>
           <div>
-            <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:2px">AI guidance uses our secure proxy</div>
-            <div style="color:var(--t3);font-size:11px;line-height:1.5">When you tap ASK AI, your state and selected scenario are sent to our Cloudflare Worker proxy, which calls the Claude API. No recording audio or personal identifiers are ever sent.</div>
+            <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:2px">AI guidance is optional</div>
+            <div style="color:var(--t3);font-size:11px;line-height:1.5">ASK AI sends only your state and selected scenario to our proxy. If the coach is offline, the app shows the on-device rights scripts instead. No recording audio is ever sent.</div>
           </div>
         </div>
 
@@ -3102,9 +3106,11 @@ const searchClear = document.getElementById('search-clear');
 const resultsBox = document.getElementById('results-box');
 const quickRow = document.getElementById('quick-row');
 
-searchInput.addEventListener('input',()=>{searchClear.style.display=searchInput.value?'block':'none'});
-searchInput.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch(searchInput.value)});
-searchInput.addEventListener('focus',()=>{quickRow.style.display='flex'});
+if(searchInput){
+  searchInput.addEventListener('input',()=>{if(searchClear) searchClear.style.display=searchInput.value?'block':'none'});
+  searchInput.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch(searchInput.value)});
+  searchInput.addEventListener('focus',()=>{if(quickRow) quickRow.style.display='flex'});
+}
 
 function clearSearch(){
   searchInput.value='';searchClear.style.display='none';
@@ -3621,7 +3627,7 @@ function downloadPackage(id){
 
   const lawInfo = entry.state && RECORDING_LAWS[entry.state] ? RECORDING_LAWS[entry.state] : null;
   const pkg = {
-    alibi_evidence_package: 'v3.0',
+    alibi_evidence_package: 'v1.0',
     incident_id: entry.id,
     generated_at: new Date().toISOString(),
     incident_timestamp: entry.date,
@@ -3677,7 +3683,7 @@ function downloadPackage(id){
     audio_available: entry.hasAudio,
     video_available: (entry.preBufferVideoSecs || 0) > 0,
     note_on_media: 'Video and audio files available for download only during the active session. Package JSON immediately after a stop; return to vault to download media.',
-    generated_by: 'Alibi Protocol v3.0',
+    generated_by: 'Alibi Protocol v1.0',
     token_contract: '396ypp7wKqVry36RhHcC8dLAxTWTg9juatoRFwnyzzRq',
     legal_disclaimer: 'This evidence package is provided as-is for informational purposes. It is not legal advice. Consult a licensed attorney regarding your specific situation.',
   };
@@ -3958,8 +3964,8 @@ async function claimFoundingShield(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({wallet, email:email||null, ref_by:refBy||null, source:'app_shield_activation', activated_at:new Date().toISOString(), user_agent:navigator.userAgent})
     });
-    const data = await res.json();
-    if(res.ok || data.position){
+    const data = await res.json().catch(()=>({}));
+    if(res.ok && (data.position || data.ok || data.ref_code)){
       localStorage.setItem('alibi_founding_claimed', wallet);
       localStorage.setItem('alibi_founding_position', data.position||'???');
       localStorage.setItem('alibi_founding_ref_code', data.ref_code||wallet.slice(0,8));
@@ -3969,13 +3975,12 @@ async function claimFoundingShield(){
       showFoundingSuccess(data.position||'?', data.ref_code||wallet.slice(0,8));
     } else {
       btn.disabled=false; btn.textContent='⚔️ CLAIM MY FOUNDING SHIELD';
-      toast('Claim failed — check wallet address','error',4000);
+      toast('Claim service is unavailable. Your wallet was not submitted.','warn',5000);
     }
   }catch(e){
-    // Offline fallback
-    localStorage.setItem('alibi_founding_claimed', wallet);
-    localStorage.setItem('alibi_founding_pending_sync', JSON.stringify({wallet,email,ref_by:refBy}));
-    showFoundingSuccess('pending', wallet.slice(0,8));
+    localStorage.setItem('alibi_founding_pending_sync', JSON.stringify({wallet,email,ref_by:refBy,saved_at:new Date().toISOString()}));
+    btn.disabled=false; btn.textContent='⚔️ CLAIM MY FOUNDING SHIELD';
+    toast('Claim service is offline. Address saved on this device to retry.','warn',5000);
   }
 }
 

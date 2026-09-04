@@ -1,10 +1,34 @@
-# Vercel cleanUrls maps app.html → /app, which 404s as a reserved path.
-# The live app is served from alibi.html via /app rewrite.
+# Product app is alibi.html. Vercel cleanUrls maps app.html → reserved /app (404).
 app.html
-app_fixed.html
-alibi-app-final.html
 api
 mobile
 Mobile_App
 worker
 node_modules
+token
+
+# Source / ops — not the public site
+alibi-api-worker.js
+alibi_token_mint.js
+alibi_brand_token.js
+airdrop-allocator.js
+discord-worker.js
+discord-d1-schema.sql
+wrangler.toml
+styles.css
+
+# Unfinished or internal pages — do not ship on launch
+Promo_Commercial.html
+Alibi_Investor_Landing.html
+live_apex.html
+pitchdeck.html
+airdrop.html
+leaderboard.html
+tokenomics.html
+whitepaper.html
+deploy as right one
+DISCORD_SETUP_GUIDE.md
+PROJECT_VISION.md
+Alibi_Protocol_Brand_Guidelines.md
+*.zip
+*.bat

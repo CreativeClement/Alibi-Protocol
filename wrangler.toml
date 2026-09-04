@@ -1,5 +1,5 @@
 name = "alibi-api"
-main = "cloudflare-worker.js"
+main = "alibi-api-worker.js"
 compatibility_date = "2024-01-01"
 
 # ── KV Namespace (rate limiting) ──
