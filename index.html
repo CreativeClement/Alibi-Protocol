@@ -26,6 +26,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -476,10 +477,11 @@ footer .logo-text{font-size:20px;-webkit-text-fill-color:transparent}
     <a href="#invest">Investors</a>
     <a href="#token">Token</a>
     <a href="#roadmap">Roadmap</a>
+    <a href="/app">Open App</a>
   </div>
   <div style="display:flex;align-items:center;gap:14px">
     <button class="hamburger" id="menuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
-    <a href="#waitlist" class="btn-nav">Start Earning</a>
+    <a href="/app" class="btn-nav">Open App</a>
   </div>
 </nav>
 
@@ -491,7 +493,8 @@ footer .logo-text{font-size:20px;-webkit-text-fill-color:transparent}
   <a href="#invest">Investors</a>
   <a href="#token">Token</a>
   <a href="#roadmap">Roadmap</a>
-  <a href="#waitlist" class="btn-nav" style="margin-top:16px">Start Earning</a>
+  <a href="/app">Open App</a>
+  <a href="/app" class="btn-nav" style="margin-top:16px">Open App</a>
 </div>
 
 <main id="hero">
@@ -541,7 +544,7 @@ footer .logo-text{font-size:20px;-webkit-text-fill-color:transparent}
     </div>
 
     <div class="hero-btns gs-reveal">
-      <a href="#waitlist" class="btn-earn">Start Earning Free →</a>
+      <a href="/app" class="btn-earn">Open the App →</a>
       <a href="#how" class="btn-ghost-hero">See How It Works</a>
     </div>
     <p class="hero-note gs-reveal">Free to use &nbsp;·&nbsp; No wallet required to start &nbsp;·&nbsp; Claim tokens at launch</p>
@@ -992,9 +995,9 @@ footer .logo-text{font-size:20px;-webkit-text-fill-color:transparent}
       <div class="sec-tag fu" style="display:inline-flex;margin-bottom:24px">Join the Movement</div>
       <h2 class="fu">Start earning.<br><span class="g">Drive protected.</span></h2>
       <p class="wl-sub fu">Get early access to wallet launch, token claim, and every feature as it ships. The people here first earn the most.</p>
-      <form class="wform fu" id="wl-form" onsubmit="return false;">
+      <form class="wform fu" id="wl-form">
         <input type="email" id="wl-email" placeholder="your@email.com" autocomplete="email" required>
-        <button type="button" id="wl-btn">Claim My Spot →</button>
+        <button type="submit" id="wl-btn">Claim My Spot →</button>
       </form>
       <div class="wnote fu" id="wl-note" style="font-family:var(--mono);font-size:11px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-top:14px">No spam. Only ship updates. Unsubscribe anytime.</div>
       <div class="social-row fu" style="display:flex;gap:24px;justify-content:center;margin-top:36px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase">
@@ -1037,6 +1040,8 @@ footer .logo-text{font-size:20px;-webkit-text-fill-color:transparent}
       <a href="https://discord.gg/CXVrwXe3" target="_blank" rel="noopener" style="color:var(--t2);transition:color .2s">Discord</a>
       <a href="privacy.html" style="color:var(--t2);transition:color .2s">Privacy</a>
       <a href="terms.html" style="color:var(--t2);transition:color .2s">Terms</a>
+      <a href="disclaimer.html" style="color:var(--t2);transition:color .2s">Disclaimer</a>
+      <a href="contact.html" style="color:var(--t2);transition:color .2s">Contact</a>
     </div>
     <p style="font-family:var(--mono);font-size:10px;color:var(--t4);margin-bottom:6px;word-break:break-all">CA: 396ypp7wKqVry36RhHcC8dLAxTWTg9juatoRFwnyzzRq</p>
     <p style="font-family:var(--mono);font-size:10px;color:var(--t4)">© 2026 Alibi Protocol. All rights reserved. Built on Solana. · Stop the Lie. Save Your Life.</p>
@@ -1050,9 +1055,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var mob = document.getElementById('mobMenu');
   var menuBtn = document.getElementById('menuBtn');
   var mobClose = document.getElementById('mobClose');
-  if(menuBtn) menuBtn.onclick = function(){ mob.classList.add('on'); };
-  if(mobClose) mobClose.onclick = function(){ mob.classList.remove('on'); };
-  if(mob) mob.querySelectorAll('a').forEach(function(a){ a.onclick = function(){ mob.classList.remove('on'); }; });
+  function closeMob(){ if(mob) mob.classList.remove('on'); }
+  if(menuBtn) menuBtn.onclick = function(){ if(mob) mob.classList.add('on'); };
+  if(mobClose) mobClose.onclick = closeMob;
+  if(mob) mob.querySelectorAll('a').forEach(function(a){ a.onclick = closeMob; });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMob(); });
 
   // ─── FADE-UP OBSERVER ───
   var obs = new IntersectionObserver(function(es){
@@ -1061,12 +1068,14 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.fu').forEach(function(el){ obs.observe(el); });
 
   // ─── WAITLIST → FORMSPREE ───
-  var wlBtn = document.getElementById('wl-btn');
-  if(wlBtn){
-    wlBtn.onclick = function(){
+  var wlForm = document.getElementById('wl-form');
+  if(wlForm){
+    wlForm.addEventListener('submit', function(e){
+      e.preventDefault();
       var em = document.getElementById('wl-email');
       var n = document.getElementById('wl-note');
       var btn = document.getElementById('wl-btn');
+      if(!n || !btn) return;
       if(!em || !em.value || !em.value.includes('@') || !em.value.includes('.')){
         n.textContent = 'Enter a valid email address.';
         n.style.color = 'var(--red)';
@@ -1080,7 +1089,9 @@ document.addEventListener('DOMContentLoaded', function() {
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ email: email, source: 'waitlist-section', referrer: document.referrer || 'direct', page: location.pathname })
       })
-      .then(function(res){ return res.json().then(function(data){ return {ok: res.ok, data: data}; }); })
+      .then(function(res){
+        return res.json().then(function(data){ return {ok: res.ok, data: data}; }).catch(function(){ return {ok: res.ok, data: {}}; });
+      })
       .then(function(result){
         if(result.ok){
           n.textContent = "✓ You're on the list. First to know when wallet launch drops.";
@@ -1101,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.disabled = false;
         btn.textContent = 'Claim My Spot →';
       });
-    };
+    });
   }
 
   function showToast(msg){
@@ -1115,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ─── GSAP REVEAL ───
   if(window.gsap){
-    gsap.registerPlugin(ScrollTrigger);
+    if(window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
     gsap.from('.gs-reveal', {y:50, opacity:0, duration:1.6, ease:'power3.out', stagger:.18});
   }
 

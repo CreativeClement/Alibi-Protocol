@@ -1,51 +1,32 @@
 /**
  * Alibi Protocol — Service Worker
- * Provides offline caching for landing page assets.
- * Cache-first strategy for static assets, network-first for HTML pages.
+ * Offline cache for the public launch pages only.
  */
-
-const CACHE_NAME = 'alibi-v20';
+const CACHE_NAME = 'alibi-v21';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/tokenomics',
-  '/tokenomics.html',
-  '/whitepaper',
-  '/whitepaper.html',
-  '/pitchdeck',
-  '/pitchdeck.html',
   '/privacy',
-  '/privacy.html',
   '/terms',
-  '/terms.html',
   '/disclaimer',
-  '/disclaimer.html',
-  '/Alibi_Protocol_Investor_Document',
-  '/Alibi_Protocol_Investor_Document.html',
-  '/Alibi_Investor_Landing',
-  '/Alibi_Investor_Landing.html',
-  '/alibi_viral_twitter',
-  '/alibi_viral_twitter.html',
-  '/alibi_data_marketplace_video',
-  '/alibi_data_marketplace_video.html',
-  '/alibi_media_showcase',
-  '/alibi_media_showcase.html',
+  '/contact',
+  '/app',
   '/favicon.svg',
   '/icon-192.png',
   '/icon-512.png',
-  '/manifest.json'
+  '/manifest.json',
+  '/og-image.png'
 ];
 
-/* Install — pre-cache core assets */
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(STATIC_ASSETS.map((url) => cache.add(url).catch(() => null)))
+    )
   );
   self.skipWaiting();
 });
 
-/* Activate — purge old caches */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -55,7 +36,6 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-/* Fetch — network-first for HTML, cache-first for assets */
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -65,27 +45,30 @@ self.addEventListener('fetch', (event) => {
 
   const isHTML = request.headers.get('accept')?.includes('text/html') ||
                  url.pathname.endsWith('.html') ||
-                 url.pathname === '/';
+                 url.pathname === '/' ||
+                 url.pathname === '/app';
 
   if (isHTML) {
-    /* Network-first for pages — always try fresh content */
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
           return response;
         })
         .catch(() => caches.match(request))
     );
   } else {
-    /* Cache-first for static assets */
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
         return fetch(request).then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
           return response;
         });
       })

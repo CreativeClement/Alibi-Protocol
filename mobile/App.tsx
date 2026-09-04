@@ -1,13 +1,11 @@
 // Must be first import — polyfills crypto.getRandomValues for tweetnacl/Solana
 import 'react-native-get-random-values';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
   StatusBar,
-  Dimensions,
-  Animated,
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
@@ -22,8 +20,7 @@ import { EmergencyScreen } from './src/screens/EmergencyScreen';
 import { StealthScreen } from './src/screens/StealthScreen';
 import { TabBar } from './src/components/TabBar';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
-
-const { height } = Dimensions.get('window');
+import { SplashScreen } from './src/components/SplashScreen';
 
 type AppTab = 'NAVIGATION' | 'VAULT' | 'AFTER' | 'WALLET' | 'STEALTH';
 
@@ -31,14 +28,13 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<AppTab>('NAVIGATION');
   const [emergencyActive, setEmergencyActive] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [booting, setBooting] = useState(true);
 
   const { location, error: locationError, loading: locationLoading } = useLocation({
     enabled: true,
   });
 
   const { wallet, connect, disconnect, signTransaction } = useWallet();
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-  const prevTabRef = useRef<AppTab>(currentTab);
 
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
@@ -46,29 +42,27 @@ export default function App() {
 
   const handleTabChange = useCallback((tabId: string) => {
     if (tabId === currentTab) return;
-    // Fade out, switch, fade in
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 100,
-      useNativeDriver: true,
-    }).start(() => {
-      prevTabRef.current = tabId as AppTab;
-      setCurrentTab(tabId as AppTab);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-    });
-  }, [currentTab, fadeAnim]);
+    setCurrentTab(tabId as AppTab);
+  }, [currentTab]);
 
   const tabs = [
-    { id: 'NAVIGATION', label: 'Navigate', icon: '🧭' },
-    { id: 'VAULT', label: 'Vault', icon: '🔐' },
-    { id: 'AFTER', label: 'After', icon: '⚖️' },
-    { id: 'WALLET', label: 'Wallet', icon: '💎' },
-    { id: 'STEALTH', label: 'Stealth', icon: '🕵️' },
+    { id: 'NAVIGATION', label: 'Navigate', icon: 'navigate' as const },
+    { id: 'VAULT', label: 'Vault', icon: 'lock-closed' as const },
+    { id: 'AFTER', label: 'After', icon: 'shield-checkmark' as const },
+    { id: 'WALLET', label: 'Wallet', icon: 'wallet' as const },
+    { id: 'STEALTH', label: 'Stealth', icon: 'eye-off' as const },
   ];
+
+  if (booting) {
+    return (
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <ExpoStatusBar style="light" />
+          <SplashScreen onFinish={() => setBooting(false)} />
+        </View>
+      </SafeAreaProvider>
+    );
+  }
 
   if (emergencyActive) {
     return (
@@ -137,9 +131,9 @@ export default function App() {
       <ErrorBoundary fallbackMessage="Alibi Protocol encountered an unexpected error. Your vault data and recordings are safe.">
         <SafeAreaView style={styles.container}>
           <ExpoStatusBar style="light" />
-          <Animated.View style={[styles.screenContainer, { opacity: fadeAnim }]}>
+          <View style={styles.screenContainer}>
             {renderScreen()}
-          </Animated.View>
+          </View>
           <TabBar
             tabs={tabs}
             activeTab={currentTab}
